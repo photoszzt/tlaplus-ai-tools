@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "tlaplus": {
+      "type": "local",
+      "command": ["node", "/path/to/tlaplus-mcp-server/dist/index.js"],
+      "enabled": true
+    }
+  }
+}
