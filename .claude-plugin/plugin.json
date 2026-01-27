@@ -7,12 +7,8 @@
   },
   "repository": "https://github.com/USER/tlaplus-mcp-server",
   "license": "MIT",
-  "keywords": [
-    "tla+",
-    "formal-verification",
-    "model-checking",
-    "mcp"
-  ],
+  "keywords": ["tla+", "formal-verification", "model-checking", "mcp"],
+  "skills": "./skills/",
   "mcpServers": {
     "tlaplus": {
       "command": "node",
