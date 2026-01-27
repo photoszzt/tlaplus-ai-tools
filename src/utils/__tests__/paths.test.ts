@@ -121,7 +121,7 @@ describe('paths', () => {
   });
 
   describe('autoDetectToolsDir', () => {
-    it('detects monorepo tools directory', async () => {
+    it('detects standalone tools directory', async () => {
       mockStat.mockResolvedValue({ isDirectory: () => true });
       mockAccess.mockResolvedValue(undefined);
 
@@ -133,7 +133,7 @@ describe('paths', () => {
       );
     });
 
-    it('detects standalone tools directory', async () => {
+    it('detects fallback tools directory', async () => {
       mockStat
         .mockRejectedValueOnce(new Error('Not found'))
         .mockResolvedValueOnce({ isDirectory: () => true });
@@ -154,7 +154,7 @@ describe('paths', () => {
       mockAccess.mockResolvedValueOnce(undefined);
 
       const result = await autoDetectToolsDir();
-      expect(result).toBe(path.join(npmRoot, '@tlaplus', 'mcp-server', 'tools'));
+      expect(result).toBe(path.join(npmRoot, 'tlaplus-mcp-server', 'tools'));
     });
 
     it('returns null when npm is not available', async () => {
@@ -191,8 +191,8 @@ describe('paths', () => {
 
     it('skips directory if it is not a directory', async () => {
       mockStat
-        .mockResolvedValueOnce({ isDirectory: () => false }) // monorepo is file
-        .mockResolvedValueOnce({ isDirectory: () => true }); // standalone is directory
+        .mockResolvedValueOnce({ isDirectory: () => false }) // standalone is file
+        .mockResolvedValueOnce({ isDirectory: () => true }); // fallback is directory
       mockAccess.mockResolvedValue(undefined);
       mockExecSync.mockImplementation(() => {
         throw new Error('npm not found');
@@ -204,11 +204,11 @@ describe('paths', () => {
 
     it('continues checking when jar validation fails', async () => {
       mockStat
-        .mockResolvedValueOnce({ isDirectory: () => true }) // monorepo exists
-        .mockResolvedValueOnce({ isDirectory: () => true }); // standalone exists
+        .mockResolvedValueOnce({ isDirectory: () => true }) // standalone exists
+        .mockResolvedValueOnce({ isDirectory: () => true }); // fallback exists
       mockAccess
-        .mockRejectedValueOnce(new Error('jar not found')) // monorepo jar missing
-        .mockResolvedValueOnce(undefined); // standalone jar exists
+        .mockRejectedValueOnce(new Error('jar not found')) // standalone jar missing
+        .mockResolvedValueOnce(undefined); // fallback jar exists
       mockExecSync.mockImplementation(() => {
         throw new Error('npm not found');
       });
@@ -219,7 +219,7 @@ describe('paths', () => {
   });
 
   describe('autoDetectKbDir', () => {
-    it('detects monorepo knowledgebase directory', async () => {
+    it('detects standalone knowledgebase directory', async () => {
       mockStat.mockResolvedValue({ isDirectory: () => true });
       mockReaddir.mockResolvedValue(['README.md', 'intro.md']);
 
@@ -227,10 +227,10 @@ describe('paths', () => {
       expect(result).toContain('knowledgebase');
     });
 
-    it('detects standalone knowledgebase directory', async () => {
+    it('detects fallback knowledgebase directory', async () => {
       mockStat
-        .mockRejectedValueOnce(new Error('Not found')) // monorepo fails
-        .mockResolvedValueOnce({ isDirectory: () => true }); // standalone succeeds
+        .mockRejectedValueOnce(new Error('Not found')) // standalone fails
+        .mockResolvedValueOnce({ isDirectory: () => true }); // fallback succeeds
       mockReaddir
         .mockResolvedValueOnce(['README.md']);
 
@@ -243,14 +243,14 @@ describe('paths', () => {
       mockExecSync.mockReturnValue(`${npmRoot}\n`);
 
       mockStat
-        .mockRejectedValueOnce(new Error('Not found')) // monorepo fails
         .mockRejectedValueOnce(new Error('Not found')) // standalone fails
+        .mockRejectedValueOnce(new Error('Not found')) // fallback fails
         .mockResolvedValueOnce({ isDirectory: () => true }); // npm global succeeds
       mockReaddir
         .mockResolvedValueOnce(['guide.md']);
 
       const result = await autoDetectKbDir();
-      expect(result).toBe(path.join(npmRoot, '@tlaplus', 'mcp-server', 'resources', 'knowledgebase'));
+      expect(result).toBe(path.join(npmRoot, 'tlaplus-mcp-server', 'resources', 'knowledgebase'));
     });
 
     it('returns null when no knowledgebase found', async () => {
@@ -275,8 +275,8 @@ describe('paths', () => {
 
     it('skips directory without markdown files', async () => {
       mockStat
-        .mockResolvedValueOnce({ isDirectory: () => true }) // monorepo exists
-        .mockResolvedValueOnce({ isDirectory: () => true }); // standalone exists
+        .mockResolvedValueOnce({ isDirectory: () => true }) // standalone exists
+        .mockResolvedValueOnce({ isDirectory: () => true }); // fallback exists
       mockReaddir
         .mockResolvedValueOnce(['file.txt', 'config.json']) // no .md files
         .mockResolvedValueOnce(['guide.md']); // has .md files
@@ -303,8 +303,8 @@ describe('paths', () => {
 
     it('skips if not a directory', async () => {
       mockStat
-        .mockResolvedValueOnce({ isDirectory: () => false }) // monorepo is file
-        .mockResolvedValueOnce({ isDirectory: () => true }); // standalone is directory
+        .mockResolvedValueOnce({ isDirectory: () => false }) // standalone is file
+        .mockResolvedValueOnce({ isDirectory: () => true }); // fallback is directory
       mockReaddir
         .mockResolvedValueOnce(['guide.md']);
       mockExecSync.mockImplementation(() => {

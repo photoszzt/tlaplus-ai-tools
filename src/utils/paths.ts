@@ -49,7 +49,7 @@ export async function autoDetectToolsDir(): Promise<string | null> {
 
   // Try relative paths from package directory
   const candidates = [
-    path.join(packageDir, '..', '..', 'tools'),  // ../../tools (monorepo)
+    path.join(packageDir, 'tools'),               // tools (standalone repo)
     path.join(packageDir, '..', 'tools'),         // ../tools
   ];
 
@@ -57,7 +57,7 @@ export async function autoDetectToolsDir(): Promise<string | null> {
   try {
     const npmRoot = execSync('npm root -g', { encoding: 'utf8' }).trim();
     candidates.push(
-      path.join(npmRoot, '@tlaplus', 'mcp-server', 'tools')
+      path.join(npmRoot, 'tlaplus-mcp-server', 'tools')
     );
   } catch {
     // npm not available, skip
@@ -98,7 +98,7 @@ export async function autoDetectKbDir(): Promise<string | null> {
 
   // Try relative paths from package directory
   const candidates = [
-    path.join(packageDir, '..', '..', 'resources', 'knowledgebase'),  // ../../resources/knowledgebase
+    path.join(packageDir, 'resources', 'knowledgebase'),               // resources/knowledgebase (standalone repo)
     path.join(packageDir, '..', 'resources', 'knowledgebase'),         // ../resources/knowledgebase
   ];
 
@@ -106,7 +106,7 @@ export async function autoDetectKbDir(): Promise<string | null> {
   try {
     const npmRoot = execSync('npm root -g', { encoding: 'utf8' }).trim();
     candidates.push(
-      path.join(npmRoot, '@tlaplus', 'mcp-server', 'resources', 'knowledgebase')
+      path.join(npmRoot, 'tlaplus-mcp-server', 'resources', 'knowledgebase')
     );
   } catch {
     // npm not available, skip
