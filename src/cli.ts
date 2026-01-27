@@ -112,7 +112,7 @@ EXAMPLES:
   tlaplus-mcp-server --verbose
 
 DOCUMENTATION:
-  https://github.com/tlaplus/vscode-tlaplus/tree/master/packages/mcp-server
+  https://github.com/USER/tlaplus-mcp-server
 `);
 }
 
