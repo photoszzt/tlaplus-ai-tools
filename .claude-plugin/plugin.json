@@ -1,0 +1,25 @@
+{
+  "name": "tlaplus-mcp-server",
+  "version": "1.0.0",
+  "description": "TLA+ formal specification tools for Claude Code",
+  "author": {
+    "name": "TLA+ Foundation"
+  },
+  "repository": "https://github.com/USER/tlaplus-mcp-server",
+  "license": "MIT",
+  "keywords": [
+    "tla+",
+    "formal-verification",
+    "model-checking",
+    "mcp"
+  ],
+  "mcpServers": {
+    "tlaplus": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/dist/index.js"
+      ],
+      "cwd": "${CLAUDE_PLUGIN_ROOT}"
+    }
+  }
+}
