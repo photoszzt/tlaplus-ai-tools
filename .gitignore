@@ -3,3 +3,14 @@ dist/
 tools/*.jar
 coverage/
 .env
+
+# User-specific plugin settings
+.claude/*.local.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Development tracking files
+.claude-plugin/*.md
+!.claude-plugin/README.md

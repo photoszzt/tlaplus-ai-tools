@@ -1,14 +1,21 @@
 {
-  "name": "tlaplus-mcp-server",
+  "name": "tlaplus",
   "version": "1.0.0",
-  "description": "TLA+ formal specification tools for Claude Code",
+  "description": "TLA+ formal specification and model checking tools with AI assistance",
   "author": {
-    "name": "TLA+ Foundation"
+    "name": "Zhiting Zhu",
+    "email": "zhitingzzt@gmail.com",
+    "url": "https://github.com/photoszzt"
   },
-  "repository": "https://github.com/USER/tlaplus-mcp-server",
+  "homepage": "https://github.com/photoszzt/tlaplus-ai-tools",
+  "repository": "https://github.com/photoszzt/tlaplus-ai-tools",
   "license": "MIT",
-  "keywords": ["tla+", "formal-verification", "model-checking", "mcp"],
+  "keywords": ["tla+", "formal-verification", "model-checking", "mcp", "verification", "formal-methods"],
+  "category": "development-tools",
   "skills": "./skills/",
+  "commands": "./commands/",
+  "agents": "./agents/",
+  "hooks": "./hooks/hooks.json",
   "mcpServers": {
     "tlaplus": {
       "command": "node",

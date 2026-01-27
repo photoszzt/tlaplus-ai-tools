@@ -1,582 +1,369 @@
-# TLA+ MCP Server
+# TLA+ AI Tools
 
-Model Context Protocol (MCP) server for TLA+ formal specification tools.
+> Complete TLA+ formal specification and model checking toolkit for Claude Code and OpenCode
+
+**AI-powered assistance for writing, verifying, and debugging TLA+ specifications.**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![Java Version](https://img.shields.io/badge/java-%3E%3D11-orange)](https://adoptium.net/)
 
 ## Overview
 
-This package provides a standalone MCP server that exposes TLA+ tools (SANY parser, TLC model checker) and knowledge base resources to MCP clients like Claude Desktop and other AI assistants.
+TLA+ AI Tools is a comprehensive plugin that brings the power of TLA+ formal methods to AI coding assistants. It combines an MCP server for TLA+ tools with AI skills, commands, agents, and hooks to provide intelligent assistance throughout the entire TLA+ workflow.
+
+**Key Capabilities:**
+- 🤖 **AI Skills** - Learn TLA+, model checking, refinement, and debugging
+- ⚡ **Slash Commands** - Parse, check, smoke test, review, and more
+- 🎯 **Autonomous Agents** - Automated validation, config generation, trace analysis
+- 🔗 **Event Hooks** - Auto-parse on save, suggest configs, verify tools
+- 🛠️ **MCP Integration** - Full access to SANY parser and TLC model checker
+- 📚 **Knowledge Base** - 20+ articles on TLA+ best practices
 
 ## Features
 
-- **Parse & Validate** - Parse TLA+ specifications using SANY to detect syntax and semantic errors
-- **Model Checking** - Run exhaustive model checking with TLC to verify correctness properties
-- **Smoke Testing** - Quick random simulation to find violations without exhaustive state exploration
-- **Behavior Exploration** - Generate and inspect behavior traces of specified lengths
-- **Symbol Extraction** - Extract symbols from TLA+ modules with TLC config suggestions
-- **Module Discovery** - List available TLA+ standard modules
-- **Knowledge Base** - Access 20+ articles on TLA+ best practices and common patterns
+### AI Skills (6)
+
+**For Learning:**
+- **tla-getting-started** - Introduction to TLA+ with examples and tutorials
+- **tla-model-checking** - Complete guide to TLC configuration and workflows
+- **tla-refinement-proofs** - Specification refinement and verification
+
+**For Development:**
+- **tla-spec-review** - Comprehensive specification review checklist
+- **tla-debug-violations** - Systematic debugging of counterexamples
+- **tla-create-animations** - Visualize specifications with SVG animations
+
+### Slash Commands (6)
+
+- `/tla-parse` - Parse and validate TLA+ specifications
+- `/tla-check` - Run exhaustive model checking with TLC
+- `/tla-smoke` - Quick 3-second smoke test
+- `/tla-symbols` - Extract symbols and generate TLC config
+- `/tla-review` - Comprehensive spec review with validation
+- `/tla-setup` - Interactive setup and verification
+
+### Autonomous Agents (4)
+
+- **spec-validator** - Automatically validate specifications
+- **config-generator** - Generate TLC configuration files
+- **animation-creator** - Create visualization animations
+- **trace-analyzer** - Analyze and explain counterexamples
+
+### Event Hooks (3)
+
+- **SessionStart** - Verify TLA+ tools on startup
+- **PreToolUse** - Auto-parse TLA+ files before saving
+- **PostToolUse** - Suggest config generation for new specs
+
+### MCP Tools
+
+Full integration with TLA+ toolchain:
+- **SANY Parser** - Syntax and semantic validation
+- **TLC Model Checker** - Exhaustive state space exploration
+- **Smoke Testing** - Fast random simulation
+- **Behavior Exploration** - Generate execution traces
+- **Symbol Extraction** - Analyze spec structure
+- **Knowledge Base** - Access TLA+ documentation
 
 ## Installation
 
-### From Source
+### Quick Start (Recommended)
 
 ```bash
-git clone https://github.com/USER/tlaplus-mcp-server.git
-cd tlaplus-mcp-server
+# Clone repository
+git clone https://github.com/photoszzt/tlaplus-ai-tools.git
+cd tlaplus-ai-tools
 
-# Install dependencies
+# Install and setup
 npm install
-
-# Build
 npm run build
+npm run setup    # Downloads TLA+ tools
 
-# Run setup to download TLA+ tools
-npm run setup
+# Verify installation
+npm run verify
 
-# Link globally (optional)
-npm link
+# Use with Claude Code
+cc --plugin-dir $(pwd)
 ```
+
+### From npm (Coming Soon)
+
+```bash
+npm install -g tlaplus-ai-tools
+cc
+```
+
+### Claude Code Marketplace (Coming Soon)
+
+```
+/plugin install tlaplus
+```
+
+See [INSTALLATION.md](INSTALLATION.md) for detailed instructions.
 
 ## Requirements
 
-- **Node.js**: 18.0.0 or higher
-- **Java**: 11 or higher (required for TLA+ tools)
-- **TLA+ Tools**: tla2tools.jar and CommunityModules-deps.jar (downloaded by setup script)
+- **Node.js** 18.0.0 or higher
+- **Java** 11 or higher (for TLA+ tools)
+- **Claude Code** or **OpenCode**
 
-## Usage
+## Quick Start Guide
 
-### Stdio Mode (for Claude Desktop)
-
-The server runs in stdio mode by default, suitable for Claude Desktop integration:
-
-```bash
-tlaplus-mcp-server [options]
-```
-
-### HTTP Mode
-
-For remote access or non-stdio clients:
-
-```bash
-tlaplus-mcp-server --http --port 3000
-```
-
-### CLI Options
-
-- `--http` - Enable HTTP transport (default: stdio)
-- `--port <number>` - HTTP server port (default: 3000)
-- `--working-dir <path>` - Restrict file access to this directory
-- `--tools-dir <path>` - Path to TLA+ tools directory (auto-detected if omitted)
-- `--kb-dir <path>` - Path to knowledge base directory (auto-detected if omitted)
-- `--java-home <path>` - Path to Java installation (uses system Java if omitted)
-- `--verbose` - Enable debug logging
-- `--help, -h` - Show help message
-- `--version, -v` - Show version
-
-### Examples
-
-```bash
-# Start in stdio mode with auto-detection
-tlaplus-mcp-server
-
-# Start in HTTP mode with verbose logging
-tlaplus-mcp-server --http --port 3000 --verbose
-
-# Specify custom paths
-tlaplus-mcp-server --tools-dir /opt/tlaplus/tools --kb-dir /opt/tlaplus/kb
-
-# Restrict to project directory
-tlaplus-mcp-server --working-dir /home/user/my-tla-project
-
-# Use specific Java installation
-tlaplus-mcp-server --java-home /usr/lib/jvm/java-17-openjdk
-```
-
-## Claude Code Configuration
-
-### Installation
-
-1. Install the TLA+ MCP Server plugin:
-
-```bash
-cd tlaplus-mcp-server
-npm run setup  # Download TLA+ tools
-npm link       # Make globally available
-```
-
-2. Add to your Claude Code config file:
-
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
-**Linux**: `~/.config/Claude/claude_desktop_config.json`
-
-### Minimal Configuration
-
-```json
-{
-  "mcpServers": {
-    "tlaplus": {
-      "command": "tlaplus-mcp-server"
-    }
-  }
-}
-```
-
-### With Custom Paths
-
-```json
-{
-  "mcpServers": {
-    "tlaplus": {
-      "command": "tlaplus-mcp-server",
-      "args": [
-        "--tools-dir", "/path/to/tlaplus-mcp-server/tools",
-        "--kb-dir", "/path/to/tlaplus-mcp-server/resources/knowledgebase",
-        "--verbose"
-      ]
-    }
-  }
-}
-```
-
-### With Working Directory Restriction
-
-```json
-{
-  "mcpServers": {
-    "tlaplus": {
-      "command": "tlaplus-mcp-server",
-      "args": ["--working-dir", "/path/to/project"]
-    }
-  }
-}
-```
-
-## OpenCode Configuration
-
-### Installation
-
-1. Install the TLA+ MCP Server plugin:
-
-```bash
-cd tlaplus-mcp-server
-npm run setup  # Download TLA+ tools
-npm link       # Make globally available
-```
-
-2. Add the plugin to your OpenCode configuration:
-
-**Location**: `~/.config/opencode/plugin/tlaplus-mcp-server/`
-
-Create `manifest.json`:
-
-```json
-{
-  "name": "tlaplus-mcp-server",
-  "version": "1.0.0",
-  "description": "TLA+ formal specification tools for OpenCode",
-  "type": "mcp",
-  "mcp": {
-    "command": "tlaplus-mcp-server",
-    "args": []
-  }
-}
-```
-
-### With Custom Paths
-
-```json
-{
-  "name": "tlaplus-mcp-server",
-  "version": "1.0.0",
-  "description": "TLA+ formal specification tools for OpenCode",
-  "type": "mcp",
-  "mcp": {
-    "command": "tlaplus-mcp-server",
-    "args": [
-      "--tools-dir", "/path/to/tlaplus-mcp-server/tools",
-      "--kb-dir", "/path/to/tlaplus-mcp-server/resources/knowledgebase",
-      "--verbose"
-    ]
-  }
-}
-```
-
-### Skills Integration
-
-Create skill files in `~/.config/opencode/plugin/tlaplus-mcp-server/skills/`:
-
-**tlaplus-parse.md**:
-```markdown
-# TLA+ Parse Skill
-
-Use this skill when you need to parse and validate TLA+ specifications.
-
-## When to Use
-- Checking TLA+ syntax
-- Validating module structure
-- Detecting semantic errors
-
-## Usage
-Use the tlaplus_mcp_sany_parse tool with the file path.
-```
-
-**tlaplus-model-check.md**:
-```markdown
-# TLA+ Model Checking Skill
-
-Use this skill when you need to verify TLA+ specifications.
-
-## When to Use
-- Exhaustive state space exploration
-- Verifying invariants and properties
-- Finding counterexamples
-
-## Usage
-Use the tlaplus_mcp_tlc_check tool with the file path and optional config.
-```
-
-## Available Tools
-
-### SANY Tools
-
-#### `tlaplus_mcp_sany_parse`
-Parse a TLA+ module for syntax and semantic errors.
-
-**Parameters:**
-- `fileName` (string): Full path to the TLA+ file
-
-**Example:**
-```
-Parse /path/to/MySpec.tla
-```
-
-#### `tlaplus_mcp_sany_symbol`
-Extract symbols from a TLA+ module for TLC configuration file generation.
-
-**Parameters:**
-- `fileName` (string): Full path to the TLA+ file
-- `includeExtendedModules` (boolean, optional): Include symbols from extended/instantiated modules
-
-**Response format (schemaVersion: 1):**
-
-```json
-{
-  "schemaVersion": 1,
-  "rootModule": "Counter",
-  "file": "/path/to/Counter.tla",
-  "includeExtendedModules": false,
-  "candidates": {
-    "constants": [{ "name": "MaxValue", "location": {...}, "comment": "..." }],
-    "variables": [{ "name": "count", "location": {...} }],
-    "statePredicates": [{ "name": "Init", "location": {...} }],
-    "actionPredicates": [{ "name": "Next", "location": {...} }],
-    "temporalFormulas": [{ "name": "Spec", "location": {...} }],
-    "operatorsWithArgs": [{ "name": "Add", "location": {...} }],
-    "theorems": [...],
-    "assumptions": [...]
-  },
-  "bestGuess": {
-    "init": { "name": "Init", "match": "exact", "reason": "root module exact match" },
-    "next": { "name": "Next", "match": "exact", "reason": "root module exact match" },
-    "spec": { "name": "Spec", "match": "exact", "reason": "root module exact match" },
-    "invariants": [{ "name": "TypeOK", "match": "contains", "reason": "..." }],
-    "properties": [{ "name": "Liveness", "match": "contains", "reason": "..." }]
-  },
-  "extendedModules": {
-    "Helper": { "candidates": {...} }
-  }
-}
-```
-
-**TLA+ Level meanings:**
-- Level 0: Constant expressions
-- Level 1: State expressions (can reference variables)
-- Level 2: Action expressions (can reference primed variables)
-- Level 3: Temporal formulas
-
-**bestGuess matching:**
-- `exact`: Exact name match (e.g., "Init")
-- `case_insensitive_exact`: Case-insensitive exact match
-- `prefix`: Name starts with expected prefix (e.g., "InitState")
-- `contains`: Name contains expected pattern
-- `fallback_first_candidate`: No name match, using first available candidate
-
-**Module preference in bestGuess:**
-1. Root module (highest priority)
-2. Extended non-stdlib modules
-3. Standard library modules (lowest priority, used as last resort)
-
-#### `tlaplus_mcp_sany_modules`
-List all available TLA+ standard modules.
-
-**Parameters:** None
-
-**Example:**
-```
-List available TLA+ modules
-```
-
-### TLC Tools
-
-#### `tlaplus_mcp_tlc_check`
-Perform exhaustive model checking on a TLA+ specification.
-
-**Parameters:**
-- `fileName` (string): Full path to the TLA+ file
-- `cfgFile` (string, optional): Path to custom TLC configuration file
-- `extraOpts` (array, optional): Additional TLC options
-- `extraJavaOpts` (array, optional): Additional Java options
-
-**Example:**
-```
-Model check /path/to/Counter.tla
-```
-
-**Note:** Requires a .cfg file (Counter.cfg or MCCounter.tla/MCCounter.cfg).
-
-#### `tlaplus_mcp_tlc_smoke`
-Run a quick smoke test using random simulation (3 seconds).
-
-**Parameters:**
-- `fileName` (string): Full path to the TLA+ file
-- `cfgFile` (string, optional): Path to custom TLC configuration file
-- `extraOpts` (array, optional): Additional TLC options
-- `extraJavaOpts` (array, optional): Additional Java options
-
-**Example:**
-```
-Smoke test /path/to/Counter.tla
-```
-
-#### `tlaplus_mcp_tlc_explore`
-Generate and print a behavior trace of specified length.
-
-**Parameters:**
-- `fileName` (string): Full path to the TLA+ file
-- `behaviorLength` (number): Length of behavior to generate
-- `cfgFile` (string, optional): Path to custom TLC configuration file
-- `extraOpts` (array, optional): Additional TLC options
-- `extraJavaOpts` (array, optional): Additional Java options
-
-**Example:**
-```
-Explore /path/to/Counter.tla with behavior length 5
-```
-
-## Knowledge Base Resources
-
-The server exposes 20+ TLA+ knowledge base articles as MCP resources:
-
-- `tla-animations.md` - Understanding TLA+ animations
-- `tla-bestpractice-spec-properties.md` - Best practices for specifications
-- `tla-choose-nondeterminism.md` - Using CHOOSE for nondeterminism
-- `tla-functions-records-sequences.md` - Functions, records, and sequences
-- `tla-refinement.md` - Specification refinement
-- `tla-review-guidelines.md` - Code review guidelines
-- And more...
-
-Resources are accessible via URI: `tlaplus://knowledge/<filename>`
-
-## Troubleshooting
-
-### Java not found
-
-**Error:** `Java executable not found`
-
-**Solutions:**
-1. Install Java 11 or higher: https://adoptium.net/
-2. Set JAVA_HOME environment variable
-3. Use `--java-home /path/to/java` option
-
-### TLA+ tools not found
-
-**Error:** `TLA+ tools jar not found`
-
-**Solutions:**
-1. Run `npm run setup` to download TLA+ tools
-2. Use `--tools-dir /path/to/tools` to specify the location
-3. Verify tla2tools.jar and CommunityModules-deps.jar exist in the tools directory
-
-### Config file not found
-
-**Error:** `No Counter.cfg found`
-
-**Solutions:**
-1. Create a .cfg file with the same name as your .tla file
-2. Or create MCCounter.tla and MCCounter.cfg files
-3. See TLC documentation for config file format
-
-### Permission denied
-
-**Error:** `Access denied: Path is outside the workspace`
-
-**Solution:**
-If using `--working-dir`, ensure the file path is within that directory. Otherwise, the server allows access to any file.
-
-## Error Recovery
-
-The server implements comprehensive error recovery with automatic retries for transient failures:
-
-### Automatic Retry Behavior
-
-Transient errors (file locks, Java spawn failures, I/O errors) are automatically retried with exponential backoff:
-
-- **Attempt 1**: Immediate
-- **Attempt 2**: After 100ms delay
-- **Attempt 3**: After 1s delay
-- **Attempt 4**: After 10s delay (max)
-
-Maximum 3 retry attempts before returning error to client.
-
-### Structured Error Codes
-
-All errors include structured error codes for better diagnostics:
+### 1. Create Your First Spec
 
 ```
-Error [JAVA_NOT_FOUND]: Java executable not found in "/invalid/path"
-
-Suggested Actions:
-- Install Java 17 or later
-- Set JAVA_HOME environment variable
-- Use --java-home to specify Java location
+User: "I want to learn TLA+"
+→ tla-getting-started skill loads with tutorial
 ```
 
-Error codes classify failures as:
-- **Transient** - Automatically retried (JAR_LOCKED, JAVA_SPAWN_FAILED, FILE_BUSY)
-- **Permanent** - Require user intervention (FILE_NOT_FOUND, JAVA_NOT_FOUND, PARSE_SYNTAX_ERROR)
+Follow the guidance to create a simple counter specification.
 
-### Common Error Codes
+### 2. Generate Configuration
 
-| Code | Type | Description |
-|------|------|-------------|
-| `JAVA_NOT_FOUND` | Permanent | Java not installed or misconfigured |
-| `JAVA_SPAWN_FAILED` | Transient | Failed to start Java (retried automatically) |
-| `FILE_NOT_FOUND` | Permanent | File does not exist |
-| `FILE_BUSY` | Transient | File locked by another process |
-| `JAR_LOCKED` | Transient | JAR file locked (common on Windows with antivirus) |
-| `JAR_ENTRY_NOT_FOUND` | Permanent | Entry not found in JAR archive |
-| `CONFIG_TOOLS_NOT_FOUND` | Permanent | TLA+ tools not configured |
-
-See [docs/ERROR-CODES.md](./docs/ERROR-CODES.md) for complete error code reference.
-
-### Verbose Mode
-
-Enable detailed error diagnostics with environment variables:
-
-```bash
-VERBOSE=1 tlaplus-mcp-server
-# or
-DEBUG=1 tlaplus-mcp-server
+```
+/tla-symbols @Counter.tla
+→ Generates Counter.cfg with proper settings
 ```
 
-Verbose mode includes:
-- Full stack traces for all errors
-- Detailed error context (file paths, retry attempts)
-- Enhanced debugging information
+### 3. Test Quickly
 
-### Retry Examples
-
-**File lock (Windows antivirus scanning JAR):**
 ```
-Error [JAR_LOCKED]: Cannot access tla2tools.jar
-
-Suggested Actions:
-- Close other programs using the JAR file
-- Check for antivirus software locking files
-
-Failed after 3 retry attempts.
+/tla-smoke @Counter.tla
+→ 3-second smoke test finds obvious bugs
 ```
 
-**Java spawn failure (recovered on retry):**
+### 4. Full Verification
+
 ```
-# First attempt fails, retried automatically
-# Second attempt succeeds - no error shown to user
+/tla-check @Counter.tla
+→ Exhaustive model checking
 ```
 
-### Graceful Degradation
+### 5. Review and Debug
 
-The server continues operating when non-critical errors occur:
+```
+/tla-review @Counter.tla
+→ Comprehensive review with automated validation
+```
 
-- **Module scanning**: Returns available modules even if some paths fail
-- **JAR scanning**: Logs warnings for corrupted JARs but continues
-- **Path detection**: Falls back to manual configuration if auto-detection fails
+## Workflows
+
+### Learning TLA+
+
+```
+1. Ask: "teach me TLA+"
+2. Follow tla-getting-started skill
+3. Create example specs
+4. Run /tla-parse and /tla-smoke
+5. Progress to /tla-check
+```
+
+### Writing Specifications
+
+```
+1. Write spec in editor
+2. Auto-parse on save (hook)
+3. /tla-symbols to generate config
+4. /tla-smoke for quick test
+5. /tla-check for full verification
+```
+
+### Debugging Violations
+
+```
+1. TLC reports violation
+2. Use trace-analyzer agent
+3. Understand counterexample
+4. Fix based on suggestions
+5. Re-run /tla-check
+```
+
+### Creating Animations
+
+```
+1. Ask: "create animation for my spec"
+2. animation-creator agent generates anim spec
+3. /tla-check @SpecAnim.tla
+4. View animated state transitions
+```
+
+## Documentation
+
+- **[INSTALLATION.md](INSTALLATION.md)** - Complete installation guide
+- **[TESTING.md](TESTING.md)** - Testing and verification guide
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines (coming soon)
+
+## Configuration
+
+### Custom Settings (Optional)
+
+Create `.claude/tlaplus.local.md` in your project:
+
+```yaml
+---
+javaHome: /usr/lib/jvm/java-17
+toolsDir: /custom/path/to/tools
+tlcDefaults:
+  workers: 8
+  heapSize: 8192
+hooks:
+  autoParseOnSave: true
+  suggestConfigGeneration: true
+---
+```
+
+All settings are optional - the plugin auto-detects paths by default.
+
+## Examples
+
+### Counter Specification
+
+```tla
+---- MODULE Counter ----
+EXTENDS Naturals
+
+CONSTANT MaxValue
+VARIABLE count
+
+Init == count = 0
+
+Increment == count < MaxValue /\ count' = count + 1
+ReachMax  == count = MaxValue /\ count' = count
+
+Next == Increment \/ ReachMax
+
+Spec == Init /\ [][Next]_<<count>>
+
+TypeInvariant == count \in 0..MaxValue
+BoundInvariant == count <= MaxValue
+====
+```
+
+### Usage
+
+```
+/tla-parse @Counter.tla         # Validate syntax
+/tla-symbols @Counter.tla        # Generate Counter.cfg
+/tla-smoke @Counter.tla          # Quick test (3s)
+/tla-check @Counter.tla          # Full verification
+```
+
+More examples in `skills/*/examples/` directories.
 
 ## Architecture
 
-The server is organized into:
-
-- **Tools** (`src/tools/`) - MCP tool implementations (SANY, TLC, knowledge base)
-- **Utils** (`src/utils/`) - Core utilities (Java execution, TLA+ tools, parsing)
-- **Server** (`src/server.ts`) - MCP server with stdio and HTTP transport
-- **CLI** (`src/cli.ts`) - Command-line interface and argument parsing
-
-## Development
-
-```bash
-# Install dependencies
-npm install
-
-# Build
-npm run build
-
-# Watch mode
-npm run dev
+```
+tlaplus-ai-tools/
+├── skills/          # AI skills for TLA+ knowledge
+├── commands/        # Slash commands for user actions
+├── agents/          # Autonomous agents for automation
+├── hooks/           # Event-driven automation
+├── src/             # MCP server source code
+├── dist/            # Compiled MCP server
+├── tools/           # TLA+ tools (downloaded)
+└── resources/       # Knowledge base articles
 ```
 
-## Testing
+## Platform Support
 
-The MCP server has comprehensive automated tests covering all utilities and platform-specific code.
+- ✅ **macOS** (Intel & Apple Silicon)
+- ✅ **Linux** (Ubuntu, Debian, Fedora)
+- ✅ **Windows** 10/11 (via WSL for scripts)
+- ✅ **Claude Code**
+- ✅ **OpenCode**
 
-```bash
-# Run tests
-npm test
+## Troubleshooting
 
-# Run tests with coverage
-npm run test:coverage
-
-# Run in watch mode during development
-npm run test:watch
-```
-
-### Platform Support
-
-Tested on:
-- ✅ macOS (Intel & Apple Silicon)
-- ✅ Windows 10/11
-- ✅ Linux (Ubuntu, Debian, Fedora)
-- ✅ Node.js 18, 20, 22
-
-See [TESTING.md](./TESTING.md) for detailed testing guide.
-
-### Integration Tests
+### Java Not Found
 
 ```bash
-node test-sany.js         # Basic SANY integration test
-node test-fixtures.js     # Comprehensive test with repository fixtures
+# Install Java 11+
+# macOS: brew install openjdk@17
+# Linux: sudo apt-get install openjdk-17-jdk
+# Windows: https://adoptium.net/
+
+# Verify
+java -version
 ```
 
-### Test Results
+### TLA+ Tools Missing
 
-The server has been thoroughly tested with 10 TLA+ specifications from the vscode-tlaplus test suite:
+```bash
+# Download tools
+npm run setup
 
-- ✅ 100% test pass rate
-- ✅ Valid specifications parse without errors
-- ✅ Invalid specifications correctly report errors
-- ✅ Tested with real-world TLA+ code
+# Verify
+npm run verify
+```
 
-See [TEST-RESULTS.md](./TEST-RESULTS.md) for detailed test results.
+### Plugin Not Loading
 
-## License
+```bash
+# Verify structure
+npm run verify
 
-MIT
+# Try explicit path
+cc --plugin-dir $(pwd)
+
+# Check plugin list
+/plugin list
+```
+
+See [INSTALLATION.md](INSTALLATION.md) for more troubleshooting.
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or pull request.
+Contributions are welcome! This project is derived from and inspired by [vscode-tlaplus](https://github.com/tlaplus/vscode-tlaplus).
+
+Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- **TLA+ Tools** - [tlaplus/tlaplus](https://github.com/tlaplus/tlaplus)
+- **VS Code Extension** - [tlaplus/vscode-tlaplus](https://github.com/tlaplus/vscode-tlaplus)
+- **Model Context Protocol** - [modelcontextprotocol](https://github.com/modelcontextprotocol)
+- **Leslie Lamport** - Creator of TLA+
 
 ## Related Projects
 
-- [TLA+ Tools](https://github.com/tlaplus/tlaplus) - The TLA+ specification and verification system
-- [VSCode TLA+ Extension](https://github.com/tlaplus/vscode-tlaplus) - TLA+ support for Visual Studio Code
-- [Model Context Protocol](https://github.com/modelcontextprotocol) - MCP specification and SDKs
+- [TLA+ Homepage](https://lamport.azurewebsites.net/tla/tla.html)
+- [Learn TLA+](https://learntla.com/)
+- [TLA+ Examples](https://github.com/tlaplus/Examples)
+- [TLA+ Google Group](https://groups.google.com/g/tlaplus)
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/photoszzt/tlaplus-ai-tools/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/photoszzt/tlaplus-ai-tools/discussions)
+- **TLA+ Help**: [TLA+ Google Group](https://groups.google.com/g/tlaplus)
+
+## Status
+
+- ✅ **Development**: Complete
+- ✅ **Testing**: Structure validated
+- ⏳ **Marketplace**: Ready for submission
+- ✅ **Open Source**: Available now
+
+## Quick Links
+
+- [Installation Guide](INSTALLATION.md)
+- [Testing Guide](TESTING.md)
+- [Changelog](CHANGELOG.md)
+- [License](LICENSE)
+
+---
+
+**Made with ❤️ for the TLA+ community**
+
+Start formally verifying your systems today! 🚀
