@@ -34,6 +34,22 @@ describe('java', () => {
   const originalArch = process.arch;
   const originalEnv = { ...process.env };
 
+  // Helper to clear all Java-related environment variables
+  function clearJavaEnvVars() {
+    const javaEnvVars = [
+      'JAVA_HOME',
+      'JDK_HOME',
+      'JAVA_HOME_21_ARM64',
+      'JAVA_HOME_17_ARM64',
+      'JAVA_HOME_11_ARM64',
+      'JAVA_HOME_21_X64',
+      'JAVA_HOME_17_X64',
+      'JAVA_HOME_11_X64',
+      'JAVA_HOME_8_X64'
+    ];
+    javaEnvVars.forEach(key => delete process.env[key]);
+  }
+
   beforeEach(() => {
     mockSpawn.mockReset();
     mockExecSync.mockReset();
@@ -77,6 +93,7 @@ describe('java', () => {
     });
 
     it('uses JAVA_HOME when no javaHome provided', () => {
+      clearJavaEnvVars();
       process.env.JAVA_HOME = '/env/java/home';
       mockExistsSync.mockReturnValue(true);
 
@@ -88,6 +105,7 @@ describe('java', () => {
       Object.defineProperty(process, 'platform', { value: 'darwin', configurable: true });
       Object.defineProperty(process, 'arch', { value: 'arm64', configurable: true });
 
+      clearJavaEnvVars();
       process.env.JAVA_HOME_17_ARM64 = '/opt/homebrew/java/17-arm64';
       process.env.JAVA_HOME_17_X64 = '/usr/local/java/17-x64';
       process.env.JAVA_HOME = '/default/java';
@@ -99,7 +117,7 @@ describe('java', () => {
     });
 
     it('uses JDK_HOME as fallback', () => {
-      delete process.env.JAVA_HOME;
+      clearJavaEnvVars();
       process.env.JDK_HOME = '/jdk/home';
       mockExistsSync.mockReturnValue(true);
 
@@ -108,8 +126,7 @@ describe('java', () => {
     });
 
     it('falls back to java command when no JAVA_HOME', () => {
-      delete process.env.JAVA_HOME;
-      delete process.env.JDK_HOME;
+      clearJavaEnvVars();
       mockExistsSync.mockReturnValue(false);
 
       const result = findJavaExecutable();
@@ -117,6 +134,7 @@ describe('java', () => {
     });
 
     it('deduplicates environment variables with same value', () => {
+      clearJavaEnvVars();
       process.env.JAVA_HOME = '/same/path';
       process.env.JDK_HOME = '/same/path';
       mockExistsSync.mockReturnValueOnce(true);
