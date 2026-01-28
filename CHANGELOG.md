@@ -38,7 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for both Claude Code and OpenCode
 
 ### Changed
-- Renamed from `tlaplus-mcp-server` to `tlaplus-ai-tools`
 - Updated plugin metadata and author information
 - Enhanced README with marketplace-first installation
 

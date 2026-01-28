@@ -3,7 +3,7 @@
   "mcp": {
     "tlaplus": {
       "type": "local",
-      "command": ["node", "/path/to/tlaplus-mcp-server/dist/index.js"],
+      "command": ["node", "/path/to/tlaplus-ai-tools/dist/index.js"],
       "enabled": true
     }
   }

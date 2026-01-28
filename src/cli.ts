@@ -82,7 +82,7 @@ TLA+ MCP Server
 Model Context Protocol (MCP) server for TLA+ formal specification tools.
 
 USAGE:
-  tlaplus-mcp-server [options]
+  tlaplus-ai-tools [options]
 
 OPTIONS:
   --http                    Enable HTTP transport (default: stdio)
@@ -97,22 +97,22 @@ OPTIONS:
 
 EXAMPLES:
   # Start in stdio mode (for Claude Desktop)
-  tlaplus-mcp-server
+  tlaplus-ai-tools
 
   # Start in HTTP mode
-  tlaplus-mcp-server --http --port 3000
+  tlaplus-ai-tools --http --port 3000
 
   # Specify custom paths
-  tlaplus-mcp-server --tools-dir /opt/tlaplus/tools --kb-dir /opt/tlaplus/docs
+  tlaplus-ai-tools --tools-dir /opt/tlaplus/tools --kb-dir /opt/tlaplus/docs
 
   # Restrict to project directory
-  tlaplus-mcp-server --working-dir /home/user/my-tla-project
+  tlaplus-ai-tools --working-dir /home/user/my-tla-project
 
   # Enable verbose logging
-  tlaplus-mcp-server --verbose
+  tlaplus-ai-tools --verbose
 
 DOCUMENTATION:
-  https://github.com/USER/tlaplus-mcp-server
+  https://github.com/photoszzt/tlaplus-ai-tools
 `);
 }
 

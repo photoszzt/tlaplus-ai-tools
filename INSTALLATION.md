@@ -392,7 +392,7 @@ sudo chown -R $(whoami) ~/.npm
 sudo chown -R $(whoami) /usr/local/lib/node_modules
 
 # Or use npx without global install
-npx tlaplus-mcp-server
+npx tlaplus-ai-tools
 ```
 
 ## Updating

@@ -6,7 +6,7 @@
       "command": [
         "npx",
         "-y",
-        "tlaplus-mcp-server",
+        "tlaplus-ai-tools",
         "--tools-dir",
         "/path/to/tlaplus/tools",
         "--kb-dir",

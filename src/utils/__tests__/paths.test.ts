@@ -154,7 +154,7 @@ describe('paths', () => {
       mockAccess.mockResolvedValueOnce(undefined);
 
       const result = await autoDetectToolsDir();
-      expect(result).toBe(path.join(npmRoot, 'tlaplus-mcp-server', 'tools'));
+      expect(result).toBe(path.join(npmRoot, 'tlaplus-ai-tools', 'tools'));
     });
 
     it('returns null when npm is not available', async () => {
@@ -250,7 +250,7 @@ describe('paths', () => {
         .mockResolvedValueOnce(['guide.md']);
 
       const result = await autoDetectKbDir();
-      expect(result).toBe(path.join(npmRoot, 'tlaplus-mcp-server', 'resources', 'knowledgebase'));
+      expect(result).toBe(path.join(npmRoot, 'tlaplus-ai-tools', 'resources', 'knowledgebase'));
     });
 
     it('returns null when no knowledgebase found', async () => {

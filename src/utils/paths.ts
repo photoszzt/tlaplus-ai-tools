@@ -57,7 +57,7 @@ export async function autoDetectToolsDir(): Promise<string | null> {
   try {
     const npmRoot = execSync('npm root -g', { encoding: 'utf8' }).trim();
     candidates.push(
-      path.join(npmRoot, 'tlaplus-mcp-server', 'tools')
+      path.join(npmRoot, 'tlaplus-ai-tools', 'tools')
     );
   } catch {
     // npm not available, skip
@@ -106,7 +106,7 @@ export async function autoDetectKbDir(): Promise<string | null> {
   try {
     const npmRoot = execSync('npm root -g', { encoding: 'utf8' }).trim();
     candidates.push(
-      path.join(npmRoot, 'tlaplus-mcp-server', 'resources', 'knowledgebase')
+      path.join(npmRoot, 'tlaplus-ai-tools', 'resources', 'knowledgebase')
     );
   } catch {
     // npm not available, skip

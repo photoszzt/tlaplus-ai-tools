@@ -41,7 +41,7 @@ Test the MCP server independently.
 node dist/index.js --help
 
 # Expected output:
-# Usage: tlaplus-mcp-server [options]
+# Usage: tlaplus-ai-tools [options]
 # Options:
 #   --http              Enable HTTP transport
 #   --port <number>     HTTP port (default: 3000)
@@ -107,12 +107,12 @@ Test plugin in Claude Code environment.
 **Method 1: Local Plugin Directory**
 ```bash
 # Start Claude Code with plugin
-cc --plugin-dir /home/zhitingz/tlaplus-mcp-server
+cc --plugin-dir $(pwd)
 ```
 
 **Method 2: Global Installation**
 ```bash
-cd /home/zhitingz/tlaplus-mcp-server
+# From plugin directory
 npm link
 cc
 ```

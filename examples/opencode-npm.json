@@ -3,7 +3,7 @@
   "mcp": {
     "tlaplus": {
       "type": "local",
-      "command": ["npx", "-y", "tlaplus-mcp-server"],
+      "command": ["npx", "-y", "tlaplus-ai-tools"],
       "enabled": true
     }
   }
