@@ -1,0 +1,280 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
+/**
+ * OpenCode Commands Lint Tests
+ * 
+ * These tests validate the structure and content of OpenCode command files
+ * in .opencode/commands/ directory. They ensure:
+ * - All expected command files exist
+ * - Each has valid YAML frontmatter with required keys
+ * - Each references the appropriate MCP tools
+ * - Each includes usage examples and @ handling notes
+ * - Documentation accurately reflects command support
+ */
+
+const COMMANDS_DIR = path.join(__dirname, '../../.opencode/commands');
+const OPENCODE_DOC = path.join(__dirname, '../../OPENCODE.md');
+
+// Expected command files (from plan)
+const EXPECTED_COMMANDS = [
+  'tla-parse.md',
+  'tla-symbols.md',
+  'tla-smoke.md',
+  'tla-check.md',
+  'tla-review.md',
+  'tla-setup.md'
+];
+
+// MCP tool requirements per command (from plan lines 661-668)
+const REQUIRED_MCP_TOOLS: Record<string, string[]> = {
+  'tla-parse.md': ['tlaplus_mcp_sany_parse'],
+  'tla-symbols.md': ['tlaplus_mcp_sany_parse', 'tlaplus_mcp_sany_symbol'],
+  'tla-smoke.md': ['tlaplus_mcp_tlc_smoke'],
+  'tla-check.md': ['tlaplus_mcp_tlc_check'],
+  'tla-review.md': ['tlaplus_mcp_sany_parse', 'tlaplus_mcp_sany_symbol', 'tlaplus_mcp_tlc_smoke'],
+  'tla-setup.md': [] // No MCP tools, validation only
+};
+
+/**
+ * Minimal frontmatter parser (plan lines 655-659)
+ * Reads between first two --- lines and extracts key: value pairs
+ */
+function parseFrontmatter(content: string): Record<string, string> {
+  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!frontmatterMatch) {
+    return {};
+  }
+
+  const frontmatterText = frontmatterMatch[1];
+  const result: Record<string, string> = {};
+
+  // Parse simple key: value pairs (single-line only)
+  const lines = frontmatterText.split('\n');
+  for (const line of lines) {
+    const match = line.match(/^(\w+):\s*(.+)$/);
+    if (match) {
+      const [, key, value] = match;
+      result[key] = value.trim();
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Check if file exists (helper)
+ */
+function fileExists(filePath: string): boolean {
+  try {
+    return fs.existsSync(filePath);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Read file content (helper)
+ */
+function readFile(filePath: string): string {
+  return fs.readFileSync(filePath, 'utf-8');
+}
+
+describe('OpenCode Commands Lint Tests', () => {
+  describe('Command Files Existence', () => {
+    it('should have .opencode/commands directory', () => {
+      expect(fileExists(COMMANDS_DIR)).toBe(true);
+    });
+
+    EXPECTED_COMMANDS.forEach(commandFile => {
+      it(`should have ${commandFile}`, () => {
+        const filePath = path.join(COMMANDS_DIR, commandFile);
+        expect(fileExists(filePath)).toBe(true);
+      });
+    });
+  });
+
+  describe('Frontmatter Validation', () => {
+    EXPECTED_COMMANDS.forEach(commandFile => {
+      describe(commandFile, () => {
+        let content: string;
+        let frontmatter: Record<string, string>;
+
+        beforeAll(() => {
+          const filePath = path.join(COMMANDS_DIR, commandFile);
+          if (fileExists(filePath)) {
+            content = readFile(filePath);
+            frontmatter = parseFrontmatter(content);
+          }
+        });
+
+        it('should have valid YAML frontmatter', () => {
+          expect(Object.keys(frontmatter).length).toBeGreaterThan(0);
+        });
+
+        it('should have description key', () => {
+          expect(frontmatter.description).toBeDefined();
+          expect(frontmatter.description.length).toBeGreaterThan(0);
+        });
+
+        it('should have agent: build', () => {
+          expect(frontmatter.agent).toBe('build');
+        });
+      });
+    });
+  });
+
+  describe('MCP Tool References', () => {
+    EXPECTED_COMMANDS.forEach(commandFile => {
+      describe(commandFile, () => {
+        let content: string;
+        const requiredTools = REQUIRED_MCP_TOOLS[commandFile];
+
+        beforeAll(() => {
+          const filePath = path.join(COMMANDS_DIR, commandFile);
+          if (fileExists(filePath)) {
+            content = readFile(filePath);
+          }
+        });
+
+        if (requiredTools.length > 0) {
+          requiredTools.forEach(tool => {
+            it(`should reference ${tool}`, () => {
+              expect(content).toContain(tool);
+            });
+          });
+        } else {
+          it('should not require MCP tools (validation only)', () => {
+            // tla-setup is validation only, no MCP tools required
+            expect(commandFile).toBe('tla-setup.md');
+          });
+        }
+      });
+    });
+  });
+
+  describe('Usage Examples and @ Handling', () => {
+    EXPECTED_COMMANDS.forEach(commandFile => {
+      describe(commandFile, () => {
+        let content: string;
+
+        beforeAll(() => {
+          const filePath = path.join(COMMANDS_DIR, commandFile);
+          if (fileExists(filePath)) {
+            content = readFile(filePath);
+          }
+        });
+
+        it('should include usage example with plain path', () => {
+          // Look for example invocations like: /tla-parse test-specs/Counter.tla
+          const commandName = commandFile.replace('.md', '');
+          const plainPathPattern = new RegExp(`/${commandName}\\s+[^@\\s][^\\s]*\\.tla`);
+          expect(content).toMatch(plainPathPattern);
+        });
+
+        it('should include note about @ handling', () => {
+          // Check for @ stripping or @ handling documentation
+          const hasAtHandling = 
+            content.includes('Strip Leading @ Symbol') ||
+            content.includes('leading `@`') ||
+            content.includes('@$1') ||
+            content.includes('@ prefix') ||
+            content.includes('strip') && content.includes('@');
+          
+          expect(hasAtHandling).toBe(true);
+        });
+
+        it('should include "Preferred" usage example or equivalent', () => {
+          // Look for "Preferred" marker or clear usage examples
+          const hasPreferredOrExample = 
+            content.includes('Preferred') ||
+            content.includes('Usage:') ||
+            content.includes('Example') ||
+            content.includes('Test Invocations');
+          
+          expect(hasPreferredOrExample).toBe(true);
+        });
+      });
+    });
+  });
+
+  describe('Documentation Accuracy', () => {
+    it('OPENCODE.md should not claim commands are unsupported', () => {
+      if (fileExists(OPENCODE_DOC)) {
+        const content = readFile(OPENCODE_DOC);
+        
+        // Check for outdated claims like "Commands | ❌ Not Supported"
+        const hasUnsupportedClaim = 
+          content.includes('Commands** | ❌ Not Supported') ||
+          content.includes('Commands** | ❌') ||
+          (content.includes('Commands') && content.includes('Not Supported') && 
+           content.indexOf('Commands') < content.indexOf('Not Supported') &&
+           content.indexOf('Not Supported') - content.indexOf('Commands') < 100);
+        
+        expect(hasUnsupportedClaim).toBe(false);
+      }
+    });
+
+    it('OPENCODE.md should document command support if it exists', () => {
+      if (fileExists(OPENCODE_DOC)) {
+        const content = readFile(OPENCODE_DOC);
+        
+        // If commands exist, docs should mention them
+        const commandsExist = EXPECTED_COMMANDS.some(cmd => 
+          fileExists(path.join(COMMANDS_DIR, cmd))
+        );
+        
+        if (commandsExist) {
+          // Should have some mention of commands being available
+          const mentionsCommands = 
+            content.includes('/tla-parse') ||
+            content.includes('/tla-check') ||
+            content.includes('custom commands') ||
+            content.includes('Commands') && content.includes('✅');
+          
+          expect(mentionsCommands).toBe(true);
+        }
+      }
+    });
+  });
+
+  describe('Command Content Quality', () => {
+    EXPECTED_COMMANDS.forEach(commandFile => {
+      describe(commandFile, () => {
+        let content: string;
+
+        beforeAll(() => {
+          const filePath = path.join(COMMANDS_DIR, commandFile);
+          if (fileExists(filePath)) {
+            content = readFile(filePath);
+          }
+        });
+
+        it('should have implementation section', () => {
+          expect(content).toMatch(/##\s+Implementation/i);
+        });
+
+        it('should have step-by-step instructions', () => {
+          // Look for numbered steps or clear structure
+          const hasSteps = 
+            content.includes('Step 1') ||
+            content.includes('**1.') ||
+            content.match(/\d+\.\s+\w+/);
+          
+          expect(hasSteps).toBeTruthy();
+        });
+
+        it('should validate file path', () => {
+          // Commands should validate .tla extension and file existence
+          const hasValidation = 
+            content.includes('.tla') &&
+            (content.includes('validate') || 
+             content.includes('check') || 
+             content.includes('exists'));
+          
+          expect(hasValidation).toBe(true);
+        });
+      });
+    });
+  });
+});
