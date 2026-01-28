@@ -100,6 +100,19 @@ cc
 /plugin install tlaplus
 ```
 
+### OpenCode
+
+```bash
+# Build and start
+npm run build
+opencode
+
+# Verify MCP connection
+opencode mcp list
+```
+
+See [OPENCODE.md](OPENCODE.md) for detailed OpenCode setup and platform differences.
+
 See [INSTALLATION.md](INSTALLATION.md) for detailed instructions.
 
 ## Requirements
