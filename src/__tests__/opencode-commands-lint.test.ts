@@ -86,11 +86,71 @@ describe('OpenCode Commands Lint Tests', () => {
       expect(fileExists(COMMANDS_DIR)).toBe(true);
     });
 
+    it('should have exactly 6 expected command files', () => {
+      if (!fileExists(COMMANDS_DIR)) {
+        throw new Error('.opencode/commands directory does not exist');
+      }
+
+      const actualFiles = fs.readdirSync(COMMANDS_DIR)
+        .filter(f => f.endsWith('.md'));
+      
+      if (actualFiles.length !== EXPECTED_COMMANDS.length) {
+        const missing = EXPECTED_COMMANDS.filter(cmd => !actualFiles.includes(cmd));
+        const extra = actualFiles.filter(f => !EXPECTED_COMMANDS.includes(f));
+        
+        let message = `Expected exactly ${EXPECTED_COMMANDS.length} command files, found ${actualFiles.length}.`;
+        if (missing.length > 0) {
+          message += `\nMissing: ${missing.join(', ')}`;
+        }
+        if (extra.length > 0) {
+          message += `\nUnexpected: ${extra.join(', ')}`;
+        }
+        throw new Error(message);
+      }
+      
+      expect(actualFiles.length).toBe(EXPECTED_COMMANDS.length);
+    });
+
     EXPECTED_COMMANDS.forEach(commandFile => {
       it(`should have ${commandFile}`, () => {
         const filePath = path.join(COMMANDS_DIR, commandFile);
+        if (!fileExists(filePath)) {
+          throw new Error(`Missing command file: ${commandFile}. Expected at ${filePath}`);
+        }
         expect(fileExists(filePath)).toBe(true);
       });
+    });
+
+    it('should have filenames matching command names', () => {
+      if (!fileExists(COMMANDS_DIR)) {
+        throw new Error('.opencode/commands directory does not exist');
+      }
+
+      const actualFiles = fs.readdirSync(COMMANDS_DIR)
+        .filter(f => f.endsWith('.md'));
+      
+      const mismatches: string[] = [];
+      
+      actualFiles.forEach(filename => {
+        const filePath = path.join(COMMANDS_DIR, filename);
+        const content = readFile(filePath);
+        const frontmatter = parseFrontmatter(content);
+        
+        // Extract command name from filename (e.g., "tla-parse.md" -> "tla-parse")
+        const expectedCommandName = filename.replace('.md', '');
+        
+        // Check if content references the command with /command-name
+        const commandPattern = new RegExp(`/${expectedCommandName}\\b`);
+        if (!commandPattern.test(content)) {
+          mismatches.push(`${filename}: does not reference /${expectedCommandName} in content`);
+        }
+      });
+      
+      if (mismatches.length > 0) {
+        throw new Error(`Filename/command name mismatches:\n${mismatches.join('\n')}`);
+      }
+      
+      expect(mismatches.length).toBe(0);
     });
   });
 
@@ -165,24 +225,27 @@ describe('OpenCode Commands Lint Tests', () => {
           }
         });
 
-        it('should include usage example with plain path', () => {
-          // Look for example invocations like: /tla-parse test-specs/Counter.tla
-          const commandName = commandFile.replace('.md', '');
-          const plainPathPattern = new RegExp(`/${commandName}\\s+[^@\\s][^\\s]*\\.tla`);
-          expect(content).toMatch(plainPathPattern);
-        });
+        // tla-setup doesn't take file arguments, so skip these tests
+        if (commandFile !== 'tla-setup.md') {
+          it('should include usage example with plain path', () => {
+            // Look for example invocations like: /tla-parse test-specs/Counter.tla
+            const commandName = commandFile.replace('.md', '');
+            const plainPathPattern = new RegExp(`/${commandName}\\s+[^@\\s][^\\s]*\\.tla`);
+            expect(content).toMatch(plainPathPattern);
+          });
 
-        it('should include note about @ handling', () => {
-          // Check for @ stripping or @ handling documentation
-          const hasAtHandling = 
-            content.includes('Strip Leading @ Symbol') ||
-            content.includes('leading `@`') ||
-            content.includes('@$1') ||
-            content.includes('@ prefix') ||
-            content.includes('strip') && content.includes('@');
-          
-          expect(hasAtHandling).toBe(true);
-        });
+          it('should include note about @ handling', () => {
+            // Check for @ stripping or @ handling documentation
+            const hasAtHandling = 
+              content.includes('Strip Leading @ Symbol') ||
+              content.includes('leading `@`') ||
+              content.includes('@$1') ||
+              content.includes('@ prefix') ||
+              content.includes('strip') && content.includes('@');
+            
+            expect(hasAtHandling).toBe(true);
+          });
+        }
 
         it('should include "Preferred" usage example or equivalent', () => {
           // Look for "Preferred" marker or clear usage examples
@@ -200,19 +263,38 @@ describe('OpenCode Commands Lint Tests', () => {
 
   describe('Documentation Accuracy', () => {
     it('OPENCODE.md should not claim commands are unsupported', () => {
-      if (fileExists(OPENCODE_DOC)) {
-        const content = readFile(OPENCODE_DOC);
-        
-        // Check for outdated claims like "Commands | ❌ Not Supported"
-        const hasUnsupportedClaim = 
-          content.includes('Commands** | ❌ Not Supported') ||
-          content.includes('Commands** | ❌') ||
-          (content.includes('Commands') && content.includes('Not Supported') && 
-           content.indexOf('Commands') < content.indexOf('Not Supported') &&
-           content.indexOf('Not Supported') - content.indexOf('Commands') < 100);
-        
-        expect(hasUnsupportedClaim).toBe(false);
+      if (!fileExists(OPENCODE_DOC)) {
+        return;
       }
+
+      const content = readFile(OPENCODE_DOC);
+      
+      // Check for outdated claims like "Commands | ❌ Not Supported"
+      const unsupportedPatterns = [
+        /Commands\*\*\s*\|\s*❌\s*Not Supported/i,
+        /Commands\*\*\s*\|\s*❌/i,
+        /\|\s*Commands\s*\|\s*❌/i,
+        /Commands.*Not Supported/i
+      ];
+      
+      const foundPatterns = unsupportedPatterns
+        .map((pattern, idx) => ({ pattern, idx, match: pattern.test(content) }))
+        .filter(result => result.match);
+      
+      if (foundPatterns.length > 0) {
+        const patternDescriptions = foundPatterns.map(r => 
+          `Pattern ${r.idx + 1}: ${unsupportedPatterns[r.idx]}`
+        ).join('\n');
+        
+        throw new Error(
+          `OPENCODE.md contains outdated "Commands not supported" claims.\n` +
+          `Found patterns:\n${patternDescriptions}\n\n` +
+          `Action: Update OPENCODE.md to reflect that commands ARE supported.\n` +
+          `Expected: Commands should be marked as ✅ Supported with examples.`
+        );
+      }
+      
+      expect(foundPatterns.length).toBe(0);
     });
 
     it('OPENCODE.md should document command support if it exists', () => {

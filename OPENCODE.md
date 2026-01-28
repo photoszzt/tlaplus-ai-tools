@@ -18,7 +18,7 @@ OpenCode will automatically load the TLA+ MCP server from `.opencode/opencode.js
 |-----------|--------|-------|
 | **MCP Tools** | ✅ Full Support | All TLA+ tools accessible via MCP |
 | **Skills (6)** | ✅ Full Support | All 6 skills discoverable |
-| **Commands** | ❌ Not Supported | OpenCode has no slash command system |
+| **Commands** | ✅ Supported | Custom commands via .opencode/commands/*.md |
 | **Agents** | ⚠️ Different Architecture | Requires oh-my-opencode JSON config |
 | **Hooks** | ⚠️ Different Architecture | Requires JavaScript plugin files |
 
@@ -66,18 +66,33 @@ opencode debug skill | grep tla-
 
 ## Platform Differences
 
-### Commands (Not Supported)
+## Commands
 
-OpenCode does not have a `/command-name` slash command system like Claude Code. The 6 commands in `commands/` directory are Claude Code-specific:
+OpenCode supports custom commands defined in `.opencode/commands/*.md`. This repository ships 6 TLA+ commands:
 
-- `/tla-parse` ❌
-- `/tla-check` ❌
-- `/tla-smoke` ❌
-- `/tla-symbols` ❌
-- `/tla-review` ❌
-- `/tla-setup` ❌
+- `/tla-parse` - Parse and validate TLA+ specifications
+- `/tla-symbols` - Extract symbols and generate TLC configuration
+- `/tla-smoke` - Quick 3-second random simulation
+- `/tla-check` - Exhaustive model checking
+- `/tla-review` - Comprehensive spec review workflow
+- `/tla-setup` - Interactive setup and verification
 
-**Workaround**: Use MCP tools directly or invoke skills for guided workflows.
+**Usage**: Invoke commands in OpenCode TUI as `/command-name`. Commands accept spec paths as arguments:
+
+```
+/tla-parse test-specs/Counter.tla
+/tla-symbols test-specs/Counter.tla
+/tla-check test-specs/Counter.tla test-specs/Counter.cfg
+```
+
+**Note**: If you type `@path/to/spec.tla` as the first argument, the command strips the leading `@` and validates the file exists on disk (MCP tools require filesystem paths).
+
+**Verification**:
+```bash
+# Commands are auto-discovered from .opencode/commands/
+ls .opencode/commands/
+# Expected: tla-parse.md tla-symbols.md tla-smoke.md tla-check.md tla-review.md tla-setup.md
+```
 
 ### Agents (Different Architecture)
 
@@ -300,19 +315,6 @@ sudo apt-get install openjdk-11-jre
 
 ## Known Limitations
 
-### Commands Not Supported
-
-OpenCode does not have a slash command system like Claude Code. The following commands are **not available** in OpenCode:
-
-- `/tla-parse`
-- `/tla-check`
-- `/tla-smoke`
-- `/tla-symbols`
-- `/tla-review`
-- `/tla-setup`
-
-**Workaround**: Use MCP tools directly or invoke skills for guided workflows.
-
 ### Agents Not Portable
 
 The 4 agent files in `agents/` directory use Claude Code's markdown format and cannot be directly used in OpenCode. OpenCode agents are configured in `~/.config/opencode/oh-my-opencode.json`.
@@ -327,7 +329,7 @@ The hooks in `hooks/hooks.json` use Claude Code's JSON format and cannot be dire
 |---------|-------------|----------|
 | **MCP Server** | ✅ Full | ✅ Full |
 | **Skills** | ✅ 6 skills | ✅ 6 skills |
-| **Commands** | ✅ 6 commands | ❌ Not supported |
+| **Commands** | ✅ 6 commands | ✅ 6 commands (.opencode/commands) |
 | **Agents** | ✅ 4 agents | ❌ Different format |
 | **Hooks** | ✅ 3 hooks | ❌ Different format |
 | **Knowledge Base** | ✅ 20+ articles | ✅ 20+ articles |

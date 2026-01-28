@@ -209,6 +209,13 @@ Custom configuration for this project.
 
 ### OpenCode Configuration
 
+The `.opencode/opencode.json` file configures the TLA+ MCP server and is auto-detected when you run `opencode` from the repository root.
+
+**Commands**: This repository ships 6 custom OpenCode commands in `.opencode/commands/`:
+- `/tla-parse`, `/tla-symbols`, `/tla-smoke`, `/tla-check`, `/tla-review`, `/tla-setup`
+
+These commands are automatically discovered by OpenCode and invoked as `/command-name` in the TUI.
+
 **Location**: `~/.config/opencode/plugins/`
 
 Create plugin directory:

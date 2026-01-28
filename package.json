@@ -16,7 +16,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --maxWorkers=2"
+    "test:ci": "jest --ci --coverage --maxWorkers=2",
+    "opencode:e2e": "node scripts/opencode-e2e.mjs"
   },
   "keywords": [
     "tla+",

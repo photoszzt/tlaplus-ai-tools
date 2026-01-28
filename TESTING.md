@@ -30,7 +30,28 @@ npm run verify
 - ✅ JSON syntax valid
 - ✅ Executable permissions
 
-### Level 2: MCP Server Testing
+#### OpenCode Commands Testing
+
+**CI Lint Tests** (automated):
+- Validates all 6 command files exist under `.opencode/commands/`
+- Checks frontmatter structure (`description`, `agent: build`)
+- Verifies MCP tool references per command
+- Ensures usage examples and `@` handling notes present
+- Run via: `npm test -- opencode-commands-lint`
+
+**Local E2E Testing** (manual):
+- Prerequisites: OpenCode installed + model provider configured
+- Run via: `OPENCODE_E2E=1 npm run opencode:e2e`
+- Validates command execution and output markers
+- Skips if `OPENCODE_E2E` not set to `1`
+
+The E2E script runs all 6 commands and checks for deterministic markers:
+- `Spec path:` (all commands)
+- `CFG used:` (TLC commands)
+- `CFG written:` (`/tla-symbols`)
+- `Review Summary` (`/tla-review`)
+
+## Level 2: MCP Server Testing
 
 Test the MCP server independently.
 
