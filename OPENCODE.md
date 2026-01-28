@@ -114,7 +114,7 @@ tools:
 {
   "agents": {
     "my-agent": {
-      "model": "inference-nvidia-claude/aws/anthropic/claude-opus-4-5"
+      "model": "your-model-id"
     }
   }
 }

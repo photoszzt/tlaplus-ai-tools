@@ -14,3 +14,6 @@ Thumbs.db
 # Development tracking files
 .claude-plugin/*.md
 !.claude-plugin/README.md
+
+# Sisyphus directory
+.sisyphus/
