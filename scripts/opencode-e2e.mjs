@@ -61,6 +61,7 @@ async function runCommand(command, args, options = {}) {
       cwd: options.cwd || projectRoot,
       stdio: options.stdio || 'pipe',
       shell: process.platform === 'win32',
+      timeout: options.timeout || 120000, // 2 minute default timeout
     });
 
     let stdout = '';
@@ -84,6 +85,16 @@ async function runCommand(command, args, options = {}) {
 
     proc.on('error', (err) => {
       reject(err);
+    });
+
+    // Handle timeout
+    const timeoutId = setTimeout(() => {
+      proc.kill('SIGTERM');
+      reject(new Error(`Command timed out after ${options.timeout || 120000}ms`));
+    }, options.timeout || 120000);
+
+    proc.on('close', () => {
+      clearTimeout(timeoutId);
     });
   });
 }
@@ -131,40 +142,34 @@ async function preflight() {
 
 // E2E test suite
 const testSuite = [
-  {
-    name: 'tla-parse',
-    command: 'opencode',
-    args: ['run', '--command', 'tla-parse', 'test-specs/Counter.tla'],
+    {
+      name: 'tla-parse',
+      args: ['run', '--model', model, '--command', 'tla-parse', 'test-specs/Counter.tla'],
     markers: ['Spec path:'],
   },
-  {
-    name: 'tla-symbols',
-    command: 'opencode',
-    args: ['run', '--command', 'tla-symbols', 'test-specs/Counter.tla'],
+    {
+      name: 'tla-symbols',
+      args: ['run', '--model', model, '--command', 'tla-symbols', 'test-specs/Counter.tla'],
     markers: ['Spec path:', 'CFG written:'],
   },
-  {
-    name: 'tla-smoke',
-    command: 'opencode',
-    args: ['run', '--command', 'tla-smoke', 'test-specs/Counter.tla'],
+    {
+      name: 'tla-smoke',
+      args: ['run', '--model', model, '--command', 'tla-smoke', 'test-specs/Counter.tla'],
     markers: ['Spec path:', 'CFG used:'],
   },
-  {
-    name: 'tla-check',
-    command: 'opencode',
-    args: ['run', '--command', 'tla-check', 'test-specs/Counter.tla', 'test-specs/Counter.cfg'],
+    {
+      name: 'tla-check',
+      args: ['run', '--model', model, '--command', 'tla-check', 'test-specs/Counter.tla', 'test-specs/Counter.cfg'],
     markers: ['Spec path:', 'CFG used:'],
   },
-  {
-    name: 'tla-review',
-    command: 'opencode',
-    args: ['run', '--command', 'tla-review', 'test-specs/Counter.tla'],
+    {
+      name: 'tla-review',
+      args: ['run', '--model', model, '--command', 'tla-review', 'test-specs/Counter.tla'],
     markers: ['Spec path:', 'Review Summary'],
   },
-  {
-    name: 'tla-setup',
-    command: 'opencode',
-    args: ['run', '--command', 'tla-setup'],
+    {
+      name: 'tla-setup',
+      args: ['run', '--model', model, '--command', 'tla-setup'],
     markers: ['Spec path:'], // tla-setup may have different markers
   },
 ];
