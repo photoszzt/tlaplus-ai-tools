@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.2",
+    "@opencode-ai/plugin": "1.1.36",
     "adm-zip": "^0.5.16",
     "express": "^5.1.0",
     "fast-xml-parser": "^5.3.3",
