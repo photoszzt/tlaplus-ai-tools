@@ -1,5 +1,8 @@
 ---
-description: Extract symbols from TLA+ spec and generate TLC configuration file
+name: tla-symbols
+description: Extract symbols from TLA+ spec and generate TLC configuration
+argument-hint: "@spec.tla [--extended]"
+allowed-tools: [Read, Write, Bash, Grep]
 agent: build
 ---
 
@@ -19,7 +22,7 @@ Preferred (always works):
 
 ## What This Does
 
-1. Validates and normalizes the spec path from `$1`
+1. Validates and normalizes the spec path from `$ARGUMENTS`
 2. Calls `tlaplus_mcp_sany_parse` to check for syntax errors
 3. Calls `tlaplus_mcp_sany_symbol` to extract symbols
 4. Generates a `.cfg` file with best-guess configuration
@@ -29,7 +32,7 @@ Preferred (always works):
 **Step 1: Normalize Spec Path**
 
 ```
-SPEC_PATH="$1"
+SPEC_PATH="$ARGUMENTS"
 if [[ "$SPEC_PATH" == @* ]]; then
   SPEC_PATH="${SPEC_PATH#@}"
 fi
