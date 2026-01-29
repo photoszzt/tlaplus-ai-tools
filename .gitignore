@@ -17,3 +17,6 @@ Thumbs.db
 
 # Sisyphus directory
 .sisyphus/
+
+docs/plans/
+test-specs/Counter.generated.cfg
