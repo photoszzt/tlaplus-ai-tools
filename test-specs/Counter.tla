@@ -12,4 +12,6 @@ Spec == Init /\ [][Next]_x
 TypeOK == x \in Nat
 
 Inv == x <= 10
+
+StateConstraint == x <= 10
 ====
