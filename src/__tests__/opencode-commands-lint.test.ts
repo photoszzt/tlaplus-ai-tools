@@ -260,7 +260,11 @@ describe('OpenCode Commands Lint Tests', () => {
         });
 
         it('should not contain positional $N tokens', () => {
-          expect(content).not.toMatch(/\$0\b|\$1\b|\$2\b|\$3\b/);
+          // Check no $0, $1, $2, etc. (allow $ARGUMENTS)
+          const positionalMatch = content.match(/\$[0-9]\b/);
+          if (positionalMatch) {
+            throw new Error(`${commandFile} uses positional variable ${positionalMatch[0]} - use $ARGUMENTS instead`);
+          }
         });
       });
     });
