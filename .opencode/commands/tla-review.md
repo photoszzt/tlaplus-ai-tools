@@ -1,5 +1,8 @@
 ---
-description: Comprehensive TLA+ specification review (parse + symbols + smoke + checklist)
+name: tla-review
+description: Comprehensive TLA+ specification review with checklist and automated validation
+argument-hint: "@spec.tla"
+allowed-tools: [Read, Bash, Grep, Task]
 agent: build
 ---
 
@@ -19,7 +22,7 @@ Run a comprehensive review of your TLA+ specification including parsing, symbol 
 
 ## What This Does
 
-1. Validates and normalizes the spec path from `$1`
+1. Validates and normalizes the spec path from `$ARGUMENTS`
 2. Runs SANY parser to check syntax and semantics
 3. Extracts symbols to analyze spec structure
 4. Runs smoke test (unless `--no-smoke` flag present)
@@ -30,7 +33,7 @@ Run a comprehensive review of your TLA+ specification including parsing, symbol 
 **Step 1: Normalize Spec Path**
 
 ```
-SPEC_PATH="$1"
+SPEC_PATH="$ARGUMENTS"
 if [[ "$SPEC_PATH" == @* ]]; then
   SPEC_PATH="${SPEC_PATH#@}"
 fi
@@ -60,9 +63,11 @@ fi
 **Step 4: Determine CFG Argument**
 
 ```
+# Parse second token from $ARGUMENTS (split by space, take second)
 CFG_ARG=""
-if [[ "$2" == *.cfg ]]; then
-  CFG_ARG="$2"
+read -r FIRST_ARG SECOND_ARG REST <<< "$ARGUMENTS"
+if [[ "$SECOND_ARG" == *.cfg ]]; then
+  CFG_ARG="$SECOND_ARG"
 fi
 ```
 
