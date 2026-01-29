@@ -1,5 +1,8 @@
 ---
-description: Interactive TLA+ tools setup and verification
+name: tla-setup
+description: Verify TLA+ tools installation and fix common issues
+argument-hint: ""
+allowed-tools: [Bash, Read, Write, Grep]
 agent: build
 ---
 
