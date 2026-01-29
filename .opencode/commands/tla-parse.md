@@ -1,5 +1,8 @@
 ---
-description: Parse and validate TLA+ specification syntax using SANY (OpenCode probe)
+name: tla-parse
+description: Parse and validate TLA+ specification syntax using SANY
+argument-hint: "@spec.tla"
+allowed-tools: [Read, Bash, Grep]
 agent: build
 ---
 
@@ -11,28 +14,26 @@ This command validates OpenCode's argument substitution behavior and calls the S
 
 [opencode-args]
 ARGUMENTS=$ARGUMENTS
-1=$1
-2=$2
 [/opencode-args]
 
 ## Implementation
 
 **Step 1: Validate Arguments**
 
-Check that `$1` is provided:
-- If `$1` is empty, print "Error: No file path provided. Usage: /tla-parse <path.tla>" and exit
-- Print "Raw argument: $1"
+Check that `$ARGUMENTS` is provided:
+- If `$ARGUMENTS` is empty, print "Error: No file path provided. Usage: /tla-parse <path.tla>" and exit
+- Print "Raw argument: $ARGUMENTS"
 
 **Step 2: Strip Leading @ Symbol**
 
-If `$1` starts with `@`, remove it:
+If `$ARGUMENTS` starts with `@`, remove it:
 ```bash
-SPEC_PATH="${1#@}"
+SPEC_PATH="${ARGUMENTS#@}"
 ```
 
-Otherwise, use `$1` as-is:
+Otherwise, use `$ARGUMENTS` as-is:
 ```bash
-SPEC_PATH="$1"
+SPEC_PATH="$ARGUMENTS"
 ```
 
 Print "Spec path: $SPEC_PATH"
@@ -66,7 +67,7 @@ After creating this command, test with:
 
 1. `/tla-parse test-specs/Counter.tla` (plain path)
 2. `/tla-parse @test-specs/Counter.tla` (@ prefix)
-3. Check if `@$1` in template includes file contents
+3. Check if `@<path>` in template includes file contents
 
 Document results in comments below or in OPENCODE.md.
 
