@@ -124,6 +124,32 @@ else
   echo "  Run: npm run build"
 fi
 
+# Check 7: Command synchronization
+echo "Checking command file synchronization..."
+DRIFT_FOUND=0
+for cmd in "$PLUGIN_ROOT"/commands/tla-*.md; do
+  CMD_NAME=$(basename "$cmd")
+  OPENCODE_CMD="$PLUGIN_ROOT/.opencode/commands/$CMD_NAME"
+
+  if [[ ! -f "$OPENCODE_CMD" ]]; then
+    echo -e "${RED}✗${NC} Missing in .opencode/commands/: $CMD_NAME"
+    DRIFT_FOUND=1
+  elif ! diff -q "$cmd" "$OPENCODE_CMD" > /dev/null 2>&1; then
+    echo -e "${RED}✗${NC} DRIFT DETECTED: $CMD_NAME differs between commands/ and .opencode/commands/"
+    DRIFT_FOUND=1
+  else
+    echo -e "${GREEN}✓${NC} $CMD_NAME synchronized"
+  fi
+done
+
+if [[ $DRIFT_FOUND -eq 1 ]]; then
+  echo ""
+  echo -e "${RED}✗${NC} Command drift detected. Run: cp commands/tla-*.md .opencode/commands/"
+  ERRORS=$((ERRORS + 1))
+else
+  echo -e "${GREEN}✓${NC} All commands synchronized"
+fi
+
 # Summary
 echo ""
 echo "=========================================="
