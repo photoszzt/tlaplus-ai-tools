@@ -3,183 +3,214 @@ name: tla-check
 description: Run exhaustive model checking on TLA+ specification with TLC
 argument-hint: "@spec.tla [config.cfg] [--workers N]"
 allowed-tools: [Read, Bash, Grep, Write]
+agent: build
 ---
 
-# Run TLC Model Checking
+# TLC Model Checking
 
-Execute exhaustive model checking on TLA+ specifications using the TLC model checker.
+Run exhaustive model checking to verify all reachable states of your TLA+ specification.
 
 ## Usage
 
 ```
-/tla-check @Counter.tla
-/tla-check @Counter.tla Counter.cfg
-/tla-check @Counter.tla --workers 4
-/tla-check @Spec.tla MyConfig.cfg --workers 8
+/tla-check test-specs/Counter.tla
+/tla-check test-specs/Counter.tla test-specs/Counter.cfg
+/tla-check test-specs/Counter.tla --workers 4 --heap 2G
+/tla-check test-specs/Counter.tla test-specs/Counter.cfg --depth 100
 ```
 
-## Arguments
+**Note:** If you typed `@path.tla` as the first argument, this command strips the leading `@` and validates the file exists.
 
-- **spec.tla** (required) - TLA+ specification file
-- **config.cfg** (optional) - TLC configuration file (auto-detected if omitted)
-- **--workers N** (optional) - Number of worker threads (default: CPU cores)
-- **--depth N** (optional) - Maximum search depth
+## What This Does
 
-## What This Command Does
-
-1. Locates specification and config files
-2. Validates config file exists (or finds default)
-3. Invokes TLC via MCP tool `tlaplus_mcp_tlc_check`
-4. Streams output in real-time
-5. Reports results (success or counterexample)
-
-## Auto-Config Detection
-
-If no config file specified, searches for:
-1. `SpecName.cfg` (same name as .tla file)
-2. `MCSpecName.cfg` (model checking config)
-3. `MC.cfg` (generic config)
-
-If no config found, suggests running `/tla-symbols` to generate one.
-
-## Output
-
-### Success
-```
-TLC Model Checker
-Parsing file Counter.tla
-Semantic processing of module Counter
-Starting state space exploration
-Finished computing initial states: 1 distinct state
-Finished state space exploration: 11 states, 10 transitions
-
-Model checking completed. No errors found.
-States explored: 11
-Time: 0.5 seconds
-```
-
-### Invariant Violation
-```
-Error: Invariant BoundInvariant is violated.
-State trace:
-  1: count = 0
-  2: count = 1
-  ...
-  11: count = 11  <- Invariant violated here
-
-Use /tla-review to analyze the counterexample.
-```
-
-### Property Violation
-```
-Error: Temporal property Liveness is violated.
-Counterexample trace shows infinite behavior.
-
-Consider:
-- Adding fairness conditions (WF_vars or SF_vars)
-- Checking for deadlocks
-- Reviewing temporal formula
-
-Use tla-debug-violations skill for systematic debugging.
-```
-
-## When to Use
-
-- **After parsing** - Validate spec correctness with `/tla-parse` first
-- **Full verification** - Exhaustive state space checking
-- **Before deployment** - Verify all properties hold
-- **After changes** - Recheck after modifying spec
-- **Finding bugs** - Discover invariant violations
-
-## Performance Options
-
-### Worker Threads
-```
-/tla-check @Spec.tla --workers 8
-```
-Use more workers for faster checking on multi-core systems.
-
-### Depth Limit
-```
-/tla-check @Spec.tla --depth 100
-```
-Limit search depth for large state spaces.
-
-### State Space Constraints
-Add to .cfg file:
-```
-CONSTRAINT count <= 1000
-```
-
-## Interpreting Results
-
-### No Errors Found
-✅ All invariants hold for explored state space
-✅ All properties satisfied
-✅ Spec is correct (within model bounds)
-
-### Counterexample Found
-❌ Trace shows path to violation
-❌ Review state values at each step
-❌ Identify which action caused violation
-
-### State Space Too Large
-⚠️ May not finish in reasonable time
-⚠️ Reduce constants in .cfg file
-⚠️ Add state constraints
-⚠️ Use `/tla-smoke` for quick testing
-
-## Tips
-
-- **Start small** - Use small constant values initially
-- **Smoke test first** - Run `/tla-smoke` before full check
-- **Watch memory** - TLC can use significant RAM for large state spaces
-- **Use symmetry** - Define symmetry sets in config to reduce states
-- **Incremental checking** - Check invariants before properties
-
-## Error Handling
-
-**Config not found**:
-```
-Error: No configuration file found for Counter.tla
-Suggestion: Run /tla-symbols @Counter.tla to generate one
-```
-
-**Parse errors**:
-```
-Error: Specification has syntax errors
-Suggestion: Run /tla-parse @Counter.tla first
-```
-
-**Java memory error**:
-```
-Error: Java heap space exhausted
-Suggestion: Add to config: -Xmx4096m for 4GB heap
-```
-
-## Related Commands
-
-- `/tla-parse` - Validate syntax before checking
-- `/tla-smoke` - Quick 3-second test
-- `/tla-symbols` - Generate configuration file
-- `/tla-review` - Comprehensive spec review
-
-## Related Skills
-
-- `tla-model-checking` - Complete TLC workflow guide
-- `tla-debug-violations` - Debug counterexamples
+1. Validates and normalizes the spec path from `$ARGUMENTS`
+2. Applies deterministic `.cfg` selection algorithm (see below)
+3. Calls `tlaplus_mcp_tlc_check` to run exhaustive model checking
+4. Reports results (states explored, violations, counterexamples)
 
 ## Implementation
 
-Call MCP tool with appropriate options:
+**Step 1: Normalize Spec Path**
 
-```javascript
-tlaplus_mcp_tlc_check({
-  fileName: absolutePath,
-  cfgFile: configPath,
-  extraOpts: ['-workers', workerCount],
-  extraJavaOpts: ['-Xmx4096m']
-})
+```
+SPEC_PATH="$ARGUMENTS"
+if [[ "$SPEC_PATH" == @* ]]; then
+  SPEC_PATH="${SPEC_PATH#@}"
+fi
 ```
 
-Stream output to user in real-time. Parse results and provide contextual suggestions based on error type.
+Print `Spec path: $SPEC_PATH`
+
+**Step 2: Validate File**
+
+- Check path ends with `.tla`
+- Check file exists on disk
+- If validation fails, print error and exit
+
+**Step 3: Parse Flags**
+
+Extract flags from `$ARGUMENTS`:
+- `--workers <N>`: Number of worker threads (default: omit, let TLC decide)
+- `--depth <N>`: Maximum search depth (default: omit)
+- `--heap <SIZE>`: JVM heap size, e.g., `2G`, `1024m` (default: omit)
+
+Store in variables:
+```
+WORKERS=""
+DEPTH=""
+HEAP=""
+```
+
+**Step 4: Determine CFG Argument**
+
+```
+# Parse second token from $ARGUMENTS (split by space, take second)
+CFG_ARG=""
+read -r FIRST_ARG SECOND_ARG REST <<< "$ARGUMENTS"
+if [[ "$SECOND_ARG" == *.cfg ]]; then
+  CFG_ARG="$SECOND_ARG"
+fi
+```
+
+**Step 5: Apply CFG Selection Algorithm (Phase 1)**
+
+Extract spec name and directory:
+```
+SPEC_DIR=$(dirname "$SPEC_PATH")
+SPEC_NAME=$(basename "$SPEC_PATH" .tla)
+```
+
+Check preconditions in order:
+
+1. If `$SPEC_DIR/$SPEC_NAME.cfg` exists:
+   - Print `Phase 1: Spec.cfg exists`
+   - Precondition satisfied
+
+2. Else if `$SPEC_DIR/MC$SPEC_NAME.tla` AND `$SPEC_DIR/MC$SPEC_NAME.cfg` both exist:
+   - Print `Phase 1: MC pair exists (MC$SPEC_NAME.tla + MC$SPEC_NAME.cfg)`
+   - Precondition satisfied
+   - **IMPORTANT:** Do NOT create `Spec.cfg` in this case
+
+3. Else if `CFG_ARG` is non-empty and exists:
+   - Copy `$CFG_ARG` to `$SPEC_DIR/$SPEC_NAME.cfg` (non-clobbering)
+   - Print `Phase 1: Copied cfgArg to $SPEC_NAME.cfg`
+   - Precondition satisfied
+
+4. Else if `$SPEC_DIR/$SPEC_NAME.generated.cfg` exists:
+   - Copy it to `$SPEC_DIR/$SPEC_NAME.cfg` (non-clobbering)
+   - Print `Phase 1: Copied $SPEC_NAME.generated.cfg to $SPEC_NAME.cfg`
+   - Precondition satisfied
+
+5. Else:
+   - Print `Error: No config file found. Run: /tla-symbols $SPEC_PATH`
+   - Exit
+
+**Step 6: Apply CFG Selection Algorithm (Phase 2)**
+
+Determine which cfg to pass to TLC:
+
+1. If `CFG_ARG` is non-empty:
+   - Resolve `CFG_ARG` to absolute path
+   - If `dirname(CFG_ARG) == dirname(SPEC_PATH)`:
+     - Use `CFG_ARG` directly
+     - Print `Phase 2: Using explicit cfgArg: $CFG_ARG`
+   - Else:
+     - Find first available name: `$SPEC_DIR/$SPEC_NAME.override.cfg`, `.override.1.cfg`, `.override.2.cfg`, ...
+     - Copy `CFG_ARG` to that path
+     - Use the copied cfg
+     - Print `Phase 2: Copied cfgArg to $SPEC_NAME.override.cfg`
+
+2. Else:
+   - If `$SPEC_DIR/$SPEC_NAME.cfg` exists:
+     - Use `$SPEC_DIR/$SPEC_NAME.cfg`
+     - Print `Phase 2: Using default Spec.cfg`
+   - Else if `$SPEC_DIR/MC$SPEC_NAME.cfg` exists:
+     - Use `$SPEC_DIR/MC$SPEC_NAME.cfg`
+     - Print `Phase 2: Using default MC$SPEC_NAME.cfg`
+   - Else:
+     - Print `Error: Unreachable state (Phase 1 should have ensured cfg exists)`
+     - Exit
+
+Store final cfg path in `FINAL_CFG`.
+
+**Step 7: Build MCP Tool Arguments**
+
+Construct `extraOpts` array:
+```
+EXTRA_OPTS=[]
+if [[ -n "$WORKERS" ]]; then
+  EXTRA_OPTS+=("-workers", "$WORKERS")
+fi
+if [[ -n "$DEPTH" ]]; then
+  EXTRA_OPTS+=("-depth", "$DEPTH")
+fi
+```
+
+Construct `extraJavaOpts` array:
+```
+EXTRA_JAVA_OPTS=[]
+if [[ -n "$HEAP" ]]; then
+  EXTRA_JAVA_OPTS+=("-Xmx$HEAP")
+fi
+```
+
+**Step 8: Call MCP Tool**
+
+Invoke TLC model checker:
+```
+tlaplus_mcp_tlc_check \
+  --fileName "$SPEC_PATH" \
+  --cfgFile "$FINAL_CFG" \
+  --extraOpts $EXTRA_OPTS \
+  --extraJavaOpts $EXTRA_JAVA_OPTS
+```
+
+**Step 9: Report Results**
+
+Print summary:
+```
+Spec path: $SPEC_PATH
+CFG used: $FINAL_CFG
+TLC options:
+  Workers: $WORKERS (or TLC default)
+  Depth: $DEPTH (or unlimited)
+  Heap: $HEAP (or JVM default)
+
+<TLC output>
+```
+
+If violations found:
+- Print `✗ Violations detected. See counterexample above.`
+- Suggest: `Use trace-analyzer agent to understand the violation.`
+
+If no violations:
+- Print `✓ Model checking complete. No violations found.`
+- Print `All reachable states verified against invariants and properties.`
+
+If state space too large:
+- Print `⚠ State space explosion detected. Consider:`
+- Print `  1. Add state constraints to limit exploration`
+- Print `  2. Reduce constant values`
+- Print `  3. Use symmetry sets`
+- Print `  4. Increase --heap size`
+
+## Example Output
+
+```
+Spec path: test-specs/Counter.tla
+Phase 1: Spec.cfg exists
+Phase 2: Using default Spec.cfg
+CFG used: test-specs/Counter.cfg
+TLC options:
+  Workers: 4
+  Depth: (unlimited)
+  Heap: 2G
+
+TLC2 Version 2.18 of Day Month 20XX
+Running breadth-first search with 4 workers
+Explored 1,234,567 states in 45 seconds
+Diameter: 12 states
+
+✓ Model checking complete. No violations found.
+All reachable states verified against invariants and properties.
+```

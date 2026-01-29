@@ -3,90 +3,271 @@ name: tla-setup
 description: Verify TLA+ tools installation and fix common issues
 argument-hint: ""
 allowed-tools: [Bash, Read, Write, Grep]
+agent: build
 ---
 
-# TLA+ Setup and Verification
+# TLA+ Tools Setup
 
-Interactive command to verify TLA+ tools installation and fix common configuration issues.
+Interactive guide to verify and setup TLA+ tools (Java, tla2tools.jar, CommunityModules).
 
 ## Usage
 
 ```
 /tla-setup
-/tla-setup --fix
 ```
 
-## What This Command Does
+**Note:** This command does not require a spec file argument. It validates the TLA+ tools installation.
 
-1. Checks Java installation (version >= 11)
+## What This Does
+
+1. Checks Java installation and version
 2. Verifies TLA+ tools (tla2tools.jar, CommunityModules-deps.jar)
 3. Tests MCP server connection
-4. Validates plugin structure
-5. Offers to fix issues automatically
+4. Guides user through any missing dependencies
+5. Runs verification tests
 
-## Verification Steps
-
-### 1. Java Check
-- Locates Java executable
-- Verifies version 11 or higher
-- Shows Java path and version
-
-**If missing**: Provides installation instructions for Java
-
-### 2. TLA+ Tools Check
-- Checks for tla2tools.jar
-- Checks for CommunityModules-deps.jar
-- Verifies files are readable
-
-**If missing**: Offers to download tools automatically
-
-### 3. MCP Server Check
-- Verifies dist/index.js exists
-- Tests server can start
-- Validates MCP tool availability
-
-**If issues**: Suggests running `npm run build`
-
-### 4. Plugin Structure Check
-- Verifies all required directories exist
-- Checks plugin.json manifest
-- Validates skills, commands, agents
-
-### 5. Test Parse
-- Attempts to parse a simple test spec
-- Confirms end-to-end functionality
-
-## Auto-Fix Mode
-
-With `--fix` flag, automatically:
-- Downloads missing TLA+ tools
-- Runs npm build if needed
-- Creates missing directories
-- Fixes common permission issues
-
-## Output
-
-Displays checklist with status:
-- ✓ Java 17 found at /usr/lib/jvm/java-17
-- ✓ TLA+ tools present
-- ✓ MCP server compiled
-- ⚠ Missing commands directory
-- ✗ Parse test failed
-
-## When to Use
-
-- After installing plugin
-- When commands don't work
-- Before starting TLA+ work
-- After system updates
-- When troubleshooting issues
-
-## Related
-
-- Run `npm run verify` for command-line verification
-- Run `scripts/verify.sh --fix` for automated fixes
-- Check `.claude/tlaplus.local.md` for custom configuration
+**IMPORTANT:** This command does NOT mutate repository state unless explicitly instructed by the user within the session.
 
 ## Implementation
 
-Execute verification script and present results interactively. Offer fixes based on detected issues.
+**Step 1: Welcome Message**
+
+Print:
+```
+═══════════════════════════════════════════════════════════
+TLA+ TOOLS SETUP & VERIFICATION
+═══════════════════════════════════════════════════════════
+
+This guide will verify your TLA+ tools installation.
+
+Checking:
+  1. Java (JDK 11+)
+  2. TLA+ Tools (tla2tools.jar, CommunityModules-deps.jar)
+  3. MCP Server Connection
+  4. Basic Functionality
+
+─────────────────────────────────────────────────────────
+```
+
+**Step 2: Check Java**
+
+Run:
+```bash
+java -version
+```
+
+Parse output to extract version number.
+
+If Java not found:
+```
+✗ Java not found
+
+Java 11 or higher is required to run TLA+ tools.
+
+Installation instructions:
+  macOS:   brew install openjdk@17
+  Linux:   sudo apt-get install openjdk-17-jdk
+  Windows: Download from https://adoptium.net/
+
+After installing, verify with: java -version
+```
+
+If Java version < 11:
+```
+✗ Java version too old (found: <version>, required: 11+)
+
+Please upgrade Java:
+  macOS:   brew install openjdk@17
+  Linux:   sudo apt-get install openjdk-17-jdk
+  Windows: Download from https://adoptium.net/
+```
+
+If Java version >= 11:
+```
+✓ Java found: <version>
+```
+
+**Step 3: Check TLA+ Tools**
+
+Check for tools in expected locations:
+1. `tools/tla2tools.jar` (relative to repo root)
+2. `tools/CommunityModules-deps.jar`
+
+If tools not found:
+```
+✗ TLA+ tools not found
+
+Expected location: tools/tla2tools.jar
+
+To download tools, run:
+  npm run setup
+
+Or manually download:
+  1. Visit: https://github.com/tlaplus/tlaplus/releases
+  2. Download tla2tools.jar
+  3. Place in: tools/tla2tools.jar
+
+For CommunityModules:
+  1. Visit: https://github.com/tlaplus/CommunityModules/releases
+  2. Download CommunityModules-deps.jar
+  3. Place in: tools/CommunityModules-deps.jar
+```
+
+If tools found:
+```
+✓ TLA+ tools found
+  - tla2tools.jar: <size> bytes
+  - CommunityModules-deps.jar: <size> bytes
+```
+
+**Step 4: Check MCP Server Connection**
+
+Try calling `tlaplus_mcp_sany_modules` to list available modules.
+
+If MCP call fails:
+```
+✗ MCP server connection failed
+
+The MCP server may not be running or configured correctly.
+
+Troubleshooting:
+  1. Verify plugin is loaded: /plugin list
+  2. Check MCP server logs
+  3. Rebuild: npm run build
+  4. Restart OpenCode/Claude Code
+```
+
+If MCP call succeeds:
+```
+✓ MCP server connected
+  Available TLA+ modules: <count>
+```
+
+**Step 5: Run Verification Tests**
+
+Test basic functionality by parsing a simple spec.
+
+Create temporary test spec in memory:
+```tla
+---- MODULE SetupTest ----
+EXTENDS Naturals
+VARIABLE x
+Init == x = 0
+Next == x' = x + 1
+====
+```
+
+Write to temporary file: `/tmp/tlaplus-setup-test.tla`
+
+Call `tlaplus_mcp_sany_parse` with the test file.
+
+If parse succeeds:
+```
+✓ SANY parser working
+```
+
+If parse fails:
+```
+✗ SANY parser test failed
+
+This may indicate a problem with the TLA+ tools or Java setup.
+Check the error message above for details.
+```
+
+Clean up temporary file.
+
+**Step 6: Summary Report**
+
+Print final summary:
+```
+─────────────────────────────────────────────────────────
+SETUP VERIFICATION SUMMARY
+─────────────────────────────────────────────────────────
+
+<if all checks passed>
+✓ All checks passed!
+
+Your TLA+ tools are ready to use.
+
+Next steps:
+  1. Create a TLA+ specification (.tla file)
+  2. Run: /tla-parse <spec.tla>
+  3. Run: /tla-symbols <spec.tla>
+  4. Run: /tla-smoke <spec.tla>
+  5. Run: /tla-check <spec.tla>
+
+For learning TLA+, ask: "teach me TLA+"
+<else>
+⚠ Some checks failed
+
+Please address the issues above before using TLA+ tools.
+
+Common issues:
+  - Java not installed or too old → Install Java 11+
+  - TLA+ tools missing → Run: npm run setup
+  - MCP server not running → Rebuild and restart
+
+Need help? Check INSTALLATION.md or ask for assistance.
+<endif>
+
+═══════════════════════════════════════════════════════════
+```
+
+**Step 7: Offer Interactive Setup**
+
+If any checks failed, ask user:
+```
+Would you like me to help fix these issues? (yes/no)
+```
+
+If user says yes:
+- For missing Java: Provide detailed installation instructions for their platform
+- For missing tools: Offer to run `npm run setup` (ask permission first)
+- For MCP issues: Guide through rebuild and restart process
+
+**IMPORTANT:** Only mutate repository state (e.g., run `npm run setup`) if user explicitly agrees.
+
+## Example Output (All Checks Pass)
+
+```
+═══════════════════════════════════════════════════════════
+TLA+ TOOLS SETUP & VERIFICATION
+═══════════════════════════════════════════════════════════
+
+This guide will verify your TLA+ tools installation.
+
+Checking:
+  1. Java (JDK 11+)
+  2. TLA+ Tools (tla2tools.jar, CommunityModules-deps.jar)
+  3. MCP Server Connection
+  4. Basic Functionality
+
+─────────────────────────────────────────────────────────
+
+✓ Java found: openjdk 17.0.2
+✓ TLA+ tools found
+  - tla2tools.jar: 15234567 bytes
+  - CommunityModules-deps.jar: 8765432 bytes
+✓ MCP server connected
+  Available TLA+ modules: 47
+✓ SANY parser working
+
+─────────────────────────────────────────────────────────
+SETUP VERIFICATION SUMMARY
+─────────────────────────────────────────────────────────
+
+✓ All checks passed!
+
+Your TLA+ tools are ready to use.
+
+Next steps:
+  1. Create a TLA+ specification (.tla file)
+  2. Run: /tla-parse <spec.tla>
+  3. Run: /tla-symbols <spec.tla>
+  4. Run: /tla-smoke <spec.tla>
+  5. Run: /tla-check <spec.tla>
+
+For learning TLA+, ask: "teach me TLA+"
+
+═══════════════════════════════════════════════════════════
+```

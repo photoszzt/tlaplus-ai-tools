@@ -62,6 +62,10 @@ async function runCommand(command, args, options = {}) {
       stdio: options.stdio || 'pipe',
       shell: process.platform === 'win32',
       timeout: options.timeout || 120000, // 2 minute default timeout
+      env: {
+        ...process.env,
+        OPENCODE_CONFIG_DIR: projectRoot,
+      },
     });
 
     let stdout = '';
@@ -165,12 +169,12 @@ const testSuite = [
     {
       name: 'tla-review',
       args: ['run', '--model', model, '--command', 'tla-review', 'test-specs/Counter.tla'],
-    markers: ['Spec path:', 'Review Summary'],
+    markers: ['Spec path:', 'TLA+ SPECIFICATION REVIEW'],
   },
     {
       name: 'tla-setup',
       args: ['run', '--model', model, '--command', 'tla-setup'],
-    markers: ['Spec path:'], // tla-setup may have different markers
+    markers: ['TLA+ TOOLS SETUP & VERIFICATION'],
   },
 ];
 

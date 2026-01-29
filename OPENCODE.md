@@ -94,6 +94,23 @@ ls .opencode/commands/
 # Expected: tla-parse.md tla-symbols.md tla-smoke.md tla-check.md tla-review.md tla-setup.md
 ```
 
+### Using Commands from Repo Root
+
+By default, OpenCode loads commands from `.opencode/commands/`. To use commands from the repo root `commands/` directory instead, set the `OPENCODE_CONFIG_DIR` environment variable:
+
+**macOS/Linux**:
+```bash
+OPENCODE_CONFIG_DIR="$PWD" opencode
+```
+
+**Windows (PowerShell)**:
+```powershell
+$env:OPENCODE_CONFIG_DIR=(Get-Location).Path
+opencode
+```
+
+This allows you to use the repo's commands without duplicating them into `.opencode/commands/`.
+
 ### Agents (Different Architecture)
 
 OpenCode agents are defined in `~/.config/opencode/oh-my-opencode.json` (global JSON config), not as markdown files with frontmatter.

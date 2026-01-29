@@ -3,317 +3,350 @@ name: tla-review
 description: Comprehensive TLA+ specification review with checklist and automated validation
 argument-hint: "@spec.tla"
 allowed-tools: [Read, Bash, Grep, Task]
+agent: build
 ---
 
-# Comprehensive Spec Review
+# TLA+ Specification Review
 
-Perform a thorough review of TLA+ specifications using systematic checklist and automated validation with the spec-validator agent.
+Run a comprehensive review of your TLA+ specification including parsing, symbol extraction, smoke testing, and best practices checklist.
 
 ## Usage
 
 ```
-/tla-review @Counter.tla
-/tla-review @System.tla
+/tla-review test-specs/Counter.tla
+/tla-review test-specs/Counter.tla test-specs/Counter.cfg
+/tla-review test-specs/Counter.tla --no-smoke
 ```
 
-## What This Command Does
+**Note:** If you typed `@path.tla` as the first argument, this command strips the leading `@` and validates the file exists.
 
-1. Loads the tla-spec-review skill
-2. Walks through review checklist interactively
-3. Runs automated validation with spec-validator agent
-4. Checks syntax with SANY parse
-5. Runs smoke test for quick validation
-6. Generates comprehensive review report
-7. Provides specific recommendations
+## What This Does
 
-## Review Process
-
-### Phase 1: Structure Review (Interactive)
-
-#### Module Declaration
-- ✓ Module name matches filename?
-- ✓ EXTENDS necessary and sufficient?
-- ✓ INSTANCE used correctly?
-
-#### Constants and Variables
-- ✓ All constants declared?
-- ✓ ASSUME statements validate constraints?
-- ✓ All variables declared?
-- ✓ Names clear and descriptive?
-
-#### Init Predicate
-- ✓ Initializes ALL variables?
-- ✓ No primed variables?
-- ✓ Well-defined initial state?
-
-#### Next Action
-- ✓ Covers all transitions?
-- ✓ Uses disjunction for multiple actions?
-- ✓ Primed variables correct?
-
-#### Specification Formula
-- ✓ Follows `Init /\ [][Next]_vars` pattern?
-- ✓ Fairness appropriate?
-- ✓ Stuttering allowed where needed?
-
-#### Invariants and Properties
-- ✓ Type invariants defined?
-- ✓ Safety properties clear?
-- ✓ Liveness properties correct?
-- ✓ Temporal formulas accurate?
-
-### Phase 2: Automated Validation
-
-Spawns spec-validator agent to:
-- Parse with SANY (detect syntax errors)
-- Run smoke test (find quick bugs)
-- Check common pitfalls (EXCEPT syntax, primed variables)
-- Analyze naming conventions
-- Verify completeness
-
-### Phase 3: Report Generation
-
-Creates review report with:
-- ✅ Passed checks
-- ⚠️ Warnings (non-critical issues)
-- ❌ Errors (must fix)
-- 💡 Recommendations (improvements)
-
-## Sample Output
-
-```
-=== TLA+ Specification Review: Counter.tla ===
-
-Phase 1: Structure Review
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-Module Declaration
-  ✓ Module name matches filename
-  ✓ EXTENDS Naturals (appropriate)
-
-Constants & Variables
-  ✓ CONSTANT MaxValue declared
-  ✓ ASSUME validates MaxValue
-  ✓ VARIABLE count declared
-  ✓ Names are clear
-
-Init Predicate
-  ✓ Initializes all variables
-  ✓ No primed variables
-  ✓ Well-defined
-
-Next Action
-  ✓ All actions covered
-  ✓ Primed variables correct
-  ⚠️ Consider adding UNCHANGED when needed
-
-Phase 2: Automated Validation
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-Running spec-validator agent...
-
-Parse Check
-  ✓ No syntax errors
-
-Smoke Test (3s)
-  ✓ No invariant violations found
-  ✓ Generated 847 states
-
-Common Pitfalls
-  ✓ No EXCEPT syntax errors
-  ✓ No primed variables in invariants
-  ✓ UNCHANGED used appropriately
-
-Phase 3: Summary
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-Checks Passed: 15/16
-Warnings: 1
-Errors: 0
-
-⚠️ Warning: Consider using UNCHANGED explicitly
-   Line 14: count' = count + 1
-   Consider: count' = count + 1 /\ UNCHANGED <<>>
-
-💡 Recommendations:
-   1. Add more invariants to catch edge cases
-   2. Consider temporal properties for liveness
-   3. Test with larger MaxValue (currently 10)
-
-Overall: GOOD - Spec is well-structured
-         Ready for model checking with /tla-check
-```
-
-## When to Use
-
-### Before Model Checking
-Pre-check before running expensive model check:
-```
-1. /tla-review @Spec.tla
-2. Fix issues
-3. /tla-check @Spec.tla
-```
-
-### Code Review
-Review specs before merging:
-```
-1. Team member writes spec
-2. Reviewer runs /tla-review
-3. Discuss findings
-4. Approve or request changes
-```
-
-### Learning TLA+
-Understand best practices:
-```
-/tla-review @MyFirstSpec.tla
-```
-Learn what to improve.
-
-### Spec Refactoring
-Validate after major changes:
-```
-1. Refactor spec
-2. /tla-review @Spec.tla
-3. Ensure still follows best practices
-```
-
-## Review Depth
-
-### Quick Review (Default)
-- Structure checklist
-- Parse and smoke test
-- Common pitfalls
-- ~2-3 minutes
-
-### Deep Review
-Ask for deeper analysis:
-```
-/tla-review @Spec.tla --deep
-```
-- Full checklist with explanations
-- Extended smoke test (10s)
-- Style and naming analysis
-- Performance recommendations
-- ~5-10 minutes
-
-## Common Issues Found
-
-### Structural Issues
-- Missing variable initialization in Init
-- Primed variables in invariants
-- Incomplete Next action (missing cases)
-- No type invariants
-
-### Syntax Issues
-- EXCEPT syntax errors: `[f EXCEPT [x] = y]` → `[f EXCEPT ![x] = y]`
-- Wrong operator precedence
-- Undefined symbols
-
-### Logic Issues
-- Invariants too weak (don't catch bugs)
-- Missing fairness conditions
-- Incorrect temporal formulas
-- Stuttering not allowed when needed
-
-### Style Issues
-- Unclear naming
-- Missing comments
-- Inconsistent formatting
-- Complex nested expressions
-
-## Fixing Issues
-
-After review, fix issues in this order:
-
-1. **Errors** (must fix) - Prevent model checking
-   ```
-   ❌ Syntax error at line 15
-   → Fix immediately
-   ```
-
-2. **Warnings** (should fix) - May cause problems
-   ```
-   ⚠️ Missing UNCHANGED
-   → Add for clarity
-   ```
-
-3. **Recommendations** (good practice) - Improvements
-   ```
-   💡 Add more invariants
-   → Consider for robustness
-   ```
-
-## Tips
-
-### Use Early and Often
-Review during development, not just at end:
-```
-Write Init → Review
-Write Next → Review
-Write Invariants → Review
-```
-
-### Iterative Improvement
-Each review cycle:
-```
-1. /tla-review
-2. Fix top issue
-3. Repeat until clean
-```
-
-### Learn from Reviews
-Pay attention to recommendations:
-- Understand why issues flagged
-- Learn TLA+ best practices
-- Improve future specs
-
-### Combine with Other Commands
-Complete workflow:
-```
-1. /tla-parse   (syntax check)
-2. /tla-review  (structure review)
-3. /tla-smoke   (quick test)
-4. /tla-check   (full verification)
-```
-
-## Customization
-
-Create project-specific review standards:
-1. Define team conventions
-2. Add to `.claude/tlaplus.local.md`
-3. Review command uses custom standards
-
-## Related Commands
-
-- `/tla-parse` - Quick syntax check
-- `/tla-smoke` - Fast validation
-- `/tla-check` - Full model checking
-- `/tla-symbols` - Analyze spec structure
-
-## Related Skills
-
-- `tla-spec-review` - Detailed review guidelines
-- `tla-debug-violations` - Debug found issues
-- `tla-getting-started` - Learn TLA+ basics
-
-## Related Agents
-
-- **spec-validator** - Automated validation
-  (Spawned automatically by this command)
+1. Validates and normalizes the spec path from `$ARGUMENTS`
+2. Runs SANY parser to check syntax and semantics
+3. Extracts symbols to analyze spec structure
+4. Runs smoke test (unless `--no-smoke` flag present)
+5. Generates comprehensive review report with recommendations
 
 ## Implementation
 
-1. Load tla-spec-review skill into context
-2. Present interactive checklist to user
-3. Spawn spec-validator agent with Task tool:
-   ```javascript
-   Task({
-     subagent_type: "spec-validator",
-     prompt: `Validate specification at ${filePath}`,
-     description: "Validating TLA+ spec"
-   })
-   ```
-4. Collect checklist responses
-5. Combine with agent results
-6. Generate formatted report
-7. Provide actionable recommendations
+**Step 1: Normalize Spec Path**
 
-Present results in clear, structured format with color coding and priority levels.
+```
+SPEC_PATH="$ARGUMENTS"
+if [[ "$SPEC_PATH" == @* ]]; then
+  SPEC_PATH="${SPEC_PATH#@}"
+fi
+```
+
+Print `Spec path: $SPEC_PATH`
+
+**Step 2: Validate File**
+
+- Check path ends with `.tla`
+- Check file exists on disk
+- If validation fails, print error and exit
+
+**Step 3: Parse Flags**
+
+Extract flags from `$ARGUMENTS`:
+- `--no-smoke`: Skip smoke test (default: smoke enabled)
+
+Store in variable:
+```
+RUN_SMOKE=true
+if [[ "$ARGUMENTS" == *--no-smoke* ]]; then
+  RUN_SMOKE=false
+fi
+```
+
+**Step 4: Determine CFG Argument**
+
+```
+# Parse second token from $ARGUMENTS (split by space, take second)
+CFG_ARG=""
+read -r FIRST_ARG SECOND_ARG REST <<< "$ARGUMENTS"
+if [[ "$SECOND_ARG" == *.cfg ]]; then
+  CFG_ARG="$SECOND_ARG"
+fi
+```
+
+**Step 5: Run SANY Parser**
+
+Call `tlaplus_mcp_sany_parse` with `fileName=$SPEC_PATH`
+
+Store result:
+- `PARSE_SUCCESS=true/false`
+- `PARSE_ERRORS=<error list>`
+
+**Step 6: Extract Symbols**
+
+Call `tlaplus_mcp_sany_symbol` with:
+- `fileName=$SPEC_PATH`
+- `includeExtendedModules=false`
+
+Store result:
+- `SYMBOLS=<symbol extraction result>`
+- Extract: `CONSTANTS`, `VARIABLES`, `INIT`, `NEXT`, `SPEC`, `INVARIANTS`, `PROPERTIES`
+
+**Step 7: Run Smoke Test (if enabled)**
+
+If `RUN_SMOKE=true`:
+
+Apply CFG selection algorithm (same as `/tla-smoke`):
+
+**Phase 1: Ensure precondition**
+
+Extract spec name and directory:
+```
+SPEC_DIR=$(dirname "$SPEC_PATH")
+SPEC_NAME=$(basename "$SPEC_PATH" .tla)
+```
+
+Check preconditions in order:
+
+1. If `$SPEC_DIR/$SPEC_NAME.cfg` exists:
+   - Print `Phase 1: Spec.cfg exists`
+   - Precondition satisfied
+
+2. Else if `$SPEC_DIR/MC$SPEC_NAME.tla` AND `$SPEC_DIR/MC$SPEC_NAME.cfg` both exist:
+   - Print `Phase 1: MC pair exists`
+   - Precondition satisfied
+
+3. Else if `CFG_ARG` is non-empty and exists:
+   - Copy `$CFG_ARG` to `$SPEC_DIR/$SPEC_NAME.cfg` (non-clobbering)
+   - Print `Phase 1: Copied cfgArg to $SPEC_NAME.cfg`
+   - Precondition satisfied
+
+4. Else if `$SPEC_DIR/$SPEC_NAME.generated.cfg` exists:
+   - Copy it to `$SPEC_DIR/$SPEC_NAME.cfg` (non-clobbering)
+   - Print `Phase 1: Copied generated cfg`
+   - Precondition satisfied
+
+5. Else:
+   - Print `Smoke test skipped: No config file found`
+   - Set `SMOKE_SKIPPED=true`
+   - Continue to review
+
+**Phase 2: Choose cfg**
+
+If precondition satisfied:
+
+1. If `CFG_ARG` is non-empty:
+   - Resolve and use `CFG_ARG` (copy if needed, same as `/tla-smoke`)
+   - Print `Phase 2: Using explicit cfgArg`
+
+2. Else:
+   - Use default cfg (`Spec.cfg` or `MCSpec.cfg`)
+   - Print `Phase 2: Using default cfg`
+
+Store final cfg path in `FINAL_CFG`.
+
+Call `tlaplus_mcp_tlc_smoke` with:
+- `fileName=$SPEC_PATH`
+- `cfgFile=$FINAL_CFG`
+- `extraJavaOpts=["-Dtlc2.TLC.stopAfter=3"]`
+
+Store result:
+- `SMOKE_SUCCESS=true/false`
+- `SMOKE_VIOLATIONS=<violation list>`
+
+**Step 8: Generate Review Report**
+
+Print comprehensive review summary:
+
+```
+═══════════════════════════════════════════════════════════
+TLA+ SPECIFICATION REVIEW
+═══════════════════════════════════════════════════════════
+
+Spec: $SPEC_PATH
+
+─────────────────────────────────────────────────────────
+1. SYNTAX & SEMANTICS (SANY Parser)
+─────────────────────────────────────────────────────────
+
+<if PARSE_SUCCESS>
+✓ Parsing successful. No syntax errors.
+<else>
+✗ Parsing failed. Errors found:
+<PARSE_ERRORS>
+<endif>
+
+─────────────────────────────────────────────────────────
+2. STRUCTURE ANALYSIS (Symbol Extraction)
+─────────────────────────────────────────────────────────
+
+Constants: <CONSTANTS or "None">
+Variables: <VARIABLES or "None">
+Init: <INIT or "Not detected">
+Next: <NEXT or "Not detected">
+Spec: <SPEC or "Not detected">
+Invariants: <INVARIANTS or "None">
+Properties: <PROPERTIES or "None">
+
+<if no INIT or no NEXT or no SPEC>
+⚠ Warning: Missing behavior specification
+  - Ensure Init, Next, and Spec are defined
+  - Or define INIT/NEXT in .cfg file
+<endif>
+
+<if CONSTANTS non-empty>
+⚠ Warning: Constants require assignment
+  - Edit .cfg file to assign concrete values
+  - Example: CONSTANT MaxValue = 10
+<endif>
+
+─────────────────────────────────────────────────────────
+3. SMOKE TEST (3-second simulation)
+─────────────────────────────────────────────────────────
+
+<if SMOKE_SKIPPED>
+⊘ Skipped (no config file or --no-smoke flag)
+<else if SMOKE_SUCCESS>
+✓ Smoke test passed
+  CFG used: $FINAL_CFG
+  No violations found in random simulation
+<else>
+✗ Smoke test failed
+  CFG used: $FINAL_CFG
+  Violations detected:
+<SMOKE_VIOLATIONS>
+<endif>
+
+─────────────────────────────────────────────────────────
+4. BEST PRACTICES CHECKLIST
+─────────────────────────────────────────────────────────
+
+<Check and report on:>
+
+□ Module documentation
+  - Does module have header comment explaining purpose?
+  - Are complex operators documented?
+
+□ Type invariants
+  - Are type invariants defined for all variables?
+  - Example: TypeInvariant == var \in ExpectedType
+
+□ Safety properties
+  - Are safety invariants defined?
+  - Do they cover critical correctness conditions?
+
+□ Liveness properties
+  - Are liveness properties defined if needed?
+  - Example: <>[]Termination
+
+□ Constant bounds
+  - Are constants bounded to reasonable values?
+  - Large constants cause state explosion
+
+□ Symmetry
+  - Can symmetry sets reduce state space?
+  - Example: SYMMETRY SymmetrySet
+
+□ State constraints
+  - Are state constraints needed to limit exploration?
+  - Example: CONSTRAINT StateConstraint
+
+─────────────────────────────────────────────────────────
+5. RECOMMENDATIONS
+─────────────────────────────────────────────────────────
+
+<Generate specific recommendations based on findings:>
+
+<if PARSE_ERRORS>
+→ Fix syntax errors before proceeding
+<endif>
+
+<if no config file>
+→ Run: /tla-symbols $SPEC_PATH
+<endif>
+
+<if CONSTANTS non-empty and no config>
+→ Assign constant values in .cfg file
+<endif>
+
+<if SMOKE_VIOLATIONS>
+→ Fix violations found in smoke test
+→ Run: /tla-check for full counterexample
+<endif>
+
+<if SMOKE_SUCCESS or SMOKE_SKIPPED>
+→ Run: /tla-check for exhaustive verification
+<endif>
+
+<if no INVARIANTS>
+→ Consider adding type and safety invariants
+<endif>
+
+<if no PROPERTIES>
+→ Consider adding liveness properties if applicable
+<endif>
+
+═══════════════════════════════════════════════════════════
+REVIEW COMPLETE
+═══════════════════════════════════════════════════════════
+```
+
+## Example Output
+
+```
+═══════════════════════════════════════════════════════════
+TLA+ SPECIFICATION REVIEW
+═══════════════════════════════════════════════════════════
+
+Spec: test-specs/Counter.tla
+
+─────────────────────────────────────────────────────────
+1. SYNTAX & SEMANTICS (SANY Parser)
+─────────────────────────────────────────────────────────
+
+✓ Parsing successful. No syntax errors.
+
+─────────────────────────────────────────────────────────
+2. STRUCTURE ANALYSIS (Symbol Extraction)
+─────────────────────────────────────────────────────────
+
+Constants: MaxValue
+Variables: count
+Init: Init
+Next: Next
+Spec: Spec
+Invariants: TypeInvariant, BoundInvariant
+Properties: None
+
+⚠ Warning: Constants require assignment
+  - Edit .cfg file to assign concrete values
+  - Example: CONSTANT MaxValue = 10
+
+─────────────────────────────────────────────────────────
+3. SMOKE TEST (3-second simulation)
+─────────────────────────────────────────────────────────
+
+✓ Smoke test passed
+  CFG used: test-specs/Counter.cfg
+  No violations found in random simulation
+
+─────────────────────────────────────────────────────────
+4. BEST PRACTICES CHECKLIST
+─────────────────────────────────────────────────────────
+
+✓ Module documentation - Header comment present
+✓ Type invariants - TypeInvariant defined
+✓ Safety properties - BoundInvariant defined
+□ Liveness properties - None defined (may not be needed)
+✓ Constant bounds - MaxValue = 10 (reasonable)
+□ Symmetry - Not applicable for this spec
+□ State constraints - Not needed (small state space)
+
+─────────────────────────────────────────────────────────
+5. RECOMMENDATIONS
+─────────────────────────────────────────────────────────
+
+→ Run: /tla-check for exhaustive verification
+→ Consider adding liveness properties if termination matters
+
+═══════════════════════════════════════════════════════════
+REVIEW COMPLETE
+═══════════════════════════════════════════════════════════
+```

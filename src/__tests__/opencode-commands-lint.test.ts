@@ -4,16 +4,18 @@ import * as path from 'path';
 /**
  * OpenCode Commands Lint Tests
  * 
- * These tests validate the structure and content of OpenCode command files
- * in .opencode/commands/ directory. They ensure:
+ * These tests validate the structure and content of merged command files
+ * in commands/ directory (used by both Claude Code and OpenCode). They ensure:
  * - All expected command files exist
- * - Each has valid YAML frontmatter with required keys
+ * - Each has valid YAML frontmatter with required keys for both platforms
  * - Each references the appropriate MCP tools
  * - Each includes usage examples and @ handling notes
  * - Documentation accurately reflects command support
+ * - OpenCode marker strings are present for E2E validation
+ * - No positional $N tokens (cross-platform compatibility)
  */
 
-const COMMANDS_DIR = path.join(__dirname, '../../.opencode/commands');
+const COMMANDS_DIR = path.join(__dirname, '../../commands');
 const OPENCODE_DOC = path.join(__dirname, '../../OPENCODE.md');
 
 // Expected command files (from plan)
@@ -82,13 +84,13 @@ function readFile(filePath: string): string {
 
 describe('OpenCode Commands Lint Tests', () => {
   describe('Command Files Existence', () => {
-    it('should have .opencode/commands directory', () => {
+    it('should have commands directory', () => {
       expect(fileExists(COMMANDS_DIR)).toBe(true);
     });
 
     it('should have exactly 6 expected command files', () => {
       if (!fileExists(COMMANDS_DIR)) {
-        throw new Error('.opencode/commands directory does not exist');
+        throw new Error('commands directory does not exist');
       }
 
       const actualFiles = fs.readdirSync(COMMANDS_DIR)
@@ -123,7 +125,7 @@ describe('OpenCode Commands Lint Tests', () => {
 
     it('should have filenames matching command names', () => {
       if (!fileExists(COMMANDS_DIR)) {
-        throw new Error('.opencode/commands directory does not exist');
+        throw new Error('commands directory does not exist');
       }
 
       const actualFiles = fs.readdirSync(COMMANDS_DIR)
@@ -172,13 +174,24 @@ describe('OpenCode Commands Lint Tests', () => {
           expect(Object.keys(frontmatter).length).toBeGreaterThan(0);
         });
 
+        it('should have name key matching filename', () => {
+          const expectedName = commandFile.replace('.md', '');
+          expect(content).toMatch(new RegExp(`^name:\\s*${expectedName}\\s*$`, 'm'));
+        });
+
         it('should have description key', () => {
           expect(frontmatter.description).toBeDefined();
           expect(frontmatter.description.length).toBeGreaterThan(0);
+          expect(content).toMatch(/^description:\s*.+$/m);
         });
 
         it('should have agent: build', () => {
           expect(frontmatter.agent).toBe('build');
+          expect(content).toMatch(/^agent:\s*build\s*$/m);
+        });
+
+        it('should have allowed-tools key', () => {
+          expect(content).toMatch(/^allowed-tools:\s*\[.+\]$/m);
         });
       });
     });
@@ -201,7 +214,78 @@ describe('OpenCode Commands Lint Tests', () => {
           requiredTools.forEach(tool => {
             it(`should reference ${tool}`, () => {
               expect(content).toContain(tool);
-            });
+  });
+
+  describe('OpenCode Marker Contract', () => {
+    const REQUIRED_MARKERS: Record<string, string[]> = {
+      'tla-parse.md': ['Spec path:'],
+      'tla-symbols.md': ['Spec path:', 'CFG written:'],
+      'tla-smoke.md': ['Spec path:', 'CFG used:'],
+      'tla-check.md': ['Spec path:', 'CFG used:'],
+      'tla-review.md': ['Spec path:', 'TLA+ SPECIFICATION REVIEW'],
+      'tla-setup.md': ['TLA+ TOOLS SETUP & VERIFICATION']
+    };
+
+    EXPECTED_COMMANDS.forEach(commandFile => {
+      describe(commandFile, () => {
+        let content: string;
+        const requiredMarkers = REQUIRED_MARKERS[commandFile];
+
+        beforeAll(() => {
+          const filePath = path.join(COMMANDS_DIR, commandFile);
+          if (fileExists(filePath)) {
+            content = readFile(filePath);
+          }
+        });
+
+        requiredMarkers.forEach(marker => {
+          it(`should contain marker: "${marker}"`, () => {
+            expect(content).toContain(marker);
+          });
+        });
+      });
+    });
+  });
+
+  describe('Cross-Platform Compatibility', () => {
+    EXPECTED_COMMANDS.forEach(commandFile => {
+      describe(commandFile, () => {
+        let content: string;
+
+        beforeAll(() => {
+          const filePath = path.join(COMMANDS_DIR, commandFile);
+          if (fileExists(filePath)) {
+            content = readFile(filePath);
+          }
+        });
+
+        it('should not contain positional $N tokens', () => {
+          expect(content).not.toMatch(/\$0\b|\$1\b|\$2\b|\$3\b/);
+        });
+      });
+    });
+  });
+
+  describe('Repository Configuration', () => {
+    it('opencode.json should exist at repo root with MCP config', () => {
+      const configPath = path.join(__dirname, '../../opencode.json');
+      expect(fileExists(configPath)).toBe(true);
+      
+      const configContent = readFile(configPath);
+      const config = JSON.parse(configContent);
+      
+      expect(config.mcp).toBeDefined();
+      expect(config.mcp.tlaplus).toBeDefined();
+    });
+
+    it('OPENCODE.md should document OPENCODE_CONFIG_DIR', () => {
+      const docPath = path.join(__dirname, '../../OPENCODE.md');
+      if (fileExists(docPath)) {
+        const content = readFile(docPath);
+        expect(content).toMatch(/OPENCODE_CONFIG_DIR/);
+      }
+    });
+  });
           });
         } else {
           it('should not require MCP tools (validation only)', () => {
