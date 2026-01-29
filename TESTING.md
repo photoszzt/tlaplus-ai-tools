@@ -38,8 +38,8 @@ Commands use unified format compatible with both platforms. To test:
 # Ensure commands are synced first
 cp commands/tla-*.md .opencode/commands/
 
-# Run E2E
-OPENCODE_E2E=1 OPENCODE_MODEL=inference-nvidia-claude/aws/anthropic/bedrock-claude-sonnet-4-5-v1 npm run opencode:e2e
+# Run E2E (OPENCODE_MODEL env var should be set to your model)
+OPENCODE_E2E=1 OPENCODE_MODEL=<your-model> npm run opencode:e2e
 ```
 
 **CI Lint Tests** (automated):
