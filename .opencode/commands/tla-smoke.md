@@ -1,5 +1,8 @@
 ---
-description: Run quick TLC smoke test (3-second random simulation)
+name: tla-smoke
+description: Run quick smoke test using random simulation (3 seconds)
+argument-hint: "@spec.tla [duration]"
+allowed-tools: [Read, Bash, Grep]
 agent: build
 ---
 
@@ -19,7 +22,7 @@ Run a quick 3-second random simulation to catch obvious bugs in your TLA+ specif
 
 ## What This Does
 
-1. Validates and normalizes the spec path from `$1`
+1. Validates and normalizes the spec path from `$ARGUMENTS`
 2. Applies deterministic `.cfg` selection algorithm (see below)
 3. Calls `tlaplus_mcp_tlc_smoke` to run random simulation
 4. Reports results (states explored, violations found)
@@ -29,7 +32,7 @@ Run a quick 3-second random simulation to catch obvious bugs in your TLA+ specif
 **Step 1: Normalize Spec Path**
 
 ```
-SPEC_PATH="$1"
+SPEC_PATH="$ARGUMENTS"
 if [[ "$SPEC_PATH" == @* ]]; then
   SPEC_PATH="${SPEC_PATH#@}"
 fi
@@ -53,9 +56,11 @@ Extract `--seconds <N>` from `$ARGUMENTS`:
 **Step 4: Determine CFG Argument**
 
 ```
+# Parse second token from $ARGUMENTS (split by space, take second)
 CFG_ARG=""
-if [[ "$2" == *.cfg ]]; then
-  CFG_ARG="$2"
+read -r FIRST_ARG SECOND_ARG REST <<< "$ARGUMENTS"
+if [[ "$SECOND_ARG" == *.cfg ]]; then
+  CFG_ARG="$SECOND_ARG"
 fi
 ```
 
