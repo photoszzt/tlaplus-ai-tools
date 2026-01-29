@@ -94,6 +94,27 @@ ls .opencode/commands/
 # Expected: tla-parse.md tla-symbols.md tla-smoke.md tla-check.md tla-review.md tla-setup.md
 ```
 
+### Command Format
+
+Commands in this repository use a **unified format** compatible with both Claude Code and OpenCode:
+
+- **Frontmatter**: Contains fields for both platforms
+  - `name`, `argument-hint`, `allowed-tools`: Claude Code (ignored by OpenCode)
+  - `agent`: OpenCode (ignored by Claude Code)
+  - `description`: Shared by both platforms
+- **Variables**: All commands use `$ARGUMENTS` for cross-platform compatibility
+- **Markers**: Commands output structured markers (e.g., "Spec path:", "CFG used:") for E2E validation
+
+#### Keeping Commands in Sync
+
+The canonical source is `commands/`. OpenCode users should periodically sync:
+
+```bash
+cp commands/tla-*.md .opencode/commands/
+```
+
+Alternatively, contributors should ensure both directories stay synchronized when updating commands.
+
 ### Using Commands from Repo Root
 
 By default, OpenCode loads commands from `.opencode/commands/`. To use commands from the repo root `commands/` directory instead, set the `OPENCODE_CONFIG_DIR` environment variable:

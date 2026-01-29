@@ -216,6 +216,14 @@ The `.opencode/opencode.json` file configures the TLA+ MCP server and is auto-de
 
 These commands are automatically discovered by OpenCode and invoked as `/command-name` in the TUI.
 
+**Command Setup**: Commands use a unified format stored in `commands/`. Copy to OpenCode directory:
+
+```bash
+cp commands/tla-*.md .opencode/commands/
+```
+
+This is only needed once or when commands are updated.
+
 **Location**: `~/.config/opencode/plugins/`
 
 Create plugin directory:

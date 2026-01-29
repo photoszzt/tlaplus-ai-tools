@@ -32,11 +32,22 @@ npm run verify
 
 #### OpenCode Commands Testing
 
+Commands use unified format compatible with both platforms. To test:
+
+```bash
+# Ensure commands are synced first
+cp commands/tla-*.md .opencode/commands/
+
+# Run E2E
+OPENCODE_E2E=1 OPENCODE_MODEL=inference-nvidia-claude/aws/anthropic/bedrock-claude-sonnet-4-5-v1 npm run opencode:e2e
+```
+
 **CI Lint Tests** (automated):
-- Validates all 6 command files exist under `.opencode/commands/`
-- Checks frontmatter structure (`description`, `agent: build`)
+- Validates all 6 command files exist under `commands/`
+- Checks unified frontmatter (Claude Code + OpenCode fields)
 - Verifies MCP tool references per command
 - Ensures usage examples and `@` handling notes present
+- Checks no positional `$N` variables (only `$ARGUMENTS`)
 - Run via: `npm test -- opencode-commands-lint`
 
 **Local E2E Testing** (manual):
