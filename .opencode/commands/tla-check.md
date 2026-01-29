@@ -1,5 +1,8 @@
 ---
-description: Run exhaustive TLC model checking on TLA+ specification
+name: tla-check
+description: Run exhaustive model checking on TLA+ specification with TLC
+argument-hint: "@spec.tla [config.cfg] [--workers N]"
+allowed-tools: [Read, Bash, Grep, Write]
 agent: build
 ---
 
@@ -20,7 +23,7 @@ Run exhaustive model checking to verify all reachable states of your TLA+ specif
 
 ## What This Does
 
-1. Validates and normalizes the spec path from `$1`
+1. Validates and normalizes the spec path from `$ARGUMENTS`
 2. Applies deterministic `.cfg` selection algorithm (see below)
 3. Calls `tlaplus_mcp_tlc_check` to run exhaustive model checking
 4. Reports results (states explored, violations, counterexamples)
@@ -30,7 +33,7 @@ Run exhaustive model checking to verify all reachable states of your TLA+ specif
 **Step 1: Normalize Spec Path**
 
 ```
-SPEC_PATH="$1"
+SPEC_PATH="$ARGUMENTS"
 if [[ "$SPEC_PATH" == @* ]]; then
   SPEC_PATH="${SPEC_PATH#@}"
 fi
@@ -61,9 +64,11 @@ HEAP=""
 **Step 4: Determine CFG Argument**
 
 ```
+# Parse second token from $ARGUMENTS (split by space, take second)
 CFG_ARG=""
-if [[ "$2" == *.cfg ]]; then
-  CFG_ARG="$2"
+read -r FIRST_ARG SECOND_ARG REST <<< "$ARGUMENTS"
+if [[ "$SECOND_ARG" == *.cfg ]]; then
+  CFG_ARG="$SECOND_ARG"
 fi
 ```
 
