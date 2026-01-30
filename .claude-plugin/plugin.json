@@ -10,18 +10,26 @@
   "homepage": "https://github.com/photoszzt/tlaplus-ai-tools",
   "repository": "https://github.com/photoszzt/tlaplus-ai-tools",
   "license": "MIT",
-  "keywords": ["tla+", "formal-verification", "model-checking", "mcp", "verification", "formal-methods"],
-  "category": "development-tools",
+  "keywords": [
+    "tla+",
+    "formal-verification",
+    "model-checking",
+    "mcp",
+    "verification",
+    "formal-methods"
+  ],
   "skills": "./skills/",
   "commands": "./commands/",
-  "agents": "./agents/",
-  "hooks": "./hooks/hooks.json",
+  "agents": [
+    "./agents/spec-validator.md",
+    "./agents/config-generator.md",
+    "./agents/animation-creator.md",
+    "./agents/trace-analyzer.md"
+  ],
   "mcpServers": {
     "tlaplus": {
       "command": "node",
-      "args": [
-        "${CLAUDE_PLUGIN_ROOT}/dist/index.js"
-      ],
+      "args": ["${CLAUDE_PLUGIN_ROOT}/dist/index.js"],
       "cwd": "${CLAUDE_PLUGIN_ROOT}"
     }
   }
