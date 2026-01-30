@@ -1,30 +1,38 @@
 {
-  "SessionStart": [
-    {
-      "type": "prompt",
-      "prompt": "Check if TLA+ tools are installed and accessible. If tools/ directory exists and contains tla2tools.jar and CommunityModules-deps.jar, silently proceed. If tools are missing or Java is not found, show a brief notification: 'TLA+ tools not configured. Run /tla-setup to complete installation.' Keep this check fast (< 1 second) and non-intrusive."
-    }
-  ],
-  "PreToolUse": [
-    {
-      "matcher": "Write|Edit",
-      "hooks": [
-        {
-          "type": "prompt",
-          "prompt": "If the file being written or edited has a .tla extension and is not in node_modules/ or a test directory, quickly parse it using tlaplus_mcp_sany_parse. If parse succeeds, silently continue. If parse fails, show a warning with the error message but DO NOT block the write - let it proceed. Skip this check for files larger than 100KB. This should be fast and non-blocking."
-        }
-      ]
-    }
-  ],
-  "PostToolUse": [
-    {
-      "matcher": "Write",
-      "hooks": [
-        {
-          "type": "prompt",
-          "prompt": "If a NEW .tla file was just created (not edited), check if a corresponding .cfg file exists in the same directory. If no .cfg file exists, suggest: 'No TLC configuration file found. Run /tla-symbols @file.tla to generate one?' Only suggest this for newly created files, not for every edit. Keep suggestion brief and non-intrusive."
-        }
-      ]
-    }
-  ]
+  "description": "TLA+ plugin hooks for automatic validation and configuration assistance",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Check if TLA+ tools are installed and accessible. If tools/ directory exists and contains tla2tools.jar and CommunityModules-deps.jar, silently proceed. If tools are missing or Java is not found, show a brief notification: 'TLA+ tools not configured. Run /tla-setup to complete installation.' Keep this check fast (< 1 second) and non-intrusive."
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "If the file being written or edited has a .tla extension and is not in node_modules/ or a test directory, quickly parse it using tlaplus_mcp_sany_parse. If parse succeeds, silently continue. If parse fails, show a warning with the error message but DO NOT block the write - let it proceed. Skip this check for files larger than 100KB. This should be fast and non-blocking."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "If a NEW .tla file was just created (not edited), check if a corresponding .cfg file exists in the same directory. If no .cfg file exists, suggest: 'No TLC configuration file found. Run /tla-symbols @file.tla to generate one?' Only suggest this for newly created files, not for every edit. Keep suggestion brief and non-intrusive."
+          }
+        ]
+      }
+    ]
+  }
 }
