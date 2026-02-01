@@ -2,15 +2,7 @@
 name: tla-setup
 description: Verify TLA+ tools installation and fix common issues
 argument-hint: ""
-allowed-tools:
-  [
-    Bash,
-    Read,
-    Write,
-    Grep,
-    mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_modules,
-    mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse,
-  ]
+allowed-tools: [Bash, Read, Write, Grep, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_modules, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse]
 agent: build
 ---
 
