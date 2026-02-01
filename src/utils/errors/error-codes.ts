@@ -29,7 +29,10 @@ export enum ErrorCode {
 
   // Configuration errors
   CONFIG_TOOLS_NOT_FOUND = 'CONFIG_TOOLS_NOT_FOUND',
-  CONFIG_INVALID_PATH = 'CONFIG_INVALID_PATH'
+  CONFIG_INVALID_PATH = 'CONFIG_INVALID_PATH',
+
+  // XMLExporter errors
+  XMLEXPORTER_USAGE_ERROR = 'XMLEXPORTER_USAGE_ERROR'
 }
 
 export const ERROR_RETRYABLE: Record<ErrorCode, boolean> = {
@@ -54,5 +57,6 @@ export const ERROR_RETRYABLE: Record<ErrorCode, boolean> = {
   [ErrorCode.PARSE_XML_MALFORMED]: false,
   [ErrorCode.PROCESS_TIMEOUT]: false,
   [ErrorCode.CONFIG_TOOLS_NOT_FOUND]: false,
-  [ErrorCode.CONFIG_INVALID_PATH]: false
+  [ErrorCode.CONFIG_INVALID_PATH]: false,
+  [ErrorCode.XMLEXPORTER_USAGE_ERROR]: false
 };

@@ -30,6 +30,29 @@ npm run verify
 - ✅ JSON syntax valid
 - ✅ Executable permissions
 
+#### Claude Code Commands Testing
+
+Commands use unified format compatible with both platforms. To test:
+
+```bash
+# Run E2E (ANTHROPIC_API_KEY must be set)
+CLAUDE_CODE_E2E=1 npm run claude-code:e2e
+```
+
+**Local E2E Testing**:
+- Prerequisites: Claude Code CLI installed + API key configured
+- Run via: `CLAUDE_CODE_E2E=1 npm run claude-code:e2e`
+- Validates command execution using `claude --print` mode
+- Checks for deterministic output markers
+- Skips if `CLAUDE_CODE_E2E` not set to `1`
+
+The E2E script runs all 6 commands and checks for deterministic markers:
+- `Spec path:` (all commands)
+- `CFG used:` (TLC commands)
+- `CFG written:` (`/tla-symbols`)
+- `TLA+ SPECIFICATION REVIEW` (`/tla-review`)
+- `TLA+ TOOLS SETUP & VERIFICATION` (`/tla-setup`)
+
 #### OpenCode Commands Testing
 
 Commands use unified format compatible with both platforms. To test:
@@ -50,7 +73,7 @@ OPENCODE_E2E=1 OPENCODE_MODEL=<your-model> npm run opencode:e2e
 - Checks no positional `$N` variables (only `$ARGUMENTS`)
 - Run via: `npm test -- opencode-commands-lint`
 
-**Local E2E Testing** (manual):
+**Local E2E Testing**:
 - Prerequisites: OpenCode installed + model provider configured
 - Run via: `OPENCODE_E2E=1 npm run opencode:e2e`
 - Validates command execution and output markers

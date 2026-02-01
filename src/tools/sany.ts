@@ -63,6 +63,12 @@ function getSuggestedActions(code: ErrorCode): string[] {
     [ErrorCode.JAR_EXTRACTION_FAILED]: [
       '- Check available disk space',
       '- Verify write permissions to temp directory'
+    ],
+    [ErrorCode.XMLEXPORTER_USAGE_ERROR]: [
+      '- Run `npm run setup` to install pinned tools (v1.8.0)',
+      '- Verify `tools/tla2tools.jar` matches v1.8.0 with correct checksum',
+      '- If checksum mismatch: delete `tools/tla2tools.jar` and re-run `npm run setup`',
+      '- This error indicates XMLExporter argument incompatibility with your TLA+ tools version'
     ]
   };
 

@@ -23,3 +23,5 @@ test-specs/Counter.generated.cfg
 
 # Test artifacts (generated on failure)
 test-artifacts/
+
+test-specs/states/

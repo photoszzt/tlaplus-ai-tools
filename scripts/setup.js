@@ -3,26 +3,87 @@
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
-// Default versions
-const DEFAULT_TLA_TOOLS_VERSION = '1.7.4';
+// Pinned versions (strict mode - overrides must match these)
+const DEFAULT_TLA_TOOLS_VERSION = '1.8.0';
 const DEFAULT_COMMUNITY_MODULES_VERSION = '202601200755';
+
+// Expected checksums for pinned versions
+const EXPECTED_CHECKSUMS = {
+  tla2tools: {
+    version: '1.8.0',
+    algorithm: 'sha1',
+    checksum: '8fc5476ff65dad2e65dfe7b3109b3867e27c4f29'
+  },
+  communityModules: {
+    version: '202601200755',
+    algorithm: 'sha256',
+    checksum: '5b7bb6d94ea1ccfdd2611716b81430208f709b493ae7b4f39fa7cb86a602932e'
+  }
+};
 
 // Get versions from environment or use defaults
 const TLA_TOOLS_VERSION = process.env.TLA_TOOLS_VERSION || DEFAULT_TLA_TOOLS_VERSION;
 const COMMUNITY_MODULES_VERSION = process.env.COMMUNITY_MODULES_VERSION || DEFAULT_COMMUNITY_MODULES_VERSION;
 
+// Strict mode: reject version overrides that don't match pinned versions
+if (TLA_TOOLS_VERSION !== DEFAULT_TLA_TOOLS_VERSION) {
+  console.error(`✗ Error: TLA_TOOLS_VERSION override rejected`);
+  console.error(`  Expected: ${DEFAULT_TLA_TOOLS_VERSION}`);
+  console.error(`  Got: ${TLA_TOOLS_VERSION}`);
+  console.error(`  This plugin requires exact version ${DEFAULT_TLA_TOOLS_VERSION} for checksum verification.`);
+  process.exit(1);
+}
+
+if (COMMUNITY_MODULES_VERSION !== DEFAULT_COMMUNITY_MODULES_VERSION) {
+  console.error(`✗ Error: COMMUNITY_MODULES_VERSION override rejected`);
+  console.error(`  Expected: ${DEFAULT_COMMUNITY_MODULES_VERSION}`);
+  console.error(`  Got: ${COMMUNITY_MODULES_VERSION}`);
+  console.error(`  This plugin requires exact version ${DEFAULT_COMMUNITY_MODULES_VERSION} for checksum verification.`);
+  process.exit(1);
+}
+
 // URLs
 const TLA_TOOLS_URL = `https://github.com/tlaplus/tlaplus/releases/download/v${TLA_TOOLS_VERSION}/tla2tools.jar`;
 const COMMUNITY_MODULES_URL = `https://github.com/tlaplus/CommunityModules/releases/download/${COMMUNITY_MODULES_VERSION}/CommunityModules-deps.jar`;
 
-// Paths
-const TOOLS_DIR = path.join(__dirname, '..', 'tools');
+// Paths (support TLA_TOOLS_DIR environment variable)
+const TOOLS_DIR = process.env.TLA_TOOLS_DIR || path.join(__dirname, '..', 'tools');
 const TLA_TOOLS_PATH = path.join(TOOLS_DIR, 'tla2tools.jar');
 const COMMUNITY_MODULES_PATH = path.join(TOOLS_DIR, 'CommunityModules-deps.jar');
 
 const MAX_REDIRECTS = 5;
 const TIMEOUT_MS = 120000;
+
+/**
+ * Calculate checksum of a file
+ * @param {string} filePath - Path to file
+ * @param {string} algorithm - Hash algorithm (sha1, sha256, etc.)
+ * @returns {string} Hex-encoded checksum
+ */
+function calculateChecksum(filePath, algorithm) {
+  const hash = crypto.createHash(algorithm);
+  const data = fs.readFileSync(filePath);
+  hash.update(data);
+  return hash.digest('hex');
+}
+
+/**
+ * Verify file checksum matches expected value
+ * @param {string} filePath - Path to file
+ * @param {string} algorithm - Hash algorithm
+ * @param {string} expectedChecksum - Expected checksum value
+ * @returns {{valid: boolean, actual: string, expected: string}}
+ */
+function verifyChecksum(filePath, algorithm, expectedChecksum) {
+  const actual = calculateChecksum(filePath, algorithm);
+  return {
+    valid: actual === expectedChecksum,
+    actual,
+    expected: expectedChecksum
+  };
+}
 
 /**
  * Download a file with redirect handling
@@ -120,41 +181,29 @@ async function setup() {
     console.log('================');
     console.log(`TLA Tools Version: ${TLA_TOOLS_VERSION}`);
     console.log(`Community Modules Version: ${COMMUNITY_MODULES_VERSION}`);
+    console.log(`Tools Directory: ${TOOLS_DIR}`);
     console.log('');
 
-    // Create tools directory if it doesn't exist
     if (!fs.existsSync(TOOLS_DIR)) {
         console.log(`Creating directory: ${TOOLS_DIR}`);
         fs.mkdirSync(TOOLS_DIR, { recursive: true });
     }
 
-    // Download tla2tools.jar
-    if (fs.existsSync(TLA_TOOLS_PATH)) {
-        console.log(`✓ tla2tools.jar already exists, skipping download`);
-    } else {
-        console.log(`Downloading tla2tools.jar from ${TLA_TOOLS_URL}...`);
-        try {
-            await downloadFile(TLA_TOOLS_URL, TLA_TOOLS_PATH);
-            console.log(`✓ Downloaded tla2tools.jar`);
-        } catch (err) {
-            console.error(`✗ Failed to download tla2tools.jar: ${err.message}`);
-            process.exit(1);
-        }
-    }
+    await downloadAndVerify(
+        'tla2tools.jar',
+        TLA_TOOLS_URL,
+        TLA_TOOLS_PATH,
+        EXPECTED_CHECKSUMS.tla2tools.algorithm,
+        EXPECTED_CHECKSUMS.tla2tools.checksum
+    );
 
-    // Download CommunityModules-deps.jar
-    if (fs.existsSync(COMMUNITY_MODULES_PATH)) {
-        console.log(`✓ CommunityModules-deps.jar already exists, skipping download`);
-    } else {
-        console.log(`Downloading CommunityModules-deps.jar from ${COMMUNITY_MODULES_URL}...`);
-        try {
-            await downloadFile(COMMUNITY_MODULES_URL, COMMUNITY_MODULES_PATH);
-            console.log(`✓ Downloaded CommunityModules-deps.jar`);
-        } catch (err) {
-            console.error(`✗ Failed to download CommunityModules-deps.jar: ${err.message}`);
-            process.exit(1);
-        }
-    }
+    await downloadAndVerify(
+        'CommunityModules-deps.jar',
+        COMMUNITY_MODULES_URL,
+        COMMUNITY_MODULES_PATH,
+        EXPECTED_CHECKSUMS.communityModules.algorithm,
+        EXPECTED_CHECKSUMS.communityModules.checksum
+    );
 
     console.log('');
     console.log('Setup complete!');
@@ -164,8 +213,73 @@ async function setup() {
     console.log('2. Test TLC: java -jar tools/tla2tools.jar');
 }
 
+/**
+ * Download file and verify checksum
+ * @param {string} name - Display name
+ * @param {string} url - Download URL
+ * @param {string} destPath - Destination path
+ * @param {string} algorithm - Hash algorithm
+ * @param {string} expectedChecksum - Expected checksum
+ */
+async function downloadAndVerify(name, url, destPath, algorithm, expectedChecksum) {
+    const fileExists = fs.existsSync(destPath);
+    
+    if (fileExists) {
+        console.log(`Verifying ${name} checksum...`);
+        const result = verifyChecksum(destPath, algorithm, expectedChecksum);
+        
+        if (result.valid) {
+            console.log(`✓ ${name} checksum verified (${algorithm}: ${result.expected})`);
+            return;
+        }
+        
+        console.error(`✗ ${name} checksum mismatch!`);
+        console.error(`  Expected (${algorithm}): ${result.expected}`);
+        console.error(`  Actual   (${algorithm}): ${result.actual}`);
+        console.error(`  File may be corrupted or from wrong version.`);
+        console.error(`  Delete ${destPath} and run setup again.`);
+        process.exit(1);
+    }
+
+    console.log(`Downloading ${name} from ${url}...`);
+    try {
+        await downloadFile(url, destPath);
+        console.log(`✓ Downloaded ${name}`);
+    } catch (err) {
+        console.error(`✗ Failed to download ${name}: ${err.message}`);
+        process.exit(1);
+    }
+
+    console.log(`Verifying ${name} checksum...`);
+    const result = verifyChecksum(destPath, algorithm, expectedChecksum);
+    
+    if (!result.valid) {
+        console.error(`✗ ${name} checksum mismatch after download!`);
+        console.error(`  Expected (${algorithm}): ${result.expected}`);
+        console.error(`  Actual   (${algorithm}): ${result.actual}`);
+        console.error(`  Download may be corrupted or incomplete.`);
+        fs.unlinkSync(destPath);
+        process.exit(1);
+    }
+    
+    console.log(`✓ ${name} checksum verified (${algorithm}: ${result.expected})`);
+}
+
 // Run setup
-setup().catch((err) => {
-    console.error(`Setup failed: ${err.message}`);
-    process.exit(1);
-});
+if (require.main === module) {
+    setup().catch((err) => {
+        console.error(`Setup failed: ${err.message}`);
+        process.exit(1);
+    });
+}
+
+module.exports = {
+    calculateChecksum,
+    verifyChecksum,
+    downloadFile,
+    downloadAndVerify,
+    setup,
+    EXPECTED_CHECKSUMS,
+    DEFAULT_TLA_TOOLS_VERSION,
+    DEFAULT_COMMUNITY_MODULES_VERSION
+};

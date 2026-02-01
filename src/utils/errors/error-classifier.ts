@@ -22,6 +22,9 @@ export function classifyError(error: Error): ErrorCode {
   if (message.includes('failed to launch java process')) {
     return ErrorCode.JAVA_SPAWN_FAILED;
   }
+  if (message.includes('only one tla file to check allowed!')) {
+    return ErrorCode.XMLEXPORTER_USAGE_ERROR;
+  }
   if (message.includes('path traversal') || message.includes('outside the working directory')) {
     return ErrorCode.FILE_PATH_TRAVERSAL;
   }
