@@ -26,3 +26,4 @@ test-specs/Counter.generated.cfg
 test-artifacts/
 
 test-specs/states/
+states
