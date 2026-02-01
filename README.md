@@ -208,6 +208,26 @@ Follow the guidance to create a simple counter specification.
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines (coming soon)
 
+## Development
+
+### Running Tests
+
+Install development dependencies:
+
+```bash
+python3 -m pip install -r requirements-dev.txt
+```
+
+Run tests:
+
+```bash
+# Unit tests (when available)
+pytest
+
+# Interactive E2E test (requires Claude Code)
+CLAUDE_CODE_E2E=1 python3 tlaplus-ai-tools/scripts/claude-code-interactive-e2e.py
+```
+
 ## Configuration
 
 ### Custom Settings (Optional)
