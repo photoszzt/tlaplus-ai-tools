@@ -14,13 +14,13 @@ OpenCode will automatically load the TLA+ MCP server from `.opencode/opencode.js
 
 ## What Works in OpenCode
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| **MCP Tools** | ✅ Full Support | All TLA+ tools accessible via MCP |
-| **Skills (6)** | ✅ Full Support | All 6 skills discoverable |
-| **Commands** | ✅ Supported | Custom commands via .opencode/commands/*.md |
-| **Agents** | ⚠️ Different Architecture | Requires oh-my-opencode JSON config |
-| **Hooks** | ⚠️ Different Architecture | Requires JavaScript plugin files |
+| Component      | Status                    | Notes                                        |
+| -------------- | ------------------------- | -------------------------------------------- |
+| **MCP Tools**  | ✅ Full Support           | All TLA+ tools accessible via MCP            |
+| **Skills (6)** | ✅ Full Support           | All 6 skills discoverable                    |
+| **Commands**   | ✅ Supported              | Custom commands via .opencode/commands/\*.md |
+| **Agents**     | ⚠️ Different Architecture | Requires oh-my-opencode JSON config          |
+| **Hooks**      | ⚠️ Different Architecture | Requires JavaScript plugin files             |
 
 ## MCP Tools
 
@@ -35,6 +35,7 @@ The TLA+ MCP server provides these tools in OpenCode:
 - `knowledge` (resource) - Access TLA+ knowledge base
 
 **Verification**:
+
 ```bash
 opencode mcp list
 # Expected output:
@@ -47,11 +48,13 @@ opencode mcp list
 All 6 TLA+ skills are available in OpenCode:
 
 **Learning Skills:**
+
 - `tla-getting-started` - Introduction to TLA+ with examples
 - `tla-model-checking` - Complete TLC configuration guide
 - `tla-refinement-proofs` - Specification refinement
 
 **Development Skills:**
+
 - `tla-spec-review` - Comprehensive spec review checklist
 - `tla-debug-violations` - Debug counterexamples systematically
 - `tla-create-animations` - Create SVG animations
@@ -59,6 +62,7 @@ All 6 TLA+ skills are available in OpenCode:
 **Usage**: Invoke skills with `/skill <name>` in OpenCode chat.
 
 **Verification**:
+
 ```bash
 opencode debug skill | grep tla-
 # Should show all 6 TLA+ skills
@@ -88,6 +92,7 @@ OpenCode supports custom commands defined in `.opencode/commands/*.md`. This rep
 **Note**: If you type `@path/to/spec.tla` as the first argument, the command strips the leading `@` and validates the file exists on disk (MCP tools require filesystem paths).
 
 **Verification**:
+
 ```bash
 # Commands are auto-discovered from .opencode/commands/
 ls .opencode/commands/
@@ -120,11 +125,13 @@ Alternatively, contributors should ensure both directories stay synchronized whe
 By default, OpenCode loads commands from `.opencode/commands/`. To use commands from the repo root `commands/` directory instead, set the `OPENCODE_CONFIG_DIR` environment variable:
 
 **macOS/Linux**:
+
 ```bash
 OPENCODE_CONFIG_DIR="$PWD" opencode
 ```
 
 **Windows (PowerShell)**:
+
 ```powershell
 $env:OPENCODE_CONFIG_DIR=(Get-Location).Path
 opencode
@@ -137,6 +144,7 @@ This allows you to use the repo's commands without duplicating them into `.openc
 OpenCode agents are defined in `~/.config/opencode/oh-my-opencode.json` (global JSON config), not as markdown files with frontmatter.
 
 **Claude Code** (this plugin):
+
 ```yaml
 ---
 description: Validates TLA+ specifications
@@ -148,6 +156,7 @@ tools:
 ```
 
 **OpenCode** (oh-my-opencode):
+
 ```json
 {
   "agents": {
@@ -165,21 +174,25 @@ The 4 agent files in `agents/` directory are Claude Code-specific and cannot be 
 OpenCode hooks are JavaScript plugin files in `.opencode/plugins/*.js`, not JSON config with bash scripts.
 
 **Claude Code** (this plugin):
+
 ```json
 {
-  "SessionStart": [{
-    "type": "prompt",
-    "prompt": "Check if TLA+ tools are installed..."
-  }]
+  "SessionStart": [
+    {
+      "type": "prompt",
+      "prompt": "Check if TLA+ tools are installed..."
+    }
+  ]
 }
 ```
 
 **OpenCode** (JavaScript plugin):
+
 ```javascript
 module.exports = {
-  'experimental.chat.system.transform': async (_input, output) => {
+  "experimental.chat.system.transform": async (_input, output) => {
     // Hook implementation
-  }
+  },
 };
 ```
 
@@ -253,17 +266,17 @@ The `.opencode/opencode.json` file is already included in this repository. OpenC
 
 ### 4. Install Skills (Optional)
 
-Skills are automatically discovered from `.claude/skills/` directory. For global access across all projects, create symlinks:
+Skills are automatically discovered from `skills/` directory. For global access across all projects, create symlinks:
 
 ```bash
 # Create symlinks in global skills directory
 mkdir -p ~/.config/opencode/skills
-ln -s $(pwd)/.claude/skills/tla-getting-started ~/.config/opencode/skills/
-ln -s $(pwd)/.claude/skills/tla-model-checking ~/.config/opencode/skills/
-ln -s $(pwd)/.claude/skills/tla-refinement-proofs ~/.config/opencode/skills/
-ln -s $(pwd)/.claude/skills/tla-spec-review ~/.config/opencode/skills/
-ln -s $(pwd)/.claude/skills/tla-debug-violations ~/.config/opencode/skills/
-ln -s $(pwd)/.claude/skills/tla-create-animations ~/.config/opencode/skills/
+ln -s $(pwd)/skills/tla-getting-started ~/.config/opencode/skills/
+ln -s $(pwd)/skills/tla-model-checking ~/.config/opencode/skills/
+ln -s $(pwd)/skills/tla-refinement-proofs ~/.config/opencode/skills/
+ln -s $(pwd)/skills/tla-spec-review ~/.config/opencode/skills/
+ln -s $(pwd)/skills/tla-debug-violations ~/.config/opencode/skills/
+ln -s $(pwd)/skills/tla-create-animations ~/.config/opencode/skills/
 ```
 
 ### 5. Start OpenCode
@@ -331,7 +344,7 @@ opencode
 
 ```bash
 # Check if skills exist
-ls -la .claude/skills/
+ls -la skills/
 
 # Verify OpenCode can see them
 opencode debug skill | grep tla-
@@ -363,20 +376,21 @@ The hooks in `hooks/hooks.json` use Claude Code's JSON format and cannot be dire
 
 ## Comparison: Claude Code vs OpenCode
 
-| Feature | Claude Code | OpenCode |
-|---------|-------------|----------|
-| **MCP Server** | ✅ Full | ✅ Full |
-| **Skills** | ✅ 6 skills | ✅ 6 skills |
-| **Commands** | ✅ 6 commands | ✅ 6 commands (.opencode/commands) |
-| **Agents** | ✅ 4 agents | ❌ Different format |
-| **Hooks** | ✅ 3 hooks | ❌ Different format |
-| **Knowledge Base** | ✅ 20+ articles | ✅ 20+ articles |
-| **Config Location** | `.claude-plugin/plugin.json` | `.opencode/opencode.json` |
-| **Skills Location** | `skills/` | `.claude/skills/` |
+| Feature             | Claude Code                  | OpenCode                           |
+| ------------------- | ---------------------------- | ---------------------------------- |
+| **MCP Server**      | ✅ Full                      | ✅ Full                            |
+| **Skills**          | ✅ 6 skills                  | ✅ 6 skills                        |
+| **Commands**        | ✅ 6 commands                | ✅ 6 commands (.opencode/commands) |
+| **Agents**          | ✅ 4 agents                  | ❌ Different format                |
+| **Hooks**           | ✅ 3 hooks                   | ❌ Different format                |
+| **Knowledge Base**  | ✅ 20+ articles              | ✅ 20+ articles                    |
+| **Config Location** | `.claude-plugin/plugin.json` | `.opencode/opencode.json`          |
+| **Skills Location** | `skills/`                    | `skills/`                          |
 
 ## Support
 
 For issues specific to:
+
 - **TLA+ Tools**: See [TLA+ Homepage](https://lamport.azurewebsites.net/tla/tla.html)
 - **This Plugin**: Open an issue on GitHub
 - **OpenCode**: See [OpenCode Documentation](https://github.com/sst/opencode)
