@@ -30,6 +30,81 @@ function formatErrorResponse(error: Error): string {
   return parts.join('\n');
 }
 
+const DEFAULT_SMOKE_TIMEOUT_MS = 120000;
+const DEFAULT_EXPLORE_TIMEOUT_MS = 600000;
+const DEFAULT_TRACE_TIMEOUT_MS = 600000;
+
+type ToolContext = {
+  signal?: AbortSignal;
+  request?: { signal?: AbortSignal };
+  _meta?: {
+    progressToken?: string | number;
+    [key: string]: unknown;
+  };
+  sendNotification?: (notification: any) => Promise<void>;
+};
+
+function getAbortSignal(context?: ToolContext): AbortSignal | undefined {
+  return context?.signal ?? context?.request?.signal;
+}
+
+function getProgressToken(context?: ToolContext): string | number | undefined {
+  return context?._meta?.progressToken;
+}
+
+async function sendProgress(
+  context: ToolContext | undefined,
+  progress: number,
+  total?: number,
+  message?: string
+): Promise<void> {
+  const progressToken = getProgressToken(context);
+  if (!progressToken || !context?.sendNotification) {
+    return;
+  }
+
+  await context.sendNotification({
+    method: 'notifications/progress',
+    params: {
+      progressToken,
+      progress,
+      total,
+      message
+    }
+  });
+}
+
+function parseTimeoutMs(value: unknown): number | undefined {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    return Math.floor(value);
+  }
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return Math.floor(parsed);
+    }
+  }
+  return undefined;
+}
+
+function extractFingerprintFromTrace(traceFilePath: string): number | undefined {
+  const fileName = path.basename(traceFilePath);
+  const match = /_F(\d+)_/.exec(fileName);
+  if (match && match[1]) {
+    return Number.parseInt(match[1], 10);
+  }
+  return undefined;
+}
+
+function resolveTimeoutMs(value: unknown, envKey: string, fallback: number): number {
+  const direct = parseTimeoutMs(value);
+  if (direct !== undefined) {
+    return direct;
+  }
+  const envValue = parseTimeoutMs(process.env[envKey]);
+  return envValue ?? fallback;
+}
+
 /**
  * Get suggested actions based on error code
  */
@@ -70,6 +145,7 @@ function getSuggestedActions(code: ErrorCode): string[] {
  * - check: Exhaustive model checking
  * - smoke: Quick smoke test (random simulation)
  * - explore: Generate and print behavior traces
+ * - trace: Load and replay TLC trace files
  */
 export async function registerTlcTools(
   server: any,
@@ -177,14 +253,16 @@ export async function registerTlcTools(
       fileName: z.string(),
       cfgFile: z.string().optional(),
       extraOpts: z.array(z.string()).optional(),
-      extraJavaOpts: z.array(z.string()).optional()
+      extraJavaOpts: z.array(z.string()).optional(),
+      timeoutMs: z.number().int().positive().optional()
     },
-    async ({ fileName, cfgFile, extraOpts, extraJavaOpts }: {
+    async ({ fileName, cfgFile, extraOpts, extraJavaOpts, timeoutMs }: {
       fileName: string;
       cfgFile?: string;
       extraOpts?: string[];
       extraJavaOpts?: string[];
-    }) => {
+      timeoutMs?: number;
+    }, context?: ToolContext) => {
       try {
         // Resolve and validate file path
         const absolutePath = resolveAndValidatePath(fileName, config.workingDir);
@@ -237,13 +315,20 @@ export async function registerTlcTools(
         const javaOpts = ['-Dtlc2.TLC.stopAfter=3', ...(extraJavaOpts || [])];
 
         // Run TLC and wait for completion
+        const timeoutMsResolved = resolveTimeoutMs(timeoutMs, 'TLC_SMOKE_TIMEOUT_MS', DEFAULT_SMOKE_TIMEOUT_MS);
+        const signal = getAbortSignal(context);
         const result = await runTlcAndWait(
           specFiles.tlaFilePath,
           path.basename(configFilePath),
           tlcOptions,
           javaOpts,
           config.toolsDir,
-          config.javaHome || undefined
+          config.javaHome || undefined,
+          timeoutMsResolved,
+          signal,
+          (progress) => {
+            sendProgress(context, progress.progress, progress.total, progress.message).catch(() => {});
+          }
         );
 
         return {
@@ -273,15 +358,17 @@ export async function registerTlcTools(
       behaviorLength: z.number().min(1),
       cfgFile: z.string().optional(),
       extraOpts: z.array(z.string()).optional(),
-      extraJavaOpts: z.array(z.string()).optional()
+      extraJavaOpts: z.array(z.string()).optional(),
+      timeoutMs: z.number().int().positive().optional()
     },
-    async ({ fileName, behaviorLength, cfgFile, extraOpts, extraJavaOpts }: {
+    async ({ fileName, behaviorLength, cfgFile, extraOpts, extraJavaOpts, timeoutMs }: {
       fileName: string;
       behaviorLength: number;
       cfgFile?: string;
       extraOpts?: string[];
       extraJavaOpts?: string[];
-    }) => {
+      timeoutMs?: number;
+    }, context?: ToolContext) => {
       try {
         // Resolve and validate file path
         const absolutePath = resolveAndValidatePath(fileName, config.workingDir);
@@ -340,19 +427,136 @@ export async function registerTlcTools(
         const javaOpts = ['-Dtlc2.TLC.stopAfter=3', ...(extraJavaOpts || [])];
 
         // Run TLC and wait for completion
+        const timeoutMsResolved = resolveTimeoutMs(timeoutMs, 'TLC_EXPLORE_TIMEOUT_MS', DEFAULT_EXPLORE_TIMEOUT_MS);
+        const signal = getAbortSignal(context);
         const result = await runTlcAndWait(
           specFiles.tlaFilePath,
           path.basename(configFilePath),
           tlcOptions,
           javaOpts,
           config.toolsDir,
-          config.javaHome || undefined
+          config.javaHome || undefined,
+          timeoutMsResolved,
+          signal,
+          (progress) => {
+            sendProgress(context, progress.progress, progress.total, progress.message).catch(() => {});
+          }
         );
 
         return {
           content: [{
             type: 'text',
             text: `Behavior exploration completed with exit code ${result.exitCode}.\n\n` +
+              `Output:\n${result.output.join('\n')}`
+          }]
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: formatErrorResponse(error as Error)
+          }]
+        };
+      }
+    }
+  );
+
+  // Tool 4: Trace replay
+  server.tool(
+    'tlaplus_mcp_tlc_trace',
+    'Load and replay a previously generated TLC trace file. This tool is particularly useful after tlaplus_mcp_tlc_check finds a counterexample and automatically generates a trace file. Trace files are .tlc files stored in the .vscode/tlc/ directory with the naming pattern: {specName}_trace_T{timestamp}_F{fp}_W{workers}_M{mode}.tlc. By rerunning TLC with -loadtrace, you can add or modify ALIAS expressions in the configuration file to derive compound values, rename variables, filter out variables, or create custom animations of the trace for better analysis. The ALIAS feature allows you to evaluate expressions on pairs of states (s -> t) in the error trace and display custom formatted output instead of raw state dumps. For comprehensive guidance on ALIAS expressions, see resource tlaplus://knowledge/tlc-alias-expressions.md.',
+    {
+      fileName: z.string(),
+      traceFile: z.string(),
+      cfgFile: z.string().optional(),
+      extraOpts: z.array(z.string()).optional(),
+      extraJavaOpts: z.array(z.string()).optional()
+    },
+    async ({ fileName, traceFile, cfgFile, extraOpts, extraJavaOpts }: {
+      fileName: string;
+      traceFile: string;
+      cfgFile?: string;
+      extraOpts?: string[];
+      extraJavaOpts?: string[];
+    }, context?: ToolContext) => {
+      try {
+        const absolutePath = resolveAndValidatePath(fileName, config.workingDir);
+
+        if (!fs.existsSync(absolutePath)) {
+          return {
+            content: [{
+              type: 'text',
+              text: `File ${absolutePath} does not exist on disk.`
+            }]
+          };
+        }
+
+        if (!config.toolsDir) {
+          return {
+            content: [{
+              type: 'text',
+              text: 'TLA+ tools directory not configured. Use --tools-dir to specify the location.'
+            }]
+          };
+        }
+
+        const specFiles = await getSpecFiles(absolutePath);
+        if (!specFiles) {
+          const specName = path.basename(absolutePath, path.extname(absolutePath));
+          return {
+            content: [{
+              type: 'text',
+              text: `No ${specName}.cfg or MC${specName}.tla/MC${specName}.cfg files found for ${absolutePath}. ` +
+                `Please create an MC${specName}.tla and MC${specName}.cfg file according to the provided TLC guidelines.`
+            }]
+          };
+        }
+
+        let configFilePath = specFiles.cfgFilePath;
+        if (cfgFile) {
+          const resolvedCfgPath = resolveAndValidatePath(cfgFile, config.workingDir);
+          if (fs.existsSync(resolvedCfgPath)) {
+            configFilePath = resolvedCfgPath;
+          }
+        }
+
+        const absoluteTracePath = resolveAndValidatePath(traceFile, config.workingDir);
+        if (!fs.existsSync(absoluteTracePath)) {
+          return {
+            content: [{
+              type: 'text',
+              text: `Trace file ${absoluteTracePath} does not exist on disk.`
+            }]
+          };
+        }
+
+        const fpValue = extractFingerprintFromTrace(absoluteTracePath);
+        const baseOptions = fpValue === undefined
+          ? ['-cleanup', '-loadtrace', 'tlc', absoluteTracePath]
+          : ['-cleanup', '-fp', String(fpValue), '-loadtrace', 'tlc', absoluteTracePath];
+        const tlcOptions = baseOptions.concat(extraOpts || []);
+        const javaOpts = extraJavaOpts || [];
+
+        const timeoutMsResolved = resolveTimeoutMs(undefined, 'TLC_TRACE_TIMEOUT_MS', DEFAULT_TRACE_TIMEOUT_MS);
+        const signal = getAbortSignal(context);
+        const result = await runTlcAndWait(
+          specFiles.tlaFilePath,
+          path.basename(configFilePath),
+          tlcOptions,
+          javaOpts,
+          config.toolsDir,
+          config.javaHome || undefined,
+          timeoutMsResolved,
+          signal,
+          (progress) => {
+            sendProgress(context, progress.progress, progress.total, progress.message).catch(() => {});
+          }
+        );
+
+        return {
+          content: [{
+            type: 'text',
+            text: `Trace replay completed with exit code ${result.exitCode}.\n\n` +
               `Output:\n${result.output.join('\n')}`
           }]
         };

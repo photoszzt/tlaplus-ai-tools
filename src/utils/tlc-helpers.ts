@@ -1,8 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { createInterface } from 'readline';
-import { ProcessInfo } from './java';
-import { runTlc, mapTlcOutputLine } from './tlc';
+import { buildJavaOptions, findJavaExecutable } from './java';
+import { withRetry } from './errors';
+import { runProcess } from './process-runner';
+import { getClassPath, getModuleSearchPaths } from './tla-tools';
+import { mapTlcOutputLine } from './tlc';
+
+const TLC_MAIN_CLASS = 'tlc2.TLC';
 
 /**
  * Result of running TLC
@@ -13,6 +17,15 @@ export interface TlcResult {
 }
 
 /**
+ * Progress callback for TLC execution
+ */
+export type TlcProgressCallback = (progress: {
+  progress: number;
+  total?: number;
+  message?: string;
+}) => void;
+
+/**
  * Specification files (TLA and CFG)
  */
 export interface SpecFiles {
@@ -20,59 +33,95 @@ export interface SpecFiles {
   cfgFilePath: string;
 }
 
-/**
- * Run TLC and wait for completion, collecting all output
- *
- * @param tlaFilePath Path to the TLA+ file
- * @param cfgFileName Name of the configuration file
- * @param tlcOptions TLC-specific options
- * @param javaOpts Java options
- * @param toolsDir Path to tools directory
- * @param javaHome Optional JAVA_HOME path
- * @returns TLC result with exit code and output
- */
 export async function runTlcAndWait(
   tlaFilePath: string,
   cfgFileName: string,
   tlcOptions: string[],
   javaOpts: string[],
   toolsDir: string,
-  javaHome?: string
+  javaHome?: string,
+  timeoutMs?: number,
+  signal?: AbortSignal,
+  onProgress?: TlcProgressCallback
 ): Promise<TlcResult> {
-  const procInfo = await runTlc(
-    tlaFilePath,
-    cfgFileName,
-    tlcOptions,
-    javaOpts,
-    toolsDir,
-    javaHome
-  );
+  const classPath = getClassPath(toolsDir);
+  const moduleSearchPaths = getModuleSearchPaths(toolsDir);
 
-  // Collect output
-  const output: string[] = [];
-  const rl = createInterface({
-    input: procInfo.mergedOutput,
-    crlfDelay: Infinity
+  const libPaths = moduleSearchPaths
+    .filter(p => !p.startsWith('jarfile:'))
+    .join(path.delimiter);
+
+  const javaOptions = javaOpts.slice();
+  if (libPaths) {
+    javaOptions.push(`-DTLA-Library=${libPaths}`);
+  }
+
+  const tlaFileName = path.basename(tlaFilePath);
+  const args = [tlaFileName, '-tool', '-modelcheck'];
+  if (cfgFileName) {
+    args.push('-config', cfgFileName);
+  }
+  args.push(...tlcOptions);
+
+  const javaPath = findJavaExecutable(javaHome);
+  const fullArgs = buildJavaOptions(javaOptions, classPath)
+    .concat([TLC_MAIN_CLASS])
+    .concat(args);
+
+  const result = await withRetry(async () => {
+    const attemptResult = await runProcess({
+      command: javaPath,
+      args: fullArgs,
+      cwd: path.dirname(tlaFilePath),
+      timeoutMs,
+      signal
+    });
+
+    if (!attemptResult.timedOut && !attemptResult.aborted && attemptResult.exitCode === null) {
+      const errorDetails = attemptResult.stderr || attemptResult.combined || 'Unknown error.';
+      throw new Error(`Failed to launch Java process using "${javaPath}": ${errorDetails}`);
+    }
+
+    return attemptResult;
   });
 
-  for await (const line of rl) {
-    const cleanedLine = mapTlcOutputLine(line);
-    if (cleanedLine !== undefined) {
-      output.push(cleanedLine);
+  let lastProgressTime = Date.now();
+  const progressIntervalMs = 10000;
+
+  const output: string[] = [];
+  if (result.combined.length > 0) {
+    const lines = result.combined.split(/\r?\n/);
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const cleanedLine = mapTlcOutputLine(line);
+      if (cleanedLine !== undefined) {
+        output.push(cleanedLine);
+      }
+
+      if (onProgress) {
+        const now = Date.now();
+        if (now - lastProgressTime >= progressIntervalMs) {
+          onProgress({
+            progress: i + 1,
+            total: lines.length,
+            message: `Processing TLC output: ${i + 1}/${lines.length} lines`
+          });
+          lastProgressTime = now;
+        }
+      }
     }
   }
 
-  // Wait for process to complete
-  const exitCode = await new Promise<number>((resolve) => {
-    procInfo.process.once('close', (code) => {
-      resolve(code || 0);
-    });
-  });
+  if (result.timedOut) {
+    output.push(`TLC process timed out after ${timeoutMs ?? 0}ms.`);
+  }
+  if (result.aborted) {
+    output.push('TLC process was aborted.');
+  }
 
-  return {
-    exitCode,
-    output
-  };
+  const exitCode = result.exitCode ?? (result.timedOut ? 124 : result.aborted ? 130 : 0);
+
+  return { exitCode, output };
 }
 
 /**

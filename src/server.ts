@@ -161,7 +161,7 @@ export class TLAPlusMCPServer {
     await registerSanyTools(server, this.config);
     this.logger.debug('SANY tools registered');
 
-    // Register TLC tools (check, smoke, explore)
+    // Register TLC tools (check, smoke, explore, trace)
     await registerTlcTools(server, this.config);
     this.logger.debug('TLC tools registered');
 
