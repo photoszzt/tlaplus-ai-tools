@@ -23,15 +23,21 @@ describe('TLC Tools', () => {
     (resolveAndValidatePath as jest.Mock).mockImplementation((path) => path);
   });
 
+  afterEach(() => {
+    delete process.env.TLC_SMOKE_TIMEOUT_MS;
+    delete process.env.TLC_EXPLORE_TIMEOUT_MS;
+  });
+
   describe('Tool Registration', () => {
-    it('registers all three TLC tools', async () => {
+    it('registers all four TLC tools', async () => {
       await registerTlcTools(mockServer, MINIMAL_CONFIG);
 
       expectToolRegistered(mockServer, 'tlaplus_mcp_tlc_check');
       expectToolRegistered(mockServer, 'tlaplus_mcp_tlc_smoke');
       expectToolRegistered(mockServer, 'tlaplus_mcp_tlc_explore');
+      expectToolRegistered(mockServer, 'tlaplus_mcp_tlc_trace');
 
-      expect(mockServer.tool).toHaveBeenCalledTimes(3);
+      expect(mockServer.tool).toHaveBeenCalledTimes(4);
     });
   });
 
@@ -215,7 +221,10 @@ describe('TLC Tools', () => {
         ['-cleanup', '-simulate'],
         ['-Dtlc2.TLC.stopAfter=3'],
         MINIMAL_CONFIG.toolsDir,
-        undefined
+        undefined,
+        120000,
+        undefined,
+        expect.any(Function)
       );
     });
 
@@ -235,7 +244,10 @@ describe('TLC Tools', () => {
         ['-cleanup', '-simulate'],
         ['-Dtlc2.TLC.stopAfter=3'],
         MINIMAL_CONFIG.toolsDir,
-        undefined
+        undefined,
+        120000,
+        undefined,
+        expect.any(Function)
       );
     });
 
@@ -256,7 +268,62 @@ describe('TLC Tools', () => {
         ['-cleanup', '-simulate'],
         ['-Dtlc2.TLC.stopAfter=3', '-Xmx2G'],
         MINIMAL_CONFIG.toolsDir,
-        undefined
+        undefined,
+        120000,
+        undefined,
+        expect.any(Function)
+      );
+    });
+
+    it('uses timeout override from env', async () => {
+      process.env.TLC_SMOKE_TIMEOUT_MS = '3000';
+      (fs.existsSync as jest.Mock).mockReturnValue(true);
+      const mocks = mockTlcSuccess([], 0);
+      (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
+      (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
+
+      await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_smoke', {
+        fileName: '/mock/spec.tla'
+      });
+
+      expect(runTlcAndWait).toHaveBeenCalledWith(
+        '/mock/spec.tla',
+        'spec.cfg',
+        ['-cleanup', '-simulate'],
+        ['-Dtlc2.TLC.stopAfter=3'],
+        MINIMAL_CONFIG.toolsDir,
+        undefined,
+        3000,
+        undefined,
+        expect.any(Function)
+      );
+    });
+
+    it('propagates AbortSignal to TLC runner', async () => {
+      (fs.existsSync as jest.Mock).mockReturnValue(true);
+      const mocks = mockTlcSuccess([], 0);
+      (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
+      (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
+
+      const controller = new AbortController();
+
+      await callRegisteredTool(
+        mockServer,
+        'tlaplus_mcp_tlc_smoke',
+        { fileName: '/mock/spec.tla' },
+        { signal: controller.signal }
+      );
+
+      expect(runTlcAndWait).toHaveBeenCalledWith(
+        '/mock/spec.tla',
+        'spec.cfg',
+        ['-cleanup', '-simulate'],
+        ['-Dtlc2.TLC.stopAfter=3'],
+        MINIMAL_CONFIG.toolsDir,
+        undefined,
+        120000,
+        controller.signal,
+        expect.any(Function)
       );
     });
 
@@ -298,7 +365,10 @@ describe('TLC Tools', () => {
         ['-cleanup', '-simulate', '-invlevel', '5'],
         ['-Dtlc2.TLC.stopAfter=3'],
         MINIMAL_CONFIG.toolsDir,
-        undefined
+        undefined,
+        600000,
+        undefined,
+        expect.any(Function)
       );
     });
 
@@ -319,7 +389,36 @@ describe('TLC Tools', () => {
         ['-cleanup', '-simulate', '-invlevel', '10'],
         ['-Dtlc2.TLC.stopAfter=3'],
         MINIMAL_CONFIG.toolsDir,
-        undefined
+        undefined,
+        600000,
+        undefined,
+        expect.any(Function)
+      );
+    });
+
+    it('uses per-invocation timeout override', async () => {
+      process.env.TLC_EXPLORE_TIMEOUT_MS = '9000';
+      (fs.existsSync as jest.Mock).mockReturnValue(true);
+      const mocks = mockTlcSuccess([], 0);
+      (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
+      (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
+
+      await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_explore', {
+        fileName: '/mock/spec.tla',
+        behaviorLength: 10,
+        timeoutMs: 5000
+      });
+
+      expect(runTlcAndWait).toHaveBeenCalledWith(
+        '/mock/spec.tla',
+        'spec.cfg',
+        ['-cleanup', '-simulate', '-invlevel', '10'],
+        ['-Dtlc2.TLC.stopAfter=3'],
+        MINIMAL_CONFIG.toolsDir,
+        undefined,
+        5000,
+        undefined,
+        expect.any(Function)
       );
     });
 
@@ -341,7 +440,10 @@ describe('TLC Tools', () => {
         ['-cleanup', '-simulate', '-invlevel', '5'],
         ['-Dtlc2.TLC.stopAfter=3'],
         MINIMAL_CONFIG.toolsDir,
-        undefined
+        undefined,
+        600000,
+        undefined,
+        expect.any(Function)
       );
     });
 
@@ -359,6 +461,40 @@ describe('TLC Tools', () => {
       expectMcpErrorResponse(response, 'Error [FILE_IO_ERROR]');
       expectMcpErrorResponse(response, 'Invalid configuration');
       expectMcpErrorResponse(response, 'Suggested Actions:');
+    });
+  });
+
+  describe('tlaplus_mcp_tlc_trace', () => {
+    beforeEach(async () => {
+      await registerTlcTools(mockServer, MINIMAL_CONFIG);
+    });
+
+    it('replays trace file with fingerprint index', async () => {
+      (fs.existsSync as jest.Mock).mockReturnValue(true);
+      const mocks = mockTlcSuccess(['Trace replay', 'State 1'], 0);
+      (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
+      (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
+
+      const traceFilePath = '/mock/.vscode/tlc/spec_trace_T2024-01-15_10-30-45_F42_W1_Mbfs.tlc';
+      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_trace', {
+        fileName: '/mock/spec.tla',
+        traceFile: traceFilePath
+      });
+
+      expectMcpTextResponse(response, 'Trace replay completed');
+      expectMcpTextResponse(response, 'State 1');
+
+      expect(runTlcAndWait).toHaveBeenCalledWith(
+        '/mock/spec.tla',
+        'spec.cfg',
+        ['-cleanup', '-fp', '42', '-loadtrace', 'tlc', traceFilePath],
+        [],
+        MINIMAL_CONFIG.toolsDir,
+        undefined,
+        600000,
+        undefined,
+        expect.any(Function)
+      );
     });
   });
 });

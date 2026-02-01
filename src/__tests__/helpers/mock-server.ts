@@ -6,7 +6,7 @@ export interface MockTool {
   name: string;
   description: string;
   schema: any;
-  handler: (args: any) => Promise<any>;
+  handler: (args: any, context?: any) => Promise<any>;
 }
 
 export interface MockResource {
@@ -21,7 +21,7 @@ export function createMockMcpServer() {
   const resources = new Map<string, MockResource>();
 
   return {
-    tool: jest.fn((name: string, description: string, schema: any, handler: (args: any) => Promise<any>) => {
+    tool: jest.fn((name: string, description: string, schema: any, handler: (args: any, context?: any) => Promise<any>) => {
       tools.set(name, { name, description, schema, handler });
     }),
     resource: jest.fn((uri: string, name: string, metadata: any, handler: () => Promise<any>) => {
@@ -37,13 +37,14 @@ export function createMockMcpServer() {
 export async function callRegisteredTool(
   server: ReturnType<typeof createMockMcpServer>,
   toolName: string,
-  args: any
+  args: any,
+  context?: any
 ): Promise<any> {
   const tool = server.getRegisteredTools().get(toolName);
   if (!tool) {
     throw new Error(`Tool ${toolName} not registered`);
   }
-  return await tool.handler(args);
+  return await tool.handler(args, context);
 }
 
 export async function callRegisteredResource(
