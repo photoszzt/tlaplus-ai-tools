@@ -3,6 +3,7 @@ dist/
 tools/*.jar
 coverage/
 .env
+__pycache__/
 
 # User-specific plugin settings
 .claude/*.local.md

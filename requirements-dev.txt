@@ -1,0 +1,8 @@
+# Development dependencies for TLA+ AI Tools
+# Install with: python3 -m pip install -r requirements-dev.txt
+
+# Testing framework
+pytest>=8.0.0
+
+# Interactive terminal automation (for E2E tests)
+pexpect>=4.9.0

@@ -1,0 +1,17 @@
+/help
+[2K[1A[2K[1A[2K[1A[2KAvailable commands:
+  /tla-parse @<spec>  - Parse TLA+ specification
+  /tla-symbols @<spec> - Extract symbols from specification
+  /exit - Exit Claude Code
+
+[32m✓[0m Ready
+
+/tla-parse @test-specs/Counter.tla
+[2K[1A[2K[1A[2KProcessing...[2K[1A[2K
+Spec path: test-specs/Counter.tla
+Parsed successfully
+
+/tla-symbols @test-specs/Counter.tla
+[2K[1A[2K[1A[2KGenerating symbols...[2K[1A[2K
+Spec path: test-specs/Counter.tla
+CFG written: test-specs/Counter.generated.cfg
