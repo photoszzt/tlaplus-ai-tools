@@ -2,7 +2,7 @@
 name: tla-symbols
 description: Extract symbols from TLA+ spec and generate TLC configuration
 argument-hint: "@spec.tla [--extended]"
-allowed-tools: [Read, Write, Bash, Grep]
+allowed-tools: [Read, Write, Bash, Grep, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol]
 agent: build
 ---
 

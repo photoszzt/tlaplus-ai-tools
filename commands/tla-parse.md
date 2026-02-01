@@ -2,36 +2,32 @@
 name: tla-parse
 description: Parse and validate TLA+ specification syntax using SANY
 argument-hint: "@spec.tla"
-allowed-tools: [Read, Bash, Grep]
+allowed-tools:
+  [Read, Bash, Grep, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse]
 agent: build
 ---
 
-# Parse TLA+ Specification (OpenCode Probe)
-
-This command validates OpenCode's argument substitution behavior and calls the SANY parser.
-
-## Debug Block
-
-[opencode-args]
-ARGUMENTS=$ARGUMENTS
-[/opencode-args]
+# Parse TLA+ Specification
 
 ## Implementation
 
 **Step 1: Validate Arguments**
 
 Check that `$ARGUMENTS` is provided:
+
 - If `$ARGUMENTS` is empty, print "Error: No file path provided. Usage: /tla-parse <path.tla>" and exit
 - Print "Raw argument: $ARGUMENTS"
 
 **Step 2: Strip Leading @ Symbol**
 
 If `$ARGUMENTS` starts with `@`, remove it:
+
 ```bash
 SPEC_PATH="${ARGUMENTS#@}"
 ```
 
 Otherwise, use `$ARGUMENTS` as-is:
+
 ```bash
 SPEC_PATH="$ARGUMENTS"
 ```
@@ -41,6 +37,7 @@ Print "Spec path: $SPEC_PATH"
 **Step 3: Validate File Path**
 
 Check that the file exists and ends with `.tla`:
+
 - If path doesn't end with `.tla`, print "Error: File must have .tla extension" and exit
 - If file doesn't exist, print "Error: File not found: $SPEC_PATH" and exit
 - Print "File validated: $SPEC_PATH"
@@ -48,6 +45,7 @@ Check that the file exists and ends with `.tla`:
 **Step 4: Call MCP Tool**
 
 Invoke the SANY parser:
+
 ```
 tlaplus_mcp_sany_parse --fileName "$SPEC_PATH"
 ```
@@ -55,24 +53,10 @@ tlaplus_mcp_sany_parse --fileName "$SPEC_PATH"
 **Step 5: Report Results**
 
 If parsing succeeds:
+
 - Print "✓ Parsing successful. No errors found."
 
 If parsing fails:
+
 - Print "✗ Parsing failed. See errors above."
 - Offer to explain common TLA+ syntax errors if user wants help
-
-## Test Invocations
-
-After creating this command, test with:
-
-1. `/tla-parse test-specs/Counter.tla` (plain path)
-2. `/tla-parse @test-specs/Counter.tla` (@ prefix)
-3. Check if `@<path>` in template includes file contents
-
-Document results in comments below or in OPENCODE.md.
-
----
-
-## Test Results
-
-<!-- Document test results here after manual testing -->

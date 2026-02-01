@@ -2,7 +2,8 @@
 name: tla-smoke
 description: Run quick smoke test using random simulation (3 seconds)
 argument-hint: "@spec.tla [duration]"
-allowed-tools: [Read, Bash, Grep]
+allowed-tools:
+  [Read, Bash, Grep, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke]
 agent: build
 ---
 
@@ -49,6 +50,7 @@ Print `Spec path: $SPEC_PATH`
 **Step 3: Parse Flags**
 
 Extract `--seconds <N>` from `$ARGUMENTS`:
+
 - Default: `SECONDS=3`
 - If `--seconds <N>` present: `SECONDS=<N>`
 - Validate `<N>` is a positive integer
@@ -67,6 +69,7 @@ fi
 **Step 5: Apply CFG Selection Algorithm (Phase 1)**
 
 Extract spec name and directory:
+
 ```
 SPEC_DIR=$(dirname "$SPEC_PATH")
 SPEC_NAME=$(basename "$SPEC_PATH" .tla)
@@ -128,6 +131,7 @@ Store final cfg path in `FINAL_CFG`.
 **Step 7: Call MCP Tool**
 
 Invoke TLC smoke test:
+
 ```
 tlaplus_mcp_tlc_smoke \
   --fileName "$SPEC_PATH" \
@@ -136,6 +140,7 @@ tlaplus_mcp_tlc_smoke \
 ```
 
 **Note on `--seconds` flag:**
+
 - The MCP tool always includes `-Dtlc2.TLC.stopAfter=3` by default
 - Adding another `-D` flag should override, but this is **best-effort**
 - If runtime still appears ~3s with `--seconds 10`, document that OpenCode/TLC may not honor the override
@@ -143,6 +148,7 @@ tlaplus_mcp_tlc_smoke \
 **Step 8: Report Results**
 
 Print summary:
+
 ```
 Spec path: $SPEC_PATH
 CFG used: $FINAL_CFG
@@ -154,9 +160,11 @@ Smoke duration: $SECONDS seconds (default 3s unless overridden)
 ```
 
 If violations found:
+
 - Print `✗ Violations detected. Run /tla-check for full trace.`
 
 If no violations:
+
 - Print `✓ No violations found in smoke test. Run /tla-check for exhaustive verification.`
 
 ## Example Output
