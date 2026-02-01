@@ -13,6 +13,7 @@
 TLA+ AI Tools is a comprehensive plugin that brings the power of TLA+ formal methods to AI coding assistants. It combines an MCP server for TLA+ tools with AI skills, commands, agents, and hooks to provide intelligent assistance throughout the entire TLA+ workflow.
 
 **Key Capabilities:**
+
 - 🤖 **AI Skills** - Learn TLA+, model checking, refinement, and debugging
 - ⚡ **Slash Commands** - Parse, check, smoke test, review, and more
 - 🎯 **Autonomous Agents** - Automated validation, config generation, trace analysis
@@ -25,11 +26,13 @@ TLA+ AI Tools is a comprehensive plugin that brings the power of TLA+ formal met
 ### AI Skills (6)
 
 **For Learning:**
+
 - **tla-getting-started** - Introduction to TLA+ with examples and tutorials
 - **tla-model-checking** - Complete guide to TLC configuration and workflows
 - **tla-refinement-proofs** - Specification refinement and verification
 
 **For Development:**
+
 - **tla-spec-review** - Comprehensive specification review checklist
 - **tla-debug-violations** - Systematic debugging of counterexamples
 - **tla-create-animations** - Visualize specifications with SVG animations
@@ -59,6 +62,7 @@ TLA+ AI Tools is a comprehensive plugin that brings the power of TLA+ formal met
 ### MCP Tools
 
 Full integration with TLA+ toolchain:
+
 - **SANY Parser** - Syntax and semantic validation
 - **TLC Model Checker** - Exhaustive state space exploration
 - **Smoke Testing** - Fast random simulation
@@ -223,9 +227,6 @@ Run tests:
 ```bash
 # Unit tests (when available)
 pytest
-
-# Interactive E2E test (requires Claude Code)
-CLAUDE_CODE_E2E=1 python3 tlaplus-ai-tools/scripts/claude-code-interactive-e2e.py
 ```
 
 ## Configuration
@@ -351,6 +352,7 @@ See [INSTALLATION.md](INSTALLATION.md) for more troubleshooting.
 Contributions are welcome! This project is derived from and inspired by [vscode-tlaplus](https://github.com/tlaplus/vscode-tlaplus).
 
 Please:
+
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes

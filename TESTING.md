@@ -24,6 +24,7 @@ npm run verify
 ```
 
 **Checks**:
+
 - ✅ Directory structure
 - ✅ Required files present
 - ✅ YAML frontmatter valid
@@ -35,11 +36,11 @@ npm run verify
 Commands use unified format compatible with both platforms. To test:
 
 ```bash
-# Run E2E (ANTHROPIC_API_KEY must be set)
-CLAUDE_CODE_E2E=1 npm run claude-code:e2e
+bash ./scripts/claude-e2e.sh
 ```
 
 **Local E2E Testing**:
+
 - Prerequisites: Claude Code CLI installed + API key configured
 - Run via: `CLAUDE_CODE_E2E=1 npm run claude-code:e2e`
 - Validates command execution using `claude --print` mode
@@ -47,6 +48,7 @@ CLAUDE_CODE_E2E=1 npm run claude-code:e2e
 - Skips if `CLAUDE_CODE_E2E` not set to `1`
 
 The E2E script runs all 6 commands and checks for deterministic markers:
+
 - `Spec path:` (all commands)
 - `CFG used:` (TLC commands)
 - `CFG written:` (`/tla-symbols`)
@@ -66,6 +68,7 @@ OPENCODE_E2E=1 OPENCODE_MODEL=<your-model> npm run opencode:e2e
 ```
 
 **CI Lint Tests** (automated):
+
 - Validates all 6 command files exist under `commands/`
 - Checks unified frontmatter (Claude Code + OpenCode fields)
 - Verifies MCP tool references per command
@@ -74,12 +77,14 @@ OPENCODE_E2E=1 OPENCODE_MODEL=<your-model> npm run opencode:e2e
 - Run via: `npm test -- opencode-commands-lint`
 
 **Local E2E Testing**:
+
 - Prerequisites: OpenCode installed + model provider configured
 - Run via: `OPENCODE_E2E=1 npm run opencode:e2e`
 - Validates command execution and output markers
 - Skips if `OPENCODE_E2E` not set to `1`
 
 The E2E script runs all 6 commands and checks for deterministic markers:
+
 - `Spec path:` (all commands)
 - `CFG used:` (TLC commands)
 - `CFG written:` (`/tla-symbols`)
@@ -160,12 +165,14 @@ Test plugin in Claude Code environment.
 #### 3.1 Installation Test
 
 **Method 1: Local Plugin Directory**
+
 ```bash
 # Start Claude Code with plugin
 cc --plugin-dir $(pwd)
 ```
 
 **Method 2: Global Installation**
+
 ```bash
 # From plugin directory
 npm link
@@ -173,6 +180,7 @@ cc
 ```
 
 **Verify**:
+
 - Plugin shows in `/plugin list`
 - Skills show in `/skills list`
 - Commands appear in `/help`
@@ -182,36 +190,42 @@ cc
 Test each skill triggers correctly.
 
 **Test tla-getting-started**:
+
 ```
 User: "I want to learn TLA+"
 Expected: Skill loads, provides introduction
 ```
 
 **Test tla-model-checking**:
+
 ```
 User: "How do I run model checking?"
 Expected: Skill loads, explains TLC workflow
 ```
 
 **Test tla-spec-review**:
+
 ```
 User: "Can you review my TLA+ specification?"
 Expected: Skill loads, shows review checklist
 ```
 
 **Test tla-debug-violations**:
+
 ```
 User: "Help me debug this invariant violation"
 Expected: Skill loads, provides debugging workflow
 ```
 
 **Test tla-create-animations**:
+
 ```
 User: "Create an animation for my spec"
 Expected: Skill loads, explains animation creation
 ```
 
 **Test tla-refinement-proofs**:
+
 ```
 User: "How do I prove refinement?"
 Expected: Skill loads, explains refinement checking
@@ -222,6 +236,7 @@ Expected: Skill loads, explains refinement checking
 Test each command executes correctly.
 
 **Test /tla-parse**:
+
 ```bash
 # Create test spec
 /tla-parse @TestSpec.tla
@@ -233,6 +248,7 @@ Expected:
 ```
 
 **Test /tla-symbols**:
+
 ```bash
 /tla-symbols @TestSpec.tla
 
@@ -243,6 +259,7 @@ Expected:
 ```
 
 **Test /tla-smoke**:
+
 ```bash
 /tla-smoke @TestSpec.tla
 
@@ -253,6 +270,7 @@ Expected:
 ```
 
 **Test /tla-check**:
+
 ```bash
 # Create config first
 cat > /tmp/TestSpec.cfg << 'EOF'
@@ -269,6 +287,7 @@ Expected:
 ```
 
 **Test /tla-review**:
+
 ```bash
 /tla-review @TestSpec.tla
 
@@ -280,6 +299,7 @@ Expected:
 ```
 
 **Test /tla-setup**:
+
 ```bash
 /tla-setup
 
@@ -296,6 +316,7 @@ Expected:
 Test agents spawn and execute correctly.
 
 **Test spec-validator**:
+
 ```
 User: "Validate Counter.tla"
 
@@ -308,6 +329,7 @@ Expected:
 ```
 
 **Test config-generator**:
+
 ```
 User: "Generate config for Counter.tla"
 
@@ -319,6 +341,7 @@ Expected:
 ```
 
 **Test animation-creator**:
+
 ```
 User: "Create animation for Counter.tla"
 
@@ -330,6 +353,7 @@ Expected:
 ```
 
 **Test trace-analyzer**:
+
 ```
 User: "Analyze this counterexample: [paste trace]"
 
@@ -345,6 +369,7 @@ Expected:
 Test hooks activate on appropriate events.
 
 **Test SessionStart hook**:
+
 ```
 1. Start Claude Code with plugin
 2. First message after startup
@@ -356,6 +381,7 @@ Expected:
 ```
 
 **Test PreToolUse hook (Write/Edit .tla)**:
+
 ```
 1. Create or edit a .tla file
 2. Use Write or Edit tool
@@ -367,6 +393,7 @@ Expected:
 ```
 
 **Test PostToolUse hook (Write .tla)**:
+
 ```
 1. Create NEW .tla file
 2. No corresponding .cfg exists
@@ -438,6 +465,7 @@ Test complete user workflows.
 Test error conditions and recovery.
 
 #### Missing Dependencies
+
 ```
 Test: Start without Java
 Expected: Clear error message, instructions to install
@@ -450,6 +478,7 @@ Expected: Helpful message, suggest /tla-symbols
 ```
 
 #### Invalid Input
+
 ```
 Test: /tla-parse @NonExistent.tla
 Expected: File not found error
@@ -462,6 +491,7 @@ Expected: Config syntax error reported
 ```
 
 #### Tool Failures
+
 ```
 Test: Java crashes
 Expected: Error captured, user notified
@@ -483,6 +513,7 @@ Expected: Memory error, suggestions provided
 **Status**: ✅ PASS / ⚠️ PARTIAL / ❌ FAIL
 
 **Steps**:
+
 1. Step 1
 2. Step 2
 3. Step 3
@@ -551,11 +582,13 @@ npm test                    # Unit tests (if added)
 ## Test Coverage Summary
 
 **Automated Tests**: ✅ 100%
+
 - Structure validation
 - Syntax validation
 - Basic verification
 
 **Manual Tests**: ⏳ Pending user testing
+
 - Plugin integration
 - Skills triggering
 - Commands execution
