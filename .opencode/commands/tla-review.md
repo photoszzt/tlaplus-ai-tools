@@ -2,7 +2,7 @@
 name: tla-review
 description: Comprehensive TLA+ specification review with checklist and automated validation
 argument-hint: "@spec.tla"
-allowed-tools: [Read, Bash, Grep, Task]
+allowed-tools: [Read, Bash, Grep, Task, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke]
 agent: build
 ---
 

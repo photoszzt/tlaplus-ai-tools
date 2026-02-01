@@ -2,7 +2,7 @@
 name: tla-setup
 description: Verify TLA+ tools installation and fix common issues
 argument-hint: ""
-allowed-tools: [Bash, Read, Write, Grep]
+allowed-tools: [Bash, Read, Write, Grep, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_modules, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse]
 agent: build
 ---
 
@@ -33,6 +33,7 @@ Interactive guide to verify and setup TLA+ tools (Java, tla2tools.jar, Community
 **Step 1: Welcome Message**
 
 Print:
+
 ```
 ═══════════════════════════════════════════════════════════
 TLA+ TOOLS SETUP & VERIFICATION
@@ -52,6 +53,7 @@ Checking:
 **Step 2: Check Java**
 
 Run:
+
 ```bash
 java -version
 ```
@@ -59,6 +61,7 @@ java -version
 Parse output to extract version number.
 
 If Java not found:
+
 ```
 ✗ Java not found
 
@@ -73,6 +76,7 @@ After installing, verify with: java -version
 ```
 
 If Java version < 11:
+
 ```
 ✗ Java version too old (found: <version>, required: 11+)
 
@@ -83,6 +87,7 @@ Please upgrade Java:
 ```
 
 If Java version >= 11:
+
 ```
 ✓ Java found: <version>
 ```
@@ -90,10 +95,12 @@ If Java version >= 11:
 **Step 3: Check TLA+ Tools**
 
 Check for tools in expected locations:
+
 1. `tools/tla2tools.jar` (relative to repo root)
 2. `tools/CommunityModules-deps.jar`
 
 If tools not found:
+
 ```
 ✗ TLA+ tools not found
 
@@ -114,6 +121,7 @@ For CommunityModules:
 ```
 
 If tools found:
+
 ```
 ✓ TLA+ tools found
   - tla2tools.jar: <size> bytes
@@ -125,6 +133,7 @@ If tools found:
 Try calling `tlaplus_mcp_sany_modules` to list available modules.
 
 If MCP call fails:
+
 ```
 ✗ MCP server connection failed
 
@@ -138,6 +147,7 @@ Troubleshooting:
 ```
 
 If MCP call succeeds:
+
 ```
 ✓ MCP server connected
   Available TLA+ modules: <count>
@@ -148,6 +158,7 @@ If MCP call succeeds:
 Test basic functionality by parsing a simple spec.
 
 Create temporary test spec in memory:
+
 ```tla
 ---- MODULE SetupTest ----
 EXTENDS Naturals
@@ -162,11 +173,13 @@ Write to temporary file: `/tmp/tlaplus-setup-test.tla`
 Call `tlaplus_mcp_sany_parse` with the test file.
 
 If parse succeeds:
+
 ```
 ✓ SANY parser working
 ```
 
 If parse fails:
+
 ```
 ✗ SANY parser test failed
 
@@ -179,6 +192,7 @@ Clean up temporary file.
 **Step 6: Summary Report**
 
 Print final summary:
+
 ```
 ─────────────────────────────────────────────────────────
 SETUP VERIFICATION SUMMARY
@@ -216,11 +230,13 @@ Need help? Check INSTALLATION.md or ask for assistance.
 **Step 7: Offer Interactive Setup**
 
 If any checks failed, ask user:
+
 ```
 Would you like me to help fix these issues? (yes/no)
 ```
 
 If user says yes:
+
 - For missing Java: Provide detailed installation instructions for their platform
 - For missing tools: Offer to run `npm run setup` (ask permission first)
 - For MCP issues: Guide through rebuild and restart process

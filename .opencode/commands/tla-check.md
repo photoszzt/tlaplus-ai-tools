@@ -2,7 +2,8 @@
 name: tla-check
 description: Run exhaustive model checking on TLA+ specification with TLC
 argument-hint: "@spec.tla [config.cfg] [--workers N]"
-allowed-tools: [Read, Bash, Grep, Write]
+allowed-tools:
+  [Read, Bash, Grep, Write, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check]
 agent: build
 ---
 
@@ -50,11 +51,13 @@ Print `Spec path: $SPEC_PATH`
 **Step 3: Parse Flags**
 
 Extract flags from `$ARGUMENTS`:
+
 - `--workers <N>`: Number of worker threads (default: omit, let TLC decide)
 - `--depth <N>`: Maximum search depth (default: omit)
 - `--heap <SIZE>`: JVM heap size, e.g., `2G`, `1024m` (default: omit)
 
 Store in variables:
+
 ```
 WORKERS=""
 DEPTH=""
@@ -75,6 +78,7 @@ fi
 **Step 5: Apply CFG Selection Algorithm (Phase 1)**
 
 Extract spec name and directory:
+
 ```
 SPEC_DIR=$(dirname "$SPEC_PATH")
 SPEC_NAME=$(basename "$SPEC_PATH" .tla)
@@ -136,6 +140,7 @@ Store final cfg path in `FINAL_CFG`.
 **Step 7: Build MCP Tool Arguments**
 
 Construct `extraOpts` array:
+
 ```
 EXTRA_OPTS=[]
 if [[ -n "$WORKERS" ]]; then
@@ -147,6 +152,7 @@ fi
 ```
 
 Construct `extraJavaOpts` array:
+
 ```
 EXTRA_JAVA_OPTS=[]
 if [[ -n "$HEAP" ]]; then
@@ -157,6 +163,7 @@ fi
 **Step 8: Call MCP Tool**
 
 Invoke TLC model checker:
+
 ```
 tlaplus_mcp_tlc_check \
   --fileName "$SPEC_PATH" \
@@ -168,6 +175,7 @@ tlaplus_mcp_tlc_check \
 **Step 9: Report Results**
 
 Print summary:
+
 ```
 Spec path: $SPEC_PATH
 CFG used: $FINAL_CFG
@@ -180,14 +188,17 @@ TLC options:
 ```
 
 If violations found:
+
 - Print `✗ Violations detected. See counterexample above.`
 - Suggest: `Use trace-analyzer agent to understand the violation.`
 
 If no violations:
+
 - Print `✓ Model checking complete. No violations found.`
 - Print `All reachable states verified against invariants and properties.`
 
 If state space too large:
+
 - Print `⚠ State space explosion detected. Consider:`
 - Print `  1. Add state constraints to limit exploration`
 - Print `  2. Reduce constant values`
