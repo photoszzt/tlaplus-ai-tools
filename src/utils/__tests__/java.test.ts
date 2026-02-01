@@ -98,7 +98,7 @@ describe('java', () => {
       mockExistsSync.mockReturnValue(true);
 
       const result = findJavaExecutable();
-      expect(result).toContain('/env/java/home');
+      expect(result).toContain(path.normalize('/env/java/home'));
     });
 
     it('prioritizes ARM64 environment variables on Apple Silicon', () => {
@@ -122,7 +122,7 @@ describe('java', () => {
       mockExistsSync.mockReturnValue(true);
 
       const result = findJavaExecutable();
-      expect(result).toContain('/jdk/home');
+      expect(result).toContain(path.normalize('/jdk/home'));
     });
 
     it('falls back to java command when no JAVA_HOME', () => {
@@ -140,7 +140,7 @@ describe('java', () => {
       mockExistsSync.mockReturnValueOnce(true);
 
       const result = findJavaExecutable();
-      expect(result).toContain('/same/path');
+      expect(result).toContain(path.normalize('/same/path'));
       expect(mockExistsSync).toHaveBeenCalledTimes(1);
     });
   });

@@ -129,10 +129,18 @@ export class TLAPlusMCPServer {
     });
 
     // Start HTTP server
-    const server = app.listen(this.config.port, () => {
-      const actualPort = (server.address() as { port: number })?.port || this.config.port;
-      this.logger.info(`TLA+ MCP server listening at http://localhost:${actualPort}/mcp`);
-      this.logger.debug(`Configuration: ${JSON.stringify(this.config, null, 2)}`);
+    const server = await new Promise<http.Server>((resolve) => {
+      const httpServer = app.listen(this.config.port, () => {
+        const actualPort = (httpServer.address() as { port: number })?.port || this.config.port;
+        this.logger.info(`TLA+ MCP server listening at http://localhost:${actualPort}/mcp`);
+        this.logger.debug(`Configuration: ${JSON.stringify(this.config, null, 2)}`);
+        resolve(httpServer);
+      });
+
+      httpServer.on('error', (err) => {
+        this.logger.error('Failed to start HTTP server:', err);
+        process.exit(1);
+      });
     });
 
     server.on('error', (err) => {

@@ -5,7 +5,9 @@ import { PassThrough } from 'stream';
 import { JavaOptions } from '../types';
 import { withRetry, ErrorCode, classifyError, enhanceError } from './errors';
 
-const javaCmd = 'java' + (process.platform === 'win32' ? '.exe' : '');
+function getJavaCommand(): string {
+  return 'java' + (process.platform === 'win32' ? '.exe' : '');
+}
 const DEFAULT_GC_OPTION = '-XX:+UseParallelGC';
 
 /**
@@ -27,6 +29,7 @@ export interface ProcessInfo {
  * @throws Error if Java not found
  */
 export function findJavaExecutable(javaHome?: string): string {
+  const javaCmd = getJavaCommand();
   // If javaHome is provided, use it
   if (javaHome) {
     const javaExec = buildJavaPathFromHome(javaHome);
@@ -208,6 +211,7 @@ export function buildJavaOptions(customOptions: string[], defaultClassPath: stri
  * @returns Full path to java executable, or undefined if not found
  */
 function buildJavaPathFromHome(javaHome: string): string | undefined {
+  const javaCmd = getJavaCommand();
   const candidate = path.join(javaHome, 'bin', javaCmd);
   return fs.existsSync(candidate) ? candidate : undefined;
 }

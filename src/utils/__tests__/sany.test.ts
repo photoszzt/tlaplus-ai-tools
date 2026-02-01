@@ -140,10 +140,13 @@ SANY finished.
 
       const procInfo = createMockProcessInfo(output);
       const result = await parseSanyOutput(procInfo);
+      const expectedFile = process.platform === 'win32'
+        ? '/home/user/specs/Module.tla'.replace(/\//g, '\\')
+        : '/home/user/specs/Module.tla';
 
       expect(result.success).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].file).toBe('/home/user/specs/Module.tla');
+      expect(result.errors[0].file).toBe(expectedFile);
       expect(result.errors[0].line).toBe(10);
       expect(result.errors[0].column).toBe(5);
       expect(result.errors[0].message).toBe('Undefined operator Add');

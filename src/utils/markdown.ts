@@ -14,25 +14,26 @@ export interface MarkdownMetadata {
  * @returns Parsed metadata object
  */
 export function parseMarkdownFrontmatter(content: string): MarkdownMetadata {
+  const normalizedContent = content.replace(/^\ufeff/, '');
   const metadata: MarkdownMetadata = {};
 
   // Check if content starts with frontmatter delimiter
-  if (!content.startsWith('---')) {
+  if (!normalizedContent.startsWith('---')) {
     return metadata;
   }
 
   // Find the end of the frontmatter section
-  const endIndex = content.indexOf('---', 3);
+  const endIndex = normalizedContent.indexOf('---', 3);
   if (endIndex === -1) {
     return metadata;
   }
 
   // Extract the frontmatter section (between the two '---' delimiters)
-  const frontmatterSection = content.substring(3, endIndex).trim();
+  const frontmatterSection = normalizedContent.substring(3, endIndex).trim();
 
   // Parse simple YAML key-value pairs
   // We only need to support 'title:' and 'description:' for now
-  const lines = frontmatterSection.split('\n');
+  const lines = frontmatterSection.split(/\r?\n/);
 
   for (const line of lines) {
     const trimmedLine = line.trim();
@@ -63,23 +64,24 @@ export function parseMarkdownFrontmatter(content: string): MarkdownMetadata {
  * @returns Content without frontmatter
  */
 export function removeMarkdownFrontmatter(content: string): string {
+  const normalizedContent = content.replace(/^\ufeff/, '');
   // Check if content starts with frontmatter delimiter
-  if (!content.startsWith('---')) {
-    return content;
+  if (!normalizedContent.startsWith('---')) {
+    return normalizedContent;
   }
 
   // Find the end of the frontmatter section
-  const endIndex = content.indexOf('---', 3);
+  const endIndex = normalizedContent.indexOf('---', 3);
   if (endIndex === -1) {
-    return content;
+    return normalizedContent;
   }
 
   // Return content after the second '---' delimiter
   // Skip the delimiter and any following newlines
   let startIndex = endIndex + 3;
-  while (startIndex < content.length && (content[startIndex] === '\n' || content[startIndex] === '\r')) {
+  while (startIndex < normalizedContent.length && (normalizedContent[startIndex] === '\n' || normalizedContent[startIndex] === '\r')) {
     startIndex++;
   }
 
-  return content.substring(startIndex);
+  return normalizedContent.substring(startIndex);
 }

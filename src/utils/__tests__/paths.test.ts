@@ -43,7 +43,7 @@ describe('paths', () => {
     it('resolves relative paths correctly', () => {
       const basePath = '/base/path';
       const relativePath = 'relative/file.txt';
-      const expectedPath = path.join(basePath, relativePath);
+      const expectedPath = path.resolve(basePath, relativePath);
 
       const result = resolveAndValidatePath(relativePath, basePath);
       expect(result).toBe(expectedPath);
@@ -91,7 +91,7 @@ describe('paths', () => {
 
       const basePath = '/base/path';
       const relativePath = 'file.txt';
-      const expectedPath = path.join(basePath, relativePath);
+      const expectedPath = path.resolve(basePath, relativePath);
 
       const result = resolveAndValidatePath(relativePath, basePath);
       expect(result).toBe(expectedPath);
@@ -113,7 +113,7 @@ describe('paths', () => {
     it('allows paths within working directory', () => {
       const basePath = '/base/path';
       const safePath = 'subdir/file.txt';
-      const expectedPath = path.join(basePath, safePath);
+      const expectedPath = path.resolve(basePath, safePath);
 
       const result = resolveAndValidatePath(safePath, basePath);
       expect(result).toBe(expectedPath);

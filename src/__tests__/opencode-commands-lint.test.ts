@@ -43,7 +43,8 @@ const REQUIRED_MCP_TOOLS: Record<string, string[]> = {
  * Reads between first two --- lines and extracts key: value pairs
  */
 function parseFrontmatter(content: string): Record<string, string> {
-  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+  const normalizedContent = content.replace(/^\ufeff/, '');
+  const frontmatterMatch = normalizedContent.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!frontmatterMatch) {
     return {};
   }
@@ -52,7 +53,7 @@ function parseFrontmatter(content: string): Record<string, string> {
   const result: Record<string, string> = {};
 
   // Parse simple key: value pairs (single-line only)
-  const lines = frontmatterText.split('\n');
+  const lines = frontmatterText.split(/\r?\n/);
   for (const line of lines) {
     const match = line.match(/^(\w+):\s*(.+)$/);
     if (match) {
