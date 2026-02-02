@@ -88,14 +88,14 @@ npm run setup    # Downloads TLA+ tools
 npm run verify
 
 # Use with Claude Code
-cc --plugin-dir $(pwd)
+claude --plugin-dir $(pwd)
 ```
 
 ### From npm (Coming Soon)
 
 ```bash
 npm install -g tlaplus-ai-tools
-cc
+claude
 ```
 
 ### Claude Code Marketplace (Coming Soon)
@@ -212,23 +212,6 @@ Follow the guidance to create a simple counter specification.
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines (coming soon)
 
-## Development
-
-### Running Tests
-
-Install development dependencies:
-
-```bash
-python3 -m pip install -r requirements-dev.txt
-```
-
-Run tests:
-
-```bash
-# Unit tests (when available)
-pytest
-```
-
 ## Configuration
 
 ### Custom Settings (Optional)
@@ -339,7 +322,7 @@ npm run verify
 npm run verify
 
 # Try explicit path
-cc --plugin-dir $(pwd)
+claude --plugin-dir $(pwd)
 
 # Check plugin list
 /plugin list

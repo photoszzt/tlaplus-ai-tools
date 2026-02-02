@@ -63,7 +63,7 @@ npm install
 npm link
 
 # Start Claude Code
-cc
+claude
 
 # Verify plugin loaded
 /plugin list
@@ -82,10 +82,7 @@ npm run build
 npm run setup
 
 # Start Claude Code with plugin directory
-cc --plugin-dir $(pwd)
-
-# Or in OpenCode
-opencode --plugin-dir $(pwd)
+claude --plugin-dir $(pwd)
 ```
 
 ### Method 4: Development Mode
@@ -101,7 +98,7 @@ npm install
 npm run dev
 
 # In another terminal, start Claude Code
-cc --plugin-dir $(pwd)
+claude --plugin-dir $(pwd)
 ```
 
 ## Platform-Specific Instructions
@@ -171,11 +168,13 @@ npm link
 ### Claude Code Configuration
 
 **Location**:
+
 - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - Linux: `~/.config/Claude/claude_desktop_config.json`
 - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
 **Minimal Configuration**:
+
 ```json
 {
   "plugins": {
@@ -201,7 +200,6 @@ hooks:
   autoParseOnSave: true
   suggestConfigGeneration: true
 ---
-
 # TLA+ Plugin Settings
 
 Custom configuration for this project.
@@ -212,6 +210,7 @@ Custom configuration for this project.
 The `.opencode/opencode.json` file configures the TLA+ MCP server and is auto-detected when you run `opencode` from the repository root.
 
 **Commands**: This repository ships 6 custom OpenCode commands in `.opencode/commands/`:
+
 - `/tla-parse`, `/tla-symbols`, `/tla-smoke`, `/tla-check`, `/tla-review`, `/tla-setup`
 
 These commands are automatically discovered by OpenCode and invoked as `/command-name` in the TUI.
@@ -227,11 +226,13 @@ This is only needed once or when commands are updated.
 **Location**: `~/.config/opencode/plugins/`
 
 Create plugin directory:
+
 ```bash
 mkdir -p ~/.config/opencode/plugins/tlaplus
 ```
 
 Link or copy plugin:
+
 ```bash
 # Link (for development)
 ln -s $(pwd) ~/.config/opencode/plugins/tlaplus
@@ -323,6 +324,7 @@ Test commands:
 **Error**: `Java executable not found`
 
 **Solution**:
+
 ```bash
 # Check Java installed
 java -version
@@ -341,6 +343,7 @@ export JAVA_HOME=/path/to/java
 **Error**: `TLA+ tools jar not found`
 
 **Solution**:
+
 ```bash
 # Run setup to download tools
 npm run setup
@@ -354,6 +357,7 @@ export TLA_TOOLS_DIR=/path/to/tools
 **Error**: Plugin doesn't appear in `/plugin list`
 
 **Solution**:
+
 ```bash
 # Verify plugin directory
 ls -la .claude-plugin/plugin.json
@@ -371,6 +375,7 @@ cc --plugin-dir $(pwd)
 **Error**: Commands don't appear in `/help`
 
 **Solution**:
+
 ```bash
 # Verify commands directory
 ls -la commands/*.md
@@ -386,6 +391,7 @@ cat .claude-plugin/plugin.json | grep commands
 **Error**: TypeScript compilation fails
 
 **Solution**:
+
 ```bash
 # Clean and rebuild
 rm -rf dist node_modules
@@ -401,6 +407,7 @@ npx tsc --noEmit
 **Error**: `EACCES: permission denied`
 
 **Solution**:
+
 ```bash
 # Fix npm permissions (global)
 sudo chown -R $(whoami) ~/.npm
@@ -475,8 +482,8 @@ Set in `.claude/tlaplus.local.md`:
 ```yaml
 ---
 tlcDefaults:
-  heapSize: 8192        # 8GB heap
-  workers: 8            # 8 worker threads
+  heapSize: 8192 # 8GB heap
+  workers: 8 # 8 worker threads
 ---
 ```
 
