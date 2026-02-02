@@ -168,7 +168,7 @@ Test plugin in Claude Code environment.
 
 ```bash
 # Start Claude Code with plugin
-cc --plugin-dir $(pwd)
+claude --plugin-dir $(pwd)
 ```
 
 **Method 2: Global Installation**
@@ -176,7 +176,7 @@ cc --plugin-dir $(pwd)
 ```bash
 # From plugin directory
 npm link
-cc
+claude
 ```
 
 **Verify**:

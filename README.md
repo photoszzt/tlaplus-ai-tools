@@ -107,8 +107,13 @@ claude
 ### OpenCode
 
 ```bash
-# Build and start
+# Install globally for OpenCode
+npm install
 npm run build
+npm run setup
+npm run install-global
+
+# Start OpenCode
 opencode
 
 # Verify MCP connection

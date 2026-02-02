@@ -24,6 +24,22 @@ npm run verify
 npm link
 ```
 
+## Migrating from v1.x
+
+**IMPORTANT**: Version 2.0+ uses global installation only. Per-project installation (`.opencode/` directory) is no longer supported.
+
+If upgrading from v1.x:
+
+```bash
+# Remove per-project artifacts (optional)
+rm -rf .opencode/
+
+# Install globally
+npm run install-global
+```
+
+See [Uninstallation](#migrating-from-v1x-per-project-installation) for details.
+
 ## Prerequisites
 
 ### Required
@@ -54,20 +70,38 @@ npm link
 ### Method 2: Global npm Install
 
 ```bash
-# Install globally from npm
+# Install globally from npm (when published)
 npm install -g tlaplus-ai-tools
 
 # Or install from local directory
 cd tlaplus-ai-tools
 npm install
+npm run build
+npm run setup
 npm link
 
-# Start Claude Code
+# For OpenCode: Run global installer
+npm run install-global
+
+# Start Claude Code or OpenCode
 claude
+# or
+opencode
 
 # Verify plugin loaded
 /plugin list
 ```
+
+**Global Install for OpenCode**:
+
+The `npm run install-global` command installs the plugin globally for OpenCode:
+
+- Patches `~/.config/opencode/opencode.json` to enable MCP server
+- Installs skills to `~/.config/opencode/skills/` (symlink or copy)
+- Installs commands to `~/.config/opencode/commands/` (symlink or copy)
+- Writes installation marker to prevent repeated prompts
+
+**Idempotent**: Running `npm run install-global` multiple times is safe and won't duplicate or fail.
 
 ### Method 3: Local Plugin Directory
 
@@ -163,6 +197,8 @@ npm run setup
 npm link
 ```
 
+**Note on Symlinks**: On Windows, the installer attempts to create symlinks for skills and commands. If symlink creation fails (e.g., due to lack of Developer Mode or administrative privileges), it will **automatically fall back to copying** the files. No manual intervention or special permissions are required.
+
 ## Configuration
 
 ### Claude Code Configuration
@@ -207,38 +243,29 @@ Custom configuration for this project.
 
 ### OpenCode Configuration
 
-The `.opencode/opencode.json` file configures the TLA+ MCP server and is auto-detected when you run `opencode` from the repository root.
+After running `npm run install-global`, the plugin is configured globally:
 
-**Commands**: This repository ships 6 custom OpenCode commands in `.opencode/commands/`:
+**What gets installed**:
+- MCP server config: `~/.config/opencode/opencode.json`
+- Skills: `~/.config/opencode/skills/tla-*`
+- Commands: `~/.config/opencode/commands/tla-*`
+- Installation marker: `~/.config/opencode/.tlaplus-install-state.json`
 
+**Commands**: 6 TLA+ commands are available globally:
 - `/tla-parse`, `/tla-symbols`, `/tla-smoke`, `/tla-check`, `/tla-review`, `/tla-setup`
 
 These commands are automatically discovered by OpenCode and invoked as `/command-name` in the TUI.
 
-**Command Setup**: Commands use a unified format stored in `commands/`. Copy to OpenCode directory:
+**Verification**:
 
 ```bash
-cp commands/tla-*.md .opencode/commands/
-```
+# Check MCP server connection
+opencode mcp list
+# Expected: ✓ tlaplus [connected]
 
-This is only needed once or when commands are updated.
-
-**Location**: `~/.config/opencode/plugins/`
-
-Create plugin directory:
-
-```bash
-mkdir -p ~/.config/opencode/plugins/tlaplus
-```
-
-Link or copy plugin:
-
-```bash
-# Link (for development)
-ln -s $(pwd) ~/.config/opencode/plugins/tlaplus
-
-# Or copy (for production)
-cp -r tlaplus-ai-tools ~/.config/opencode/plugins/tlaplus
+# Check skills
+opencode debug skill | grep tla-
+# Expected: All 6 TLA+ skills listed
 ```
 
 ## Verification
@@ -367,7 +394,7 @@ npm link
 
 # Restart Claude Code
 # Try explicit plugin directory
-cc --plugin-dir $(pwd)
+claude --plugin-dir $(pwd)
 ```
 
 ### Commands Not Showing
@@ -433,6 +460,9 @@ git pull origin main
 npm install
 npm run build
 npm run setup  # If tools updated
+
+# For OpenCode global install: Re-run installer
+npm run install-global
 ```
 
 ### Update TLA+ Tools Only
@@ -448,15 +478,58 @@ This downloads the latest TLA+ tools.
 ### Remove Global Installation
 
 ```bash
+# Uninstall npm package
 npm uninstall -g tlaplus-ai-tools
-# Or
+# Or if linked
 npm unlink
 ```
 
-### Remove Local Installation
+### Remove OpenCode Global Integration
+
+To completely remove the global OpenCode integration:
 
 ```bash
-rm -rf tlaplus-ai-tools
+# macOS/Linux
+rm -rf ~/.config/opencode/skills/tla-*
+rm -rf ~/.config/opencode/commands/tla-*
+rm ~/.config/opencode/.tlaplus-install-state.json
+
+# Windows (PowerShell)
+Remove-Item -Recurse -Force "$HOME\.config\opencode\skills\tla-*"
+Remove-Item -Recurse -Force "$HOME\.config\opencode\commands\tla-*"
+Remove-Item -Force "$HOME\.config\opencode\.tlaplus-install-state.json"
+```
+
+**Note**: You may also need to manually remove the `tlaplus` MCP server entry from `~/.config/opencode/opencode.json`.
+
+### Migrating from v1.x (Per-Project Installation)
+
+If you previously used v1.x with per-project installation, remove the `.opencode/` directory:
+
+```bash
+# macOS/Linux
+rm -rf .opencode/
+
+# Windows (PowerShell)
+Remove-Item -Recurse -Force ".opencode\"
+```
+
+Then install globally using `npm run install-global`.
+
+**Note**: The `.opencode/` directory is no longer used in v2.0+.
+
+### Reset Installation State
+
+If you need to reinstall or reset the installation:
+
+```bash
+# macOS/Linux
+rm ~/.config/opencode/.tlaplus-install-state.json
+npm run install-global
+
+# Windows (PowerShell)
+Remove-Item -Force "$HOME\.config\opencode\.tlaplus-install-state.json"
+npm run install-global
 ```
 
 ### Remove Configuration
@@ -464,10 +537,9 @@ rm -rf tlaplus-ai-tools
 ```bash
 # Claude Code config
 # Edit and remove tlaplus section from:
-# ~/.config/Claude/claude_desktop_config.json
-
-# OpenCode config
-rm -rf ~/.config/opencode/plugins/tlaplus
+# macOS: ~/Library/Application Support/Claude/claude_desktop_config.json
+# Linux: ~/.config/Claude/claude_desktop_config.json
+# Windows: %APPDATA%\Claude\claude_desktop_config.json
 
 # Project settings
 rm .claude/tlaplus.local.md
@@ -527,7 +599,7 @@ Enable verbose logging:
 
 ```bash
 DEBUG=1 npm run verify
-VERBOSE=1 cc --plugin-dir $(pwd)
+VERBOSE=1 claude --plugin-dir $(pwd)
 ```
 
 ## Next Steps

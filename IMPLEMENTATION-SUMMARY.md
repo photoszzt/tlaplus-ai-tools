@@ -14,6 +14,7 @@ Successfully implemented a comprehensive Claude Code and OpenCode plugin that br
 ### ✅ Phase 1: MCP Server Migration (from vscode-tlaplus/packages/mcp-server)
 
 **Complete MCP Server Implementation:**
+
 - Created complete project structure with TypeScript configuration
 - Set up package.json with all dependencies
 - Configured build system and CLI entry point
@@ -24,6 +25,7 @@ Successfully implemented a comprehensive Claude Code and OpenCode plugin that br
 - Added auto-detection for tools and knowledge base directories
 
 **Java & TLA+ Tools Integration:**
+
 - Created Java execution utility with proper classpath handling
 - Implemented TLA+ tools path resolution
 - Built SANY execution wrapper with output parsing
@@ -31,6 +33,7 @@ Successfully implemented a comprehensive Claude Code and OpenCode plugin that br
 - Tested integration with real Java/TLA+ tools
 
 **SANY Tools Implementation:**
+
 - Implemented tlaplus_mcp_sany_parse tool (fully functional, supports `jarfile:` URIs)
 - Implemented tlaplus_mcp_sany_symbol tool (fully functional with XMLExporter, supports `jarfile:` URIs)
 - Built tlaplus_mcp_sany_modules tool (filesystem + JAR scanning)
@@ -38,18 +41,21 @@ Successfully implemented a comprehensive Claude Code and OpenCode plugin that br
 - Added JAR module scanning with `adm-zip` for reading standard/community modules from JAR archives
 
 **TLC Model Checking Tools:**
+
 - Implemented tlaplus_mcp_tlc_check (exhaustive model checking)
 - Created tlaplus_mcp_tlc_smoke (quick random simulation)
 - Built tlaplus_mcp_tlc_explore (behavior trace generation)
 - All tools tested and functional
 
 **Knowledge Base Resources:**
+
 - Created markdown frontmatter parser
 - Implemented knowledge base resource registration
 - Registered all 20 TLA+ knowledge base articles as MCP resources
-- Resources accessible via tlaplus://knowledge/* URIs
+- Resources accessible via tlaplus://knowledge/\* URIs
 
 **Error Recovery & Resilience:**
+
 - Implemented comprehensive error recovery system with automatic retry
 - Created structured error code taxonomy (17 error codes)
 - Built error classifier with errno and message pattern matching
@@ -61,12 +67,14 @@ Successfully implemented a comprehensive Claude Code and OpenCode plugin that br
 ### ✅ Phase 2: Plugin Structure Creation
 
 **Claude Code Plugin Components:**
+
 - Created `.claude-plugin/` directory with plugin.json manifest
 - Set up plugin metadata (name, version, author, repository)
 - Configured MCP server integration with ${CLAUDE_PLUGIN_ROOT}
 - Established directory structure for all components
 
 **Directory Structure:**
+
 ```
 tlaplus-ai-tools/
 ├── .claude-plugin/
@@ -85,6 +93,7 @@ tlaplus-ai-tools/
 ### ✅ Phase 3: AI Skills Implementation (6 Skills)
 
 **Learning Skills:**
+
 1. **tla-getting-started** (~2,000 words)
    - Complete TLA+ introduction for beginners
    - Examples: Counter.tla, SimpleLock.tla, Counter.cfg
@@ -103,12 +112,12 @@ tlaplus-ai-tools/
    - TLAPS proof system overview
    - Triggers: "refinement", "prove implementation"
 
-**Development Skills:**
-4. **tla-spec-review** (Enhanced)
-   - Comprehensive review checklist
-   - References: review-checklist.md (detailed)
-   - Systematic validation workflow
-   - Triggers: "review spec", "check specification"
+**Development Skills:** 4. **tla-spec-review** (Enhanced)
+
+- Comprehensive review checklist
+- References: review-checklist.md (detailed)
+- Systematic validation workflow
+- Triggers: "review spec", "check specification"
 
 5. **tla-debug-violations** (Enhanced)
    - Systematic debugging strategies
@@ -125,6 +134,7 @@ tlaplus-ai-tools/
 ### ✅ Phase 4: Slash Commands Implementation (6 Commands)
 
 **Validation Commands:**
+
 1. **/tla-parse** - Parse and validate TLA+ specifications
    - Reads file, calls SANY parse
    - Reports syntax/semantic errors
@@ -135,22 +145,22 @@ tlaplus-ai-tools/
    - Identifies Init/Next/Spec actions
    - Generates TLC config file (.cfg)
 
-**Testing Commands:**
-3. **/tla-smoke** - Quick 3-second smoke test
-   - Fast random simulation
-   - Finds obvious bugs quickly
-   - Configurable duration
+**Testing Commands:** 3. **/tla-smoke** - Quick 3-second smoke test
+
+- Fast random simulation
+- Finds obvious bugs quickly
+- Configurable duration
 
 4. **/tla-check** - Exhaustive model checking
    - Full TLC verification
    - Checks all invariants and properties
    - Reports violations with traces
 
-**Workflow Commands:**
-5. **/tla-review** - Comprehensive spec review
-   - Loads tla-spec-review skill
-   - Spawns spec-validator agent
-   - Provides detailed review report
+**Workflow Commands:** 5. **/tla-review** - Comprehensive spec review
+
+- Loads tla-spec-review skill
+- Spawns spec-validator agent
+- Provides detailed review report
 
 6. **/tla-setup** - Interactive setup and verification
    - Checks Java installation
@@ -206,18 +216,21 @@ tlaplus-ai-tools/
 ### ✅ Phase 7: Infrastructure & Installation
 
 **Package Configuration:**
+
 - Renamed from tlaplus-mcp-server to tlaplus-ai-tools
 - Updated package.json with plugin metadata
 - Configured bin entry point for CLI
 - Added all necessary scripts
 
 **Installation Scripts:**
+
 - `scripts/post-install.js` - Auto-download TLA+ tools
 - `scripts/setup.js` - Manual setup script
 - `scripts/verify.sh` - Comprehensive verification with --fix
 - `scripts/opencode-e2e.mjs` - OpenCode E2E testing
 
 **Build System:**
+
 - TypeScript compilation to dist/
 - Watch mode for development
 - Jest test suite integration
@@ -226,11 +239,13 @@ tlaplus-ai-tools/
 ### ✅ Phase 8: Testing & Documentation
 
 **Comprehensive Test Suite:**
+
 - **21 test suites, 511 tests passing** (4 skipped when JAR not present)
 - **Coverage: 95%+ across all components**
 - Coverage thresholds met (70% branches/functions, 80% lines/statements)
 
 **Test Organization:**
+
 ```
 src/__tests__/
 ├── fixtures/              # Test fixtures (configs, samples)
@@ -282,6 +297,7 @@ src/utils/errors/__tests__/
 | **Overall** | **95.31%** | **88.7%** | **87.5%** | **95.45%** |
 
 **Documentation:**
+
 - ✅ README.md - Comprehensive user guide
 - ✅ INSTALLATION.md - Detailed installation instructions
 - ✅ TESTING.md - Testing guide with all test levels
@@ -306,6 +322,7 @@ src/utils/errors/__tests__/
 ### MCP Resources (20)
 
 All TLA+ knowledge base articles registered as resources:
+
 - tla-animations.md
 - tla-bestpractice-spec-properties.md
 - tla-choose-nondeterminism.md
@@ -361,6 +378,7 @@ All TLA+ knowledge base articles registered as resources:
 ## Test Results
 
 ### Jest Automated Tests
+
 - ✅ **21 test suites, 511 tests passing** (4 skipped when JAR not present)
 - ✅ **Coverage: 95.31% statements, 88.7% branches, 87.5% functions, 95.45% lines**
 - ✅ Coverage thresholds met (70% branches/functions, 80% lines/statements)
@@ -375,6 +393,7 @@ All TLA+ knowledge base articles registered as resources:
 - ✅ CI compatibility verified with test:ci script
 
 ### Structure Validation
+
 - ✅ **Directory structure**: All required directories present
 - ✅ **YAML frontmatter**: All skills, commands, agents validated
 - ✅ **JSON configs**: plugin.json, hooks.json valid
@@ -382,6 +401,7 @@ All TLA+ knowledge base articles registered as resources:
 - ✅ **Cross-references**: All file references accurate
 
 ### Manual Tests (Completed)
+
 - ✅ Stdio mode (Claude Desktop compatible)
 - ✅ HTTP mode (port configuration)
 - ✅ Auto-detection of tools and knowledge base
@@ -393,16 +413,19 @@ All TLA+ knowledge base articles registered as resources:
 ## Key Features
 
 ### Transport Modes
+
 - **Stdio Mode** - Default mode for Claude Code/Desktop integration
 - **HTTP Mode** - Stateless HTTP transport for remote clients
 
 ### Security
+
 - Optional working directory restriction
 - Path traversal prevention
 - File access validation
 - Safe Java execution
 
 ### Usability
+
 - Auto-detection of tools and knowledge base directories
 - Helpful error messages with resolution steps
 - Comprehensive CLI help and version commands
@@ -411,6 +434,7 @@ All TLA+ knowledge base articles registered as resources:
 - Non-intrusive event hooks
 
 ### Robustness
+
 - Proper error handling throughout
 - Process cleanup on exit
 - Stream management for long-running operations
@@ -419,6 +443,7 @@ All TLA+ knowledge base articles registered as resources:
 - Graceful degradation
 
 ### Error Recovery
+
 - Automatic retry for transient errors (JAR locks, Java spawn failures, file system delays)
 - Structured error codes (17 codes) with suggested remediation actions
 - Enhanced error context with metadata, timestamps, and stack traces
@@ -428,6 +453,7 @@ All TLA+ knowledge base articles registered as resources:
 ## Technical Highlights
 
 ### Architecture Decisions
+
 1. **Complete Plugin** - Full Claude Code plugin with MCP server, skills, commands, agents, hooks
 2. **Migrated MCP Server** - Reused and enhanced logic from VSCode extension
 3. **TypeScript** - Type safety and better developer experience
@@ -438,6 +464,7 @@ All TLA+ knowledge base articles registered as resources:
 8. **Event-Driven Hooks** - Non-intrusive automation
 
 ### Integration Points
+
 - Java process spawning with proper classpath
 - SANY output parsing with error extraction
 - TLC output filtering and formatting
@@ -452,12 +479,14 @@ All TLA+ knowledge base articles registered as resources:
 ## Known Limitations
 
 ### Planned for Future
+
 1. **PlusCal Transpilation** - Not yet integrated (SANY only)
 2. **State Space Statistics** - TLC statistics not yet parsed
 3. **TLAPS Integration** - Proof system support limited to documentation
 4. **Icon & Screenshots** - Not yet created for marketplace
 
 ### Intentional Exclusions
+
 1. **VSCode Integration** - Designed to be standalone plugin
 2. **GUI** - CLI/server only, no user interface
 3. **Stateful Sessions** - HTTP mode is stateless by design
@@ -465,18 +494,21 @@ All TLA+ knowledge base articles registered as resources:
 ## Performance Characteristics
 
 ### Startup Time
+
 - Stdio mode: ~100ms
 - HTTP mode: ~150ms (includes port binding)
 - Auto-detection adds ~50ms
 - Plugin loading: ~200-300ms (includes skill/command registration)
 
 ### Resource Usage
+
 - Memory: ~50MB base (Node.js + server)
 - Additional: Depends on TLC workload
 - CPU: Minimal when idle, high during model checking
 - Plugin overhead: Negligible
 
 ### Scalability
+
 - Stdio: Single client (designed for Claude Code)
 - HTTP: Multiple concurrent requests supported
 - TLC runs can be resource-intensive
@@ -485,11 +517,13 @@ All TLA+ knowledge base articles registered as resources:
 ## Future Improvements
 
 ### High Priority
+
 1. **Icon & Screenshots** - For marketplace submission
 2. **npm Publishing** - Publish to npm registry
 3. **User Testing** - Gather feedback from TLA+ community
 
 ### Medium Priority
+
 1. **TLC Statistics** - Parse and expose model checking statistics
 2. **Progress Reporting** - Stream progress updates during long operations
 3. **Configuration File** - Support config file in addition to CLI args
@@ -497,6 +531,7 @@ All TLA+ knowledge base articles registered as resources:
 5. **Enhanced Agents** - More sophisticated automation
 
 ### Low Priority
+
 1. **Docker Image** - Containerized distribution
 2. **Performance Optimization** - Profile and optimize hot paths
 3. **TLAPS Integration** - Deeper proof system support
@@ -516,7 +551,7 @@ npm run setup
 npm run verify
 
 # Use with Claude Code
-cc --plugin-dir $(pwd)
+claude --plugin-dir $(pwd)
 ```
 
 ### Command Line (MCP Server)
@@ -544,6 +579,7 @@ See [OPENCODE.md](OPENCODE.md) for detailed setup instructions.
 **Nothing!** This project includes the complete MCP server implementation from vscode-tlaplus/packages/mcp-server, plus extensive additions:
 
 ### Added on Top of MCP Server:
+
 - ✅ **6 AI Skills** - Complete learning path and development guidance
 - ✅ **6 Slash Commands** - User-invocable actions for common tasks
 - ✅ **4 Autonomous Agents** - Self-directed automation for complex workflows
@@ -555,6 +591,7 @@ See [OPENCODE.md](OPENCODE.md) for detailed setup instructions.
 - ✅ **511 Automated Tests** - Extensive test coverage (vs 283 in original)
 
 ### Differences from Original MCP Server:
+
 1. **Package Name**: Renamed from `@vscode-tlaplus/mcp-server` to `tlaplus-ai-tools`
 2. **Scope**: Expanded from standalone MCP server to complete plugin
 3. **Testing**: Added OpenCode command lint tests, more integration tests
@@ -562,6 +599,7 @@ See [OPENCODE.md](OPENCODE.md) for detailed setup instructions.
 5. **Dependencies**: Added `@opencode-ai/plugin` for OpenCode support
 
 ### What's the Same:
+
 - ✅ All 6 MCP tools (sany_parse, sany_symbol, sany_modules, tlc_check, tlc_smoke, tlc_explore)
 - ✅ All 20 knowledge base resources
 - ✅ Error recovery system with 17 error codes
@@ -585,6 +623,7 @@ The TLA+ AI Tools plugin is a **complete, production-ready Claude Code and OpenC
 7. **Complete Documentation** - User guides, developer docs, examples
 
 The plugin is ready for:
+
 - ✅ Immediate use by developers
 - ✅ Installation via git clone
 - ✅ Distribution via npm
@@ -597,6 +636,7 @@ The plugin is ready for:
 ## Acknowledgments
 
 Implementation based on:
+
 - **Original MCP Server**: vscode-tlaplus/packages/mcp-server by TLA+ community
 - **VSCode Extension**: vscode-tlaplus source code for TLA+ tools integration
 - **Model Context Protocol SDK**: by Anthropic
