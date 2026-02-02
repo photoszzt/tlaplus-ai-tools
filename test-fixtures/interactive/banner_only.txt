@@ -1,5 +1,0 @@
-Welcome to Claude Code!
-
-Type /help to see available commands.
-
-Ready to assist you with your TLA+ specifications.
