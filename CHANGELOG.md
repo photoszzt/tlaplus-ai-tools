@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2026-01-27
 
 ### Added
+
 - Complete Claude Code and OpenCode plugin structure
 - MCP server for TLA+ tools (SANY, TLC, knowledge base)
 - Three foundational skills:
@@ -38,10 +39,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for both Claude Code and OpenCode
 
 ### Changed
+
 - Updated plugin metadata and author information
 - Enhanced README with marketplace-first installation
 
 ### Technical Details
+
 - MCP server with stdio and HTTP transport
 - Auto-detection of Java and TLA+ tools
 - Portable paths using ${CLAUDE_PLUGIN_ROOT}
@@ -50,10 +53,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
+
 - Additional skills for TLA+ fundamentals and advanced topics
 - Enhanced agents with more sophisticated analysis
 - Marketplace icon and screenshots
-- Video tutorials and documentation
 - Community contributions and feedback integration
 
 ---
