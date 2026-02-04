@@ -1,17 +1,6 @@
 {
   "description": "TLA+ plugin hooks for automatic validation and configuration assistance",
   "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Check if TLA+ tools are installed and accessible. If tools/ directory exists and contains tla2tools.jar and CommunityModules-deps.jar, silently proceed. If tools are missing or Java is not found, show a brief notification: 'TLA+ tools not configured. Run /tla-setup to complete installation.' Keep this check fast (< 1 second) and non-intrusive."
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Write|Edit",
@@ -29,7 +18,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "If a NEW .tla file was just created (not edited), check if a corresponding .cfg file exists in the same directory. If no .cfg file exists, suggest: 'No TLC configuration file found. Run /tla-symbols @file.tla to generate one?' Only suggest this for newly created files, not for every edit. Keep suggestion brief and non-intrusive."
+            "prompt": "ONLY respond if: (1) a NEW .tla file was just created (not edited), AND (2) no corresponding .cfg file exists in the same directory. If BOTH conditions are met, output ONLY this suggestion: 'No TLC configuration file found. Run /tla-symbols @file.tla to generate one?' If ANY condition is not met, output NOTHING and allow continuation silently. Do not explain why you're not responding."
           }
         ]
       }
