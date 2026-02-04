@@ -6,11 +6,22 @@
 # 1. Build the MCP server
 npm run build
 
-# 2. Start OpenCode (auto-detects .opencode/opencode.json)
+# 2. Download TLA+ tools (if not already done)
+npm run setup
+
+# 3. Install globally for OpenCode
+npm run install-global
+
+# 4. Start OpenCode
 opencode
 ```
 
-OpenCode will automatically load the TLA+ MCP server from `.opencode/opencode.json`.
+**What `npm run install-global` does:**
+- Patches `~/.config/opencode/opencode.json` to enable MCP server
+- Installs skills to `~/.config/opencode/skills/` (symlink or copy)
+- Installs commands to `~/.config/opencode/commands/` (symlink or copy)
+- Writes installation marker to prevent repeated prompts
+- **Idempotent**: Safe to run multiple times
 
 ## What Works in OpenCode
 
@@ -242,51 +253,22 @@ If TLA+ tools are in a custom location:
 
 ## Installation Steps
 
-### 1. Build the MCP Server
-
 ```bash
 npm install
 npm run build
 npm run setup  # Downloads TLA+ tools
+npm run install-global  # Installs globally for OpenCode
 ```
 
-### 2. Verify MCP Server
+**What gets installed:**
+- MCP server config: `~/.config/opencode/opencode.json`
+- Skills: `~/.config/opencode/skills/tla-*`
+- Commands: `~/.config/opencode/commands/tla-*`
+- Marker: `~/.config/opencode/.tlaplus-install-state.json`
 
-```bash
-# Check that dist/index.js was created
-ls -la dist/index.js
+**Windows Note**: On Windows, the installer automatically falls back to copying files if symlink creation fails (no admin privileges required).
 
-# Test the server
-node dist/index.js --help
-```
-
-### 3. Configure OpenCode
-
-The `.opencode/opencode.json` file is already included in this repository. OpenCode will auto-detect it when you run `opencode` from the repo root.
-
-### 4. Install Skills (Optional)
-
-Skills are automatically discovered from `skills/` directory. For global access across all projects, create symlinks:
-
-```bash
-# Create symlinks in global skills directory
-mkdir -p ~/.config/opencode/skills
-ln -s $(pwd)/skills/tla-getting-started ~/.config/opencode/skills/
-ln -s $(pwd)/skills/tla-model-checking ~/.config/opencode/skills/
-ln -s $(pwd)/skills/tla-refinement-proofs ~/.config/opencode/skills/
-ln -s $(pwd)/skills/tla-spec-review ~/.config/opencode/skills/
-ln -s $(pwd)/skills/tla-debug-violations ~/.config/opencode/skills/
-ln -s $(pwd)/skills/tla-create-animations ~/.config/opencode/skills/
-```
-
-### 5. Start OpenCode
-
-```bash
-cd /path/to/tlaplus-ai-tools
-opencode
-```
-
-### 6. Verify Installation
+**Verification:**
 
 ```bash
 # Check MCP server connection
@@ -297,6 +279,20 @@ opencode mcp list
 opencode debug skill | grep tla-
 # Expected: All 6 TLA+ skills listed
 ```
+
+## Migrating from v1.x
+
+If you previously used per-project installation (v1.x), remove the `.opencode/` directory:
+
+```bash
+# Remove per-project artifacts (optional)
+rm -rf .opencode/
+
+# Install globally
+npm run install-global
+```
+
+The `.opencode/` directory is no longer used in v2.0+.
 
 ## Usage Examples
 
@@ -323,6 +319,15 @@ Use tlaplus_mcp_sany_parse to check test-specs/Counter.tla for syntax errors
 ```
 
 ## Troubleshooting
+
+### Reset Installation State
+
+If you need to reinstall, remove the installation marker:
+
+```bash
+rm ~/.config/opencode/.tlaplus-install-state.json
+npm run install-global
+```
 
 ### MCP Server Not Connected
 

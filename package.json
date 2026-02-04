@@ -1,6 +1,6 @@
 {
   "name": "tlaplus-ai-tools",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "TLA+ formal specification and model checking tools with AI assistance for Claude Code and OpenCode",
   "main": "dist/index.js",
   "bin": {
@@ -10,9 +10,9 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "prepublish": "npm run build",
-    "postinstall": "node scripts/post-install.js",
     "setup": "node scripts/setup.js",
     "verify": "bash scripts/verify.sh",
+    "install-global": "node scripts/install-global.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

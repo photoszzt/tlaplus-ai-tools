@@ -51,11 +51,11 @@ npm run test:ci
 
 ```bash
 # Run Claude Code with this plugin
-cc --plugin-dir $(pwd)
+claude --plugin-dir $(pwd)
 
 # Or install globally and run
 npm link
-cc
+claude
 
 # Verify plugin loaded
 /plugin list    # Should show "tlaplus"
@@ -133,16 +133,19 @@ hooks/
 The server exposes these tools via MCP (prefix: `tlaplus_mcp_`):
 
 **SANY Parser Tools:**
+
 - `sany_parse` - Parse spec, return syntax/semantic errors
 - `sany_symbol` - Extract symbols (constants, variables, operators, init/next actions)
 - `sany_modules` - List available TLA+ modules in tools JAR
 
 **TLC Model Checker Tools:**
+
 - `tlc_check` - Run exhaustive model checking
 - `tlc_smoke` - Run quick random simulation (3-second default)
 - `tlc_explore` - Generate specific behavior traces
 
 **Knowledge Base:**
+
 - `knowledge` (resource) - Access 20+ articles on TLA+ best practices
 
 ### Component Integration Flow
@@ -212,11 +215,13 @@ The server auto-detects paths in this order:
 **Java**: `JAVA_HOME` → `java` in PATH → common install locations
 
 **TLA+ Tools**:
+
 1. `tools/` in plugin root
 2. `${CLAUDE_PLUGIN_ROOT}/tools/`
 3. `~/.tlaplus/tools/`
 
 **Knowledge Base**:
+
 1. `resources/knowledgebase/` in plugin root
 2. `${CLAUDE_PLUGIN_ROOT}/resources/knowledgebase/`
 
@@ -244,6 +249,7 @@ const parsed = parseSanyOutput(result.stderr);
 ```
 
 SANY output is XML. The parser extracts:
+
 - Syntax errors (line/column, message)
 - Module dependencies
 - Symbol definitions (via separate symbol extraction)
@@ -251,6 +257,7 @@ SANY output is XML. The parser extracts:
 ### TLC Model Checker
 
 TLC requires both a `.tla` spec and a `.cfg` config file. The config specifies:
+
 - `SPECIFICATION` or `INIT`/`NEXT`
 - `INVARIANT` - properties that should always hold
 - `PROPERTY` - temporal properties to check
