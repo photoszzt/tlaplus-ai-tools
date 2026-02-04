@@ -22,6 +22,11 @@ jest.mock('os');
 const mockFs = fs as jest.Mocked<typeof fs>;
 const mockOs = os as jest.Mocked<typeof os>;
 
+// Helper to normalize paths for cross-platform comparison
+function normalizePath(p: string): string {
+  return p.split(path.sep).join('/');
+}
+
 describe('OpenCode Paths', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -52,7 +57,7 @@ describe('OpenCode Paths', () => {
 
       const result = getGlobalOpenCodeDir();
 
-      expect(result).toBe('/home/test/.config/opencode');
+      expect(normalizePath(result)).toBe('/home/test/.config/opencode');
     });
 
     it('returns macOS path when platform is darwin', () => {
@@ -61,7 +66,7 @@ describe('OpenCode Paths', () => {
 
       const result = getGlobalOpenCodeDir();
 
-      expect(result).toBe('/Users/test/.config/opencode');
+      expect(normalizePath(result)).toBe('/Users/test/.config/opencode');
     });
   });
 
@@ -69,27 +74,27 @@ describe('OpenCode Paths', () => {
     it('returns plural path when both singular and plural exist', () => {
       const baseDir = '/project/.opencode';
       mockFs.existsSync.mockImplementation((p) => {
-        const pathStr = p.toString();
+        const pathStr = normalizePath(p.toString());
         return pathStr.includes('plugins') || pathStr.includes('plugin');
       });
       mockFs.statSync.mockReturnValue({ isDirectory: () => true } as fs.Stats);
 
       const result = findExistingDir(baseDir, 'plugin', 'plugins');
 
-      expect(result).toBe('/project/.opencode/plugins');
+      expect(normalizePath(result!)).toBe('/project/.opencode/plugins');
     });
 
     it('returns singular path when only singular exists', () => {
       const baseDir = '/project/.opencode';
       mockFs.existsSync.mockImplementation((p) => {
-        const pathStr = p.toString();
+        const pathStr = normalizePath(p.toString());
         return pathStr.includes('plugin') && !pathStr.includes('plugins');
       });
       mockFs.statSync.mockReturnValue({ isDirectory: () => true } as fs.Stats);
 
       const result = findExistingDir(baseDir, 'plugin', 'plugins');
 
-      expect(result).toBe('/project/.opencode/plugin');
+      expect(normalizePath(result!)).toBe('/project/.opencode/plugin');
     });
 
     it('returns null when neither exists', () => {
@@ -116,14 +121,14 @@ describe('OpenCode Paths', () => {
     it('returns per-project plugin directory when it exists', () => {
       const projectRoot = '/project';
       mockFs.existsSync.mockImplementation((p) => {
-        const pathStr = p.toString();
+        const pathStr = normalizePath(p.toString());
         return pathStr.includes('/project/.opencode/plugins');
       });
       mockFs.statSync.mockReturnValue({ isDirectory: () => true } as fs.Stats);
 
       const result = findPluginDir(projectRoot);
 
-      expect(result).toBe('/project/.opencode/plugins');
+      expect(normalizePath(result!)).toBe('/project/.opencode/plugins');
     });
 
     it('returns global plugin directory when per-project does not exist', () => {
@@ -131,14 +136,14 @@ describe('OpenCode Paths', () => {
       mockOs.platform.mockReturnValue('linux');
       mockOs.homedir.mockReturnValue('/home/test');
       mockFs.existsSync.mockImplementation((p) => {
-        const pathStr = p.toString();
+        const pathStr = normalizePath(p.toString());
         return pathStr.includes('/home/test/.config/opencode/plugins');
       });
       mockFs.statSync.mockReturnValue({ isDirectory: () => true } as fs.Stats);
 
       const result = findPluginDir(projectRoot);
 
-      expect(result).toBe('/home/test/.config/opencode/plugins');
+      expect(normalizePath(result!)).toBe('/home/test/.config/opencode/plugins');
     });
 
     it('returns null when no plugin directory exists', () => {
@@ -157,14 +162,14 @@ describe('OpenCode Paths', () => {
     it('returns per-project commands directory when it exists', () => {
       const projectRoot = '/project';
       mockFs.existsSync.mockImplementation((p) => {
-        const pathStr = p.toString();
+        const pathStr = normalizePath(p.toString());
         return pathStr.includes('/project/.opencode/commands');
       });
       mockFs.statSync.mockReturnValue({ isDirectory: () => true } as fs.Stats);
 
       const result = findCommandsDir(projectRoot);
 
-      expect(result).toBe('/project/.opencode/commands');
+      expect(normalizePath(result!)).toBe('/project/.opencode/commands');
     });
   });
 
@@ -172,14 +177,14 @@ describe('OpenCode Paths', () => {
     it('returns per-project skills directory when it exists', () => {
       const projectRoot = '/project';
       mockFs.existsSync.mockImplementation((p) => {
-        const pathStr = p.toString();
+        const pathStr = normalizePath(p.toString());
         return pathStr.includes('/project/.opencode/skills');
       });
       mockFs.statSync.mockReturnValue({ isDirectory: () => true } as fs.Stats);
 
       const result = findSkillsDir(projectRoot);
 
-      expect(result).toBe('/project/.opencode/skills');
+      expect(normalizePath(result!)).toBe('/project/.opencode/skills');
     });
   });
 
@@ -191,20 +196,20 @@ describe('OpenCode Paths', () => {
 
       const result = findConfigFile(projectRoot);
 
-      expect(result).toBe('/project/.opencode/opencode.json');
+      expect(normalizePath(result!)).toBe('/project/.opencode/opencode.json');
     });
 
     it('returns .jsonc file when only .jsonc exists', () => {
       const projectRoot = '/project';
       mockFs.existsSync.mockImplementation((p) => {
-        const pathStr = p.toString();
+        const pathStr = normalizePath(p.toString());
         return pathStr.endsWith('opencode.jsonc');
       });
       mockFs.statSync.mockReturnValue({ isFile: () => true } as fs.Stats);
 
       const result = findConfigFile(projectRoot);
 
-      expect(result).toBe('/project/.opencode/opencode.jsonc');
+      expect(normalizePath(result!)).toBe('/project/.opencode/opencode.jsonc');
     });
 
     it('returns global config when per-project does not exist', () => {
@@ -212,14 +217,14 @@ describe('OpenCode Paths', () => {
       mockOs.platform.mockReturnValue('linux');
       mockOs.homedir.mockReturnValue('/home/test');
       mockFs.existsSync.mockImplementation((p) => {
-        const pathStr = p.toString();
+        const pathStr = normalizePath(p.toString());
         return pathStr.includes('/home/test/.config/opencode/opencode.json');
       });
       mockFs.statSync.mockReturnValue({ isFile: () => true } as fs.Stats);
 
       const result = findConfigFile(projectRoot);
 
-      expect(result).toBe('/home/test/.config/opencode/opencode.json');
+      expect(normalizePath(result!)).toBe('/home/test/.config/opencode/opencode.json');
     });
 
     it('returns null when no config file exists', () => {
@@ -295,7 +300,7 @@ describe('OpenCode Paths', () => {
       mockOs.platform.mockReturnValue('linux');
       mockOs.homedir.mockReturnValue('/home/test');
       mockFs.existsSync.mockImplementation((p) => {
-        const pathStr = p.toString();
+        const pathStr = normalizePath(p.toString());
         return (
           pathStr.includes('/project/.opencode/plugins') ||
           pathStr.includes('/project/.opencode/commands') ||
@@ -304,7 +309,7 @@ describe('OpenCode Paths', () => {
         );
       });
       mockFs.statSync.mockImplementation((p) => {
-        const pathStr = p.toString();
+        const pathStr = normalizePath(p.toString());
         if (pathStr.endsWith('opencode.json')) {
           return { isFile: () => true, isDirectory: () => false } as fs.Stats;
         }
@@ -313,7 +318,13 @@ describe('OpenCode Paths', () => {
 
       const result = getOpenCodePaths(projectRoot);
 
-      expect(result).toEqual({
+      expect({
+        pluginDir: result.pluginDir ? normalizePath(result.pluginDir) : null,
+        commandsDir: result.commandsDir ? normalizePath(result.commandsDir) : null,
+        skillsDir: result.skillsDir ? normalizePath(result.skillsDir) : null,
+        configFile: result.configFile ? normalizePath(result.configFile) : null,
+        globalDir: normalizePath(result.globalDir),
+      }).toEqual({
         pluginDir: '/project/.opencode/plugins',
         commandsDir: '/project/.opencode/commands',
         skillsDir: '/project/.opencode/skills',
@@ -349,21 +360,21 @@ describe('OpenCode Paths', () => {
       const baseDir = '/project/.opencode';
       const result = getCanonicalDir(baseDir, 'plugin');
 
-      expect(result).toBe('/project/.opencode/plugins');
+      expect(normalizePath(result)).toBe('/project/.opencode/plugins');
     });
 
     it('returns canonical commands directory path', () => {
       const baseDir = '/project/.opencode';
       const result = getCanonicalDir(baseDir, 'command');
 
-      expect(result).toBe('/project/.opencode/commands');
+      expect(normalizePath(result)).toBe('/project/.opencode/commands');
     });
 
     it('returns canonical skills directory path', () => {
       const baseDir = '/project/.opencode';
       const result = getCanonicalDir(baseDir, 'skill');
 
-      expect(result).toBe('/project/.opencode/skills');
+      expect(normalizePath(result)).toBe('/project/.opencode/skills');
     });
 
     it('creates directory when createIfMissing is true', () => {
@@ -373,10 +384,10 @@ describe('OpenCode Paths', () => {
 
       const result = getCanonicalDir(baseDir, 'plugin', true);
 
-      expect(result).toBe('/project/.opencode/plugins');
-      expect(mockFs.mkdirSync).toHaveBeenCalledWith('/project/.opencode/plugins', {
-        recursive: true,
-      });
+      expect(normalizePath(result)).toBe('/project/.opencode/plugins');
+      const mkdirCall = mockFs.mkdirSync.mock.calls[0];
+      expect(normalizePath(mkdirCall[0] as string)).toBe('/project/.opencode/plugins');
+      expect(mkdirCall[1]).toEqual({ recursive: true });
     });
   });
 

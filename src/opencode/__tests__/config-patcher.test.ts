@@ -12,6 +12,11 @@ jest.mock('os');
 const mockFs = fs as jest.Mocked<typeof fs>;
 const mockOs = os as jest.Mocked<typeof os>;
 
+// Helper to normalize paths for cross-platform comparison
+function normalizePath(p: string): string {
+  return p.split(path.sep).join('/');
+}
+
 describe('config-patcher', () => {
   let tempDir: string;
   let configPath: string;
@@ -254,7 +259,9 @@ describe('config-patcher', () => {
 
         await patchOpenCodeConfig(configPath, pluginRoot);
 
-        expect(mockFs.mkdirSync).toHaveBeenCalledWith(tempDir, { recursive: true });
+        const mkdirCall = mockFs.mkdirSync.mock.calls[0];
+        expect(normalizePath(mkdirCall[0] as string)).toBe(normalizePath(tempDir));
+        expect(mkdirCall[1]).toEqual({ recursive: true });
       });
     });
 

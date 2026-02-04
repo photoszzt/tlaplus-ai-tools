@@ -16,6 +16,11 @@ jest.mock('../paths');
 const mockFs = fs as jest.Mocked<typeof fs>;
 const mockPaths = paths as jest.Mocked<typeof paths>;
 
+// Helper to normalize paths for cross-platform comparison
+function normalizePath(p: string): string {
+  return p.split(path.sep).join('/');
+}
+
 describe('Skills Installer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -45,7 +50,7 @@ describe('Skills Installer', () => {
 
     it('returns skill names for directories containing SKILL.md', () => {
       mockFs.existsSync.mockImplementation((p: fs.PathLike) => {
-        const pathStr = p.toString();
+        const pathStr = normalizePath(p.toString());
         if (pathStr === '/repo/skills') return true;
         if (pathStr === '/repo/skills/tla-getting-started/SKILL.md') return true;
         if (pathStr === '/repo/skills/tla-model-checking/SKILL.md') return true;
@@ -67,7 +72,7 @@ describe('Skills Installer', () => {
 
     it('returns sorted skill names', () => {
       mockFs.existsSync.mockImplementation((p: fs.PathLike) => {
-        const pathStr = p.toString();
+        const pathStr = normalizePath(p.toString());
         if (pathStr === '/repo/skills') return true;
         if (pathStr.endsWith('/SKILL.md')) return true;
         return false;
@@ -94,7 +99,7 @@ describe('Skills Installer', () => {
 
     it('creates symlinks for all skills in global mode', () => {
       mockFs.existsSync.mockImplementation((p: fs.PathLike) => {
-        const pathStr = p.toString();
+        const pathStr = normalizePath(p.toString());
         if (pathStr === '/usr/lib/node_modules/tlaplus-ai-tools/skills') return true;
         if (pathStr === '/usr/lib/node_modules/tlaplus-ai-tools/skills/skill-a') return true;
         if (pathStr === '/usr/lib/node_modules/tlaplus-ai-tools/skills/skill-b') return true;
@@ -105,7 +110,6 @@ describe('Skills Installer', () => {
       });
 
       mockFs.readdirSync.mockImplementation((p: fs.PathLike, options?: any) => {
-        const pathStr = p.toString();
         return [
           { name: 'skill-a', isDirectory: () => true } as any,
           { name: 'skill-b', isDirectory: () => true } as any,
@@ -116,7 +120,7 @@ describe('Skills Installer', () => {
 
       const result = installSkills('/usr/lib/node_modules/tlaplus-ai-tools');
 
-      expect(result.sourceDir).toBe('/usr/lib/node_modules/tlaplus-ai-tools/skills');
+      expect(normalizePath(result.sourceDir)).toBe('/usr/lib/node_modules/tlaplus-ai-tools/skills');
       expect(result.targetDir).toBe('/home/user/.config/opencode/skills');
       expect(result.success).toBe(true);
       expect(result.installedCount).toBe(2);
@@ -149,10 +153,9 @@ describe('Skills Installer', () => {
       const result = uninstallSkill('skill-a', '/project/.opencode/skills');
 
       expect(result).toBe(true);
-      expect(mockFs.rmSync).toHaveBeenCalledWith(
-        '/project/.opencode/skills/skill-a',
-        { recursive: true, force: true }
-      );
+      const rmCall = mockFs.rmSync.mock.calls[0];
+      expect(normalizePath(rmCall[0] as string)).toBe('/project/.opencode/skills/skill-a');
+      expect(rmCall[1]).toEqual({ recursive: true, force: true });
     });
   });
 
@@ -199,10 +202,11 @@ describe('Skills Installer', () => {
       const pluginRoot = '/usr/lib/node_modules/tlaplus-ai-tools';
 
       mockFs.existsSync.mockImplementation((p: fs.PathLike) => {
-        const pathStr = p.toString();
-        if (pathStr === `${pluginRoot}/skills`) return true;
-        if (pathStr === `${pluginRoot}/skills/skill-a`) return true;
-        if (pathStr === `${pluginRoot}/skills/skill-a/SKILL.md`) return true;
+        const pathStr = normalizePath(p.toString());
+        const normalizedRoot = normalizePath(pluginRoot);
+        if (pathStr === `${normalizedRoot}/skills`) return true;
+        if (pathStr === `${normalizedRoot}/skills/skill-a`) return true;
+        if (pathStr === `${normalizedRoot}/skills/skill-a/SKILL.md`) return true;
         if (pathStr.includes('/.config/opencode/skills/')) return false;
         return false;
       });
@@ -217,10 +221,11 @@ describe('Skills Installer', () => {
       expect(result1.installedCount).toBe(1);
 
       mockFs.existsSync.mockImplementation((p: fs.PathLike) => {
-        const pathStr = p.toString();
-        if (pathStr === `${pluginRoot}/skills`) return true;
-        if (pathStr === `${pluginRoot}/skills/skill-a`) return true;
-        if (pathStr === `${pluginRoot}/skills/skill-a/SKILL.md`) return true;
+        const pathStr = normalizePath(p.toString());
+        const normalizedRoot = normalizePath(pluginRoot);
+        if (pathStr === `${normalizedRoot}/skills`) return true;
+        if (pathStr === `${normalizedRoot}/skills/skill-a`) return true;
+        if (pathStr === `${normalizedRoot}/skills/skill-a/SKILL.md`) return true;
         if (pathStr === '/home/user/.config/opencode/skills/skill-a') return true;
         return true;
       });

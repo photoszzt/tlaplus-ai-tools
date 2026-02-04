@@ -13,6 +13,11 @@ jest.mock('child_process');
 
 const mockFs = fs as jest.Mocked<typeof fs>;
 
+// Helper to normalize paths for cross-platform comparison
+function normalizePath(p: string): string {
+  return p.split(path.sep).join('/');
+}
+
 describe('install-state', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -21,7 +26,7 @@ describe('install-state', () => {
   describe('getMarkerPath', () => {
     it('should return global path', () => {
       const result = getMarkerPath('/global/dir');
-      expect(result).toBe('/global/dir/.tlaplus-install-state.json');
+      expect(normalizePath(result)).toBe('/global/dir/.tlaplus-install-state.json');
     });
   });
 

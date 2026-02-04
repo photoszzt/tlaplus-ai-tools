@@ -14,6 +14,11 @@ jest.mock('../paths');
 const mockFs = fs as jest.Mocked<typeof fs>;
 const mockPaths = paths as jest.Mocked<typeof paths>;
 
+// Helper to normalize paths for cross-platform comparison
+function normalizePath(p: string): string {
+  return p.split(path.sep).join('/');
+}
+
 describe('commands-installer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -66,9 +71,10 @@ describe('commands-installer', () => {
 
     it('creates symlinks for all commands', () => {
       mockFs.existsSync.mockImplementation((p) => {
-        if (p === sourceDir) return true;
-        if (p === path.join(sourceDir, 'tla-parse.md')) return true;
-        if (p === path.join(sourceDir, 'tla-check.md')) return true;
+        const normalized = normalizePath(p.toString());
+        if (normalized === normalizePath(sourceDir)) return true;
+        if (normalized === normalizePath(path.join(sourceDir, 'tla-parse.md'))) return true;
+        if (normalized === normalizePath(path.join(sourceDir, 'tla-check.md'))) return true;
         return false;
       });
 
@@ -93,8 +99,9 @@ describe('commands-installer', () => {
 
     it('falls back to copy when symlink fails', () => {
       mockFs.existsSync.mockImplementation((p) => {
-        if (p === sourceDir) return true;
-        if (p === path.join(sourceDir, 'tla-parse.md')) return true;
+        const normalized = normalizePath(p.toString());
+        if (normalized === normalizePath(sourceDir)) return true;
+        if (normalized === normalizePath(path.join(sourceDir, 'tla-parse.md'))) return true;
         return false;
       });
 
@@ -122,9 +129,10 @@ describe('commands-installer', () => {
       const sourcePath = path.join(sourceDir, 'tla-parse.md');
 
       mockFs.existsSync.mockImplementation((p) => {
-        if (p === sourceDir) return true;
-        if (p === sourcePath) return true;
-        if (p === targetPath) return true;
+        const normalized = normalizePath(p.toString());
+        if (normalized === normalizePath(sourceDir)) return true;
+        if (normalized === normalizePath(sourcePath)) return true;
+        if (normalized === normalizePath(targetPath)) return true;
         return false;
       });
 
@@ -154,9 +162,10 @@ describe('commands-installer', () => {
       const sourcePath = path.join(sourceDir, 'tla-parse.md');
 
       mockFs.existsSync.mockImplementation((p) => {
-        if (p === sourceDir) return true;
-        if (p === sourcePath) return true;
-        if (p === targetPath) return true;
+        const normalized = normalizePath(p.toString());
+        if (normalized === normalizePath(sourceDir)) return true;
+        if (normalized === normalizePath(sourcePath)) return true;
+        if (normalized === normalizePath(targetPath)) return true;
         return false;
       });
 
@@ -181,7 +190,8 @@ describe('commands-installer', () => {
 
     it('reports error when source file missing', () => {
       mockFs.existsSync.mockImplementation((p) => {
-        if (p === sourceDir) return true;
+        const normalized = normalizePath(p.toString());
+        if (normalized === normalizePath(sourceDir)) return true;
         return false;
       });
 
@@ -201,9 +211,10 @@ describe('commands-installer', () => {
       const sourcePath = path.join(sourceDir, 'tla-parse.md');
 
       mockFs.existsSync.mockImplementation((p) => {
-        if (p === sourceDir) return true;
-        if (p === sourcePath) return true;
-        if (p === targetPath) return true;
+        const normalized = normalizePath(p.toString());
+        if (normalized === normalizePath(sourceDir)) return true;
+        if (normalized === normalizePath(sourcePath)) return true;
+        if (normalized === normalizePath(targetPath)) return true;
         return false;
       });
 
@@ -235,8 +246,9 @@ describe('commands-installer', () => {
       ]);
 
       mockFs.existsSync.mockImplementation((p) => {
-        if (p === sourceDir) return true;
-        if (p === sourcePath) return true;
+        const normalized = normalizePath(p.toString());
+        if (normalized === normalizePath(sourceDir)) return true;
+        if (normalized === normalizePath(sourcePath)) return true;
         return false;
       });
 
@@ -246,9 +258,10 @@ describe('commands-installer', () => {
       expect(result1.installedCount).toBe(1);
 
       mockFs.existsSync.mockImplementation((p) => {
-        if (p === sourceDir) return true;
-        if (p === sourcePath) return true;
-        if (p === targetPath) return true;
+        const normalized = normalizePath(p.toString());
+        if (normalized === normalizePath(sourceDir)) return true;
+        if (normalized === normalizePath(sourcePath)) return true;
+        if (normalized === normalizePath(targetPath)) return true;
         return false;
       });
 
@@ -277,8 +290,9 @@ describe('commands-installer', () => {
 
     it('creates symlinks in global directory', () => {
       mockFs.existsSync.mockImplementation((p) => {
-        if (p === sourceDir) return true;
-        if (p === path.join(sourceDir, 'tla-parse.md')) return true;
+        const normalized = normalizePath(p.toString());
+        if (normalized === normalizePath(sourceDir)) return true;
+        if (normalized === normalizePath(path.join(sourceDir, 'tla-parse.md'))) return true;
         return false;
       });
 
