@@ -24,22 +24,6 @@ npm run verify
 npm link
 ```
 
-## Migrating from v1.x
-
-**IMPORTANT**: Version 2.0+ uses global installation only. Per-project installation (`.opencode/` directory) is no longer supported.
-
-If upgrading from v1.x:
-
-```bash
-# Remove per-project artifacts (optional)
-rm -rf .opencode/
-
-# Install globally
-npm run install-global
-```
-
-See [Uninstallation](#migrating-from-v1x-per-project-installation) for details.
-
 ## Prerequisites
 
 ### Required
@@ -246,12 +230,14 @@ Custom configuration for this project.
 After running `npm run install-global`, the plugin is configured globally:
 
 **What gets installed**:
+
 - MCP server config: `~/.config/opencode/opencode.json`
 - Skills: `~/.config/opencode/skills/tla-*`
 - Commands: `~/.config/opencode/commands/tla-*`
 - Installation marker: `~/.config/opencode/.tlaplus-install-state.json`
 
 **Commands**: 6 TLA+ commands are available globally:
+
 - `/tla-parse`, `/tla-symbols`, `/tla-smoke`, `/tla-check`, `/tla-review`, `/tla-setup`
 
 These commands are automatically discovered by OpenCode and invoked as `/command-name` in the TUI.
