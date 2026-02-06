@@ -1,0 +1,22 @@
+{
+  "name": "tlaplus",
+  "version": "1.0.0",
+  "displayName": "TLA+ AI Tools",
+  "description": "tla plus ai tools",
+  "shortDescription": "TLA+ formal specification and model checking with AI-powered assistance",
+  "owner": {
+    "name": "Zhiting Zhu",
+    "email": "zhitingzzt@gmail.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/photoszzt/tlaplus-ai-tools"
+  },
+  "plugins": [
+    {
+      "name": "tlaplus",
+      "source": "./"
+    }
+  ]
+}
