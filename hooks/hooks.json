@@ -4,10 +4,11 @@
     "PreToolUse": [
       {
         "matcher": "Write|Edit",
+        "filePattern": "\\.tla$",
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "If the file being written or edited has a .tla extension and is not in node_modules/ or a test directory, quickly parse it using tlaplus_mcp_sany_parse. If parse succeeds, silently continue. If parse fails, show a warning with the error message but DO NOT block the write - let it proceed. Skip this check for files larger than 100KB. This should be fast and non-blocking."
+            "prompt": "The file being written or edited is a .tla file not in node_modules/ or a test directory. Quickly parse it using tlaplus_mcp_sany_parse. If parse succeeds, silently continue. If parse fails, show a warning with the error message but DO NOT block the write - let it proceed. Skip this check for files larger than 100KB. This should be fast and non-blocking."
           }
         ]
       }
@@ -15,6 +16,7 @@
     "PostToolUse": [
       {
         "matcher": "Write",
+        "filePattern": "\\.tla$",
         "hooks": [
           {
             "type": "prompt",
