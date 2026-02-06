@@ -16,6 +16,7 @@
     "PostToolUse": [
       {
         "matcher": "Write",
+        "filePattern": "\\.tla$",
         "hooks": [
           {
             "type": "prompt",
