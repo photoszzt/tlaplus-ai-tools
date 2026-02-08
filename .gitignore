@@ -27,3 +27,6 @@ test-artifacts/
 
 test-specs/states/
 states
+docs
+.claude
+.planning

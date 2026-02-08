@@ -9,6 +9,7 @@ import { Logger } from './utils/logging';
 import { registerSanyTools } from './tools/sany';
 import { registerTlcTools } from './tools/tlc';
 import { registerKnowledgeBaseResources } from './tools/knowledge';
+import { registerAnimationTools } from './tools/animation';
 
 /**
  * Main TLA+ MCP Server class
@@ -172,6 +173,10 @@ export class TLAPlusMCPServer {
     // Register TLC tools (check, smoke, explore, trace)
     await registerTlcTools(server, this.config);
     this.logger.debug('TLC tools registered');
+
+    // Register animation tools (detect, render, frameCount)
+    await registerAnimationTools(server, this.config);
+    this.logger.debug('Animation tools registered');
 
     // Register knowledge base resources if configured
     if (this.config.kbDir) {
