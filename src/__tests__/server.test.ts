@@ -11,6 +11,7 @@ jest.mock('@modelcontextprotocol/sdk/server/streamableHttp.js');
 jest.mock('../tools/sany');
 jest.mock('../tools/tlc');
 jest.mock('../tools/knowledge');
+jest.mock('../tools/animation');
 
 // Mock express
 jest.mock('express');
@@ -21,6 +22,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { registerSanyTools } from '../tools/sany';
 import { registerTlcTools } from '../tools/tlc';
 import { registerKnowledgeBaseResources } from '../tools/knowledge';
+import { registerAnimationTools } from '../tools/animation';
 import express, { Express, Request, Response } from 'express';
 
 describe('TLAPlusMCPServer', () => {
@@ -78,6 +80,7 @@ describe('TLAPlusMCPServer', () => {
     (registerSanyTools as jest.Mock).mockResolvedValue(undefined);
     (registerTlcTools as jest.Mock).mockResolvedValue(undefined);
     (registerKnowledgeBaseResources as jest.Mock).mockResolvedValue(undefined);
+    (registerAnimationTools as jest.Mock).mockResolvedValue(undefined);
   });
 
   describe('Constructor', () => {
@@ -127,6 +130,13 @@ describe('TLAPlusMCPServer', () => {
       await server.start();
 
       expect(registerTlcTools).toHaveBeenCalledWith(mockMcpServer, MINIMAL_CONFIG);
+    });
+
+    it('registers animation tools', async () => {
+      const server = new TLAPlusMCPServer(MINIMAL_CONFIG);
+      await server.start();
+
+      expect(registerAnimationTools).toHaveBeenCalledWith(mockMcpServer, MINIMAL_CONFIG);
     });
 
     it('registers knowledge base resources when kbDir provided', async () => {
