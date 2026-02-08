@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.2",
+    "@napi-rs/canvas": "^0.1.65",
     "@opencode-ai/plugin": "1.1.36",
     "adm-zip": "^0.5.16",
     "express": "^5.1.0",
