@@ -14,7 +14,7 @@ const EXPECTED_CHECKSUMS = {
   tla2tools: {
     version: '1.8.0',
     algorithm: 'sha1',
-    checksum: '8fc5476ff65dad2e65dfe7b3109b3867e27c4f29'
+    checksum: '46d1f271b9fd05a36371243a9c21769782819738'
   },
   communityModules: {
     version: '202601200755',
