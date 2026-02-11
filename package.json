@@ -9,7 +9,9 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build",
+    "postinstall": "node scripts/postinstall.js",
     "setup": "node scripts/setup.js",
     "verify": "bash scripts/verify.sh",
     "install-global": "node scripts/install-global.js",
@@ -18,6 +20,19 @@
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --maxWorkers=2"
   },
+  "files": [
+    "dist/",
+    ".claude-plugin/",
+    "skills/",
+    "commands/",
+    "agents/",
+    "hooks/",
+    "resources/",
+    "scripts/",
+    "tsconfig.json",
+    "README.md",
+    "LICENSE"
+  ],
   "keywords": [
     "tla+",
     "tlaplus",

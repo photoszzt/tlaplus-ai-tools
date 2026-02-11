@@ -98,11 +98,21 @@ npm install -g tlaplus-ai-tools
 claude
 ```
 
-### Claude Code Marketplace (Coming Soon)
+### Claude Code Plugin Installation
 
+**Via Plugin Marketplace (Automatic):**
+
+```bash
+# Add to marketplace
+claude plugin marketplace add https://github.com/photoszzt/tlaplus-ai-tools.git
+
+# Install from marketplace - builds automatically!
+# The plugin will:
+# 1. Compile TypeScript to JavaScript (npm run build)
+# 2. Download TLA+ tools automatically (tla2tools.jar, CommunityModules-deps.jar)
 ```
-/plugin install tlaplus
-```
+
+**Note:** The plugin now includes automatic setup during installation. The MCP server is built and TLA+ tools are downloaded automatically when you install the plugin.
 
 ### OpenCode
 
