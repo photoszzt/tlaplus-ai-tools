@@ -37,12 +37,12 @@ opencode
 
 The TLA+ MCP server provides these tools in OpenCode:
 
-- `tlaplus_mcp_sany_parse` - Parse and validate TLA+ specifications
-- `tlaplus_mcp_tlc_check` - Run exhaustive model checking
-- `tlaplus_mcp_tlc_smoke` - Quick random simulation
-- `tlaplus_mcp_tlc_explore` - Generate specific behavior traces
-- `tlaplus_mcp_sany_symbol` - Extract symbols from specifications
-- `tlaplus_mcp_sany_modules` - List available TLA+ modules
+- `sany_parse` - Parse and validate TLA+ specifications
+- `tlc_check` - Run exhaustive model checking
+- `tlc_smoke` - Quick random simulation
+- `tlc_explore` - Generate specific behavior traces
+- `sany_symbol` - Extract symbols from specifications
+- `sany_modules` - List available TLA+ modules
 - `knowledge` (resource) - Access TLA+ knowledge base
 
 **Verification**:
@@ -301,7 +301,7 @@ The `.opencode/` directory is no longer used in v2.0+.
 In OpenCode chat, you can directly invoke MCP tools:
 
 ```
-Parse this TLA+ spec using tlaplus_mcp_sany_parse tool with file path test-specs/Counter.tla
+Parse this TLA+ spec using sany_parse tool with file path test-specs/Counter.tla
 ```
 
 ### Using Skills
@@ -315,7 +315,7 @@ The skill will guide you through TLA+ concepts with examples.
 ### Checking a Specification
 
 ```
-Use tlaplus_mcp_sany_parse to check test-specs/Counter.tla for syntax errors
+Use sany_parse to check test-specs/Counter.tla for syntax errors
 ```
 
 ## Troubleshooting

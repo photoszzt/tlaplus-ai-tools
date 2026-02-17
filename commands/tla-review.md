@@ -2,7 +2,7 @@
 name: tla-review
 description: Comprehensive TLA+ specification review with checklist and automated validation
 argument-hint: "@spec.tla"
-allowed-tools: [Read, Bash, Grep, Task, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke]
+allowed-tools: [Read, Bash, Grep, Task, mcp__plugin_tlaplus_tlaplus__sany_parse, mcp__plugin_tlaplus_tlaplus__sany_symbol, mcp__plugin_tlaplus_tlaplus__tlc_smoke]
 agent: build
 ---
 
@@ -73,7 +73,7 @@ fi
 
 **Step 5: Run SANY Parser**
 
-Call `tlaplus_mcp_sany_parse` with `fileName=$SPEC_PATH`
+Call `sany_parse` with `fileName=$SPEC_PATH`
 
 Store result:
 - `PARSE_SUCCESS=true/false`
@@ -81,7 +81,7 @@ Store result:
 
 **Step 6: Extract Symbols**
 
-Call `tlaplus_mcp_sany_symbol` with:
+Call `sany_symbol` with:
 - `fileName=$SPEC_PATH`
 - `includeExtendedModules=false`
 
@@ -142,7 +142,7 @@ If precondition satisfied:
 
 Store final cfg path in `FINAL_CFG`.
 
-Call `tlaplus_mcp_tlc_smoke` with:
+Call `tlc_smoke` with:
 - `fileName=$SPEC_PATH`
 - `cfgFile=$FINAL_CFG`
 - `extraJavaOpts=["-Dtlc2.TLC.stopAfter=3"]`

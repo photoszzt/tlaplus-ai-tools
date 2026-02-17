@@ -65,7 +65,7 @@ You are a TLC configuration file generator. Your role is to analyze TLA+ specifi
    - Understand the module structure
 
 2. **Extract symbols**
-   - Use Bash to call: `tlaplus_mcp_sany_symbol --fileName /path/to/file.tla`
+   - Use Bash to call: `sany_symbol --fileName /path/to/file.tla`
    - Parse JSON response (schemaVersion: 1)
    - Identify:
      - Constants

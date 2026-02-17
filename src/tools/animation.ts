@@ -234,7 +234,7 @@ export async function registerAnimationTools(
 ): Promise<void> {
   // Tool 1: Detect terminal graphics capabilities
   server.tool(
-    'tlaplus_mcp_animation_detect',
+    'animation_detect',
     'Detect terminal graphics capabilities. Returns information about supported graphics protocols (Kitty, iTerm2), terminal multiplexer status (tmux/screen), and passthrough configuration. Use this to determine the best rendering protocol before calling render.',
     {
       timeout: z.number().positive().optional().describe('Optional timeout in milliseconds (default: 500)')
@@ -246,7 +246,7 @@ export async function registerAnimationTools(
 
   // Tool 2: Render animation frame
   server.tool(
-    'tlaplus_mcp_animation_render',
+    'animation_render',
     'Render a single animation frame to the specified protocol format (Kitty, iTerm2, ASCII art, or browser fallback). Accepts animation data as AnimView record, SVG content string, or SVG file path. Exactly one source must be provided. For trace visualization, call frameCount first to get the file list, then render each frame with explicit svgFilePath.',
     {
       protocol: z.enum(['kitty', 'iterm2', 'ascii', 'browser']).describe('Target rendering protocol'),
@@ -278,7 +278,7 @@ export async function registerAnimationTools(
 
   // Tool 3: Get frame count for trace navigation
   server.tool(
-    'tlaplus_mcp_animation_frameCount',
+    'animation_frameCount',
     'Get the number of animation frames in a trace directory for navigation. Returns count and sorted list of file paths. Call this before rendering trace frames to discover available files, then use render with explicit svgFilePath for each frame.',
     {
       traceDirectory: z.string().describe('Directory containing trace SVG files'),

@@ -286,7 +286,7 @@ EXTENDS Sequences, Functions, SequencesExt
 
 **On the web:** Browse the standard modules at [github.com/tlaplus/tlaplus](https://github.com/tlaplus/tlaplus/tree/master/tlatools/org.lamport.tlatools/src/tla2sany/StandardModules) and CommunityModules at [github.com/tlaplus/CommunityModules](https://github.com/tlaplus/CommunityModules/tree/main/modules).
 
-**For AI assistants:** Use the TLA+ MCP tools `tlaplus_mcp_sany_modules` to list available modules, and `tlaplus_mcp_sany_symbol` to extract symbols from a specific module.
+**For AI assistants:** Use the TLA+ MCP tools `sany_modules` to list available modules, and `sany_symbol` to extract symbols from a specific module.
 
 ---
 

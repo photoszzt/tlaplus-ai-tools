@@ -2,7 +2,7 @@
 name: tla-setup
 description: Verify TLA+ tools installation and fix common issues
 argument-hint: ""
-allowed-tools: [Bash, Read, Write, Grep, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_modules, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse]
+allowed-tools: [Bash, Read, Write, Grep, mcp__plugin_tlaplus_tlaplus__sany_modules, mcp__plugin_tlaplus_tlaplus__sany_parse]
 agent: build
 ---
 
@@ -130,7 +130,7 @@ If tools found:
 
 **Step 4: Check MCP Server Connection**
 
-Try calling `tlaplus_mcp_sany_modules` to list available modules.
+Try calling `sany_modules` to list available modules.
 
 If MCP call fails:
 
@@ -170,7 +170,7 @@ Next == x' = x + 1
 
 Write to temporary file: `/tmp/tlaplus-setup-test.tla`
 
-Call `tlaplus_mcp_sany_parse` with the test file.
+Call `sany_parse` with the test file.
 
 If parse succeeds:
 

@@ -40,15 +40,15 @@ describe('SANY Tools', () => {
     it('registers all three SANY tools', async () => {
       await registerSanyTools(mockServer, MINIMAL_CONFIG);
 
-      expectToolRegistered(mockServer, 'tlaplus_mcp_sany_parse');
-      expectToolRegistered(mockServer, 'tlaplus_mcp_sany_symbol');
-      expectToolRegistered(mockServer, 'tlaplus_mcp_sany_modules');
+      expectToolRegistered(mockServer, 'sany_parse');
+      expectToolRegistered(mockServer, 'sany_symbol');
+      expectToolRegistered(mockServer, 'sany_modules');
 
       expect(mockServer.tool).toHaveBeenCalledTimes(3);
     });
   });
 
-  describe('tlaplus_mcp_sany_parse', () => {
+  describe('sany_parse', () => {
     beforeEach(async () => {
       await registerSanyTools(mockServer, MINIMAL_CONFIG);
     });
@@ -59,7 +59,7 @@ describe('SANY Tools', () => {
       (runSanyParse as jest.Mock).mockImplementation(mocks.runSanyParse);
       (parseSanyOutput as jest.Mock).mockImplementation(mocks.parseSanyOutput);
 
-      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_parse', {
+      const response = await callRegisteredTool(mockServer, 'sany_parse', {
         fileName: '/mock/test.tla'
       });
 
@@ -74,7 +74,7 @@ describe('SANY Tools', () => {
     it('returns error for missing file', async () => {
       (fs.existsSync as jest.Mock).mockReturnValue(false);
 
-      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_parse', {
+      const response = await callRegisteredTool(mockServer, 'sany_parse', {
         fileName: '/mock/missing.tla'
       });
 
@@ -87,7 +87,7 @@ describe('SANY Tools', () => {
       (runSanyParse as jest.Mock).mockImplementation(mocks.runSanyParse);
       (parseSanyOutput as jest.Mock).mockImplementation(mocks.parseSanyOutput);
 
-      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_parse', {
+      const response = await callRegisteredTool(mockServer, 'sany_parse', {
         fileName: '/mock/error.tla'
       });
 
@@ -100,7 +100,7 @@ describe('SANY Tools', () => {
       await registerSanyTools(mockServer, NO_TOOLS_CONFIG);
       (fs.existsSync as jest.Mock).mockReturnValue(true);
 
-      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_parse', {
+      const response = await callRegisteredTool(mockServer, 'sany_parse', {
         fileName: '/mock/test.tla'
       });
 
@@ -111,7 +111,7 @@ describe('SANY Tools', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (runSanyParse as jest.Mock).mockRejectedValue(new Error('Java not found'));
 
-      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_parse', {
+      const response = await callRegisteredTool(mockServer, 'sany_parse', {
         fileName: '/mock/test.tla'
       });
 
@@ -128,7 +128,7 @@ describe('SANY Tools', () => {
         (runSanyParse as jest.Mock).mockImplementation(mocks.runSanyParse);
         (parseSanyOutput as jest.Mock).mockImplementation(mocks.parseSanyOutput);
 
-        const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_parse', {
+        const response = await callRegisteredTool(mockServer, 'sany_parse', {
           fileName: 'jarfile:/tools/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla'
         });
 
@@ -148,7 +148,7 @@ describe('SANY Tools', () => {
           throw new Error('Entry not found in JAR');
         });
 
-        const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_parse', {
+        const response = await callRegisteredTool(mockServer, 'sany_parse', {
           fileName: 'jarfile:/tools/test.jar!/nonexistent.tla'
         });
 
@@ -166,7 +166,7 @@ describe('SANY Tools', () => {
       (runSanyParse as jest.Mock).mockImplementation(mocks.runSanyParse);
       (parseSanyOutput as jest.Mock).mockImplementation(mocks.parseSanyOutput);
 
-      await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_parse', {
+      await callRegisteredTool(mockServer, 'sany_parse', {
         fileName: '/mock/test.tla'
       });
 
@@ -178,7 +178,7 @@ describe('SANY Tools', () => {
     });
   });
 
-  describe('tlaplus_mcp_sany_symbol', () => {
+  describe('sany_symbol', () => {
     beforeEach(async () => {
       await registerSanyTools(mockServer, MINIMAL_CONFIG);
     });
@@ -200,7 +200,7 @@ describe('SANY Tools', () => {
       const mocks = mockExtractSymbolsSuccess(symbolData);
       (extractSymbols as jest.Mock).mockImplementation(mocks.extractSymbols);
 
-      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_symbol', {
+      const response = await callRegisteredTool(mockServer, 'sany_symbol', {
         fileName: '/mock/test.tla'
       });
 
@@ -216,7 +216,7 @@ describe('SANY Tools', () => {
       const mocks = mockExtractSymbolsSuccess();
       (extractSymbols as jest.Mock).mockImplementation(mocks.extractSymbols);
 
-      await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_symbol', {
+      await callRegisteredTool(mockServer, 'sany_symbol', {
         fileName: '/mock/test.tla',
         includeExtendedModules: true
       });
@@ -234,7 +234,7 @@ describe('SANY Tools', () => {
       const mocks = mockExtractSymbolsSuccess();
       (extractSymbols as jest.Mock).mockImplementation(mocks.extractSymbols);
 
-      await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_symbol', {
+      await callRegisteredTool(mockServer, 'sany_symbol', {
         fileName: '/mock/test.tla'
       });
 
@@ -249,7 +249,7 @@ describe('SANY Tools', () => {
     it('returns error for missing file', async () => {
       (fs.existsSync as jest.Mock).mockReturnValue(false);
 
-      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_symbol', {
+      const response = await callRegisteredTool(mockServer, 'sany_symbol', {
         fileName: '/mock/missing.tla'
       });
 
@@ -260,7 +260,7 @@ describe('SANY Tools', () => {
       await registerSanyTools(mockServer, NO_TOOLS_CONFIG);
       (fs.existsSync as jest.Mock).mockReturnValue(true);
 
-      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_symbol', {
+      const response = await callRegisteredTool(mockServer, 'sany_symbol', {
         fileName: '/mock/test.tla'
       });
 
@@ -271,7 +271,7 @@ describe('SANY Tools', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (extractSymbols as jest.Mock).mockRejectedValue(new Error('Failed to parse XML'));
 
-      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_symbol', {
+      const response = await callRegisteredTool(mockServer, 'sany_symbol', {
         fileName: '/mock/test.tla'
       });
 
@@ -300,7 +300,7 @@ describe('SANY Tools', () => {
         const mocks = mockExtractSymbolsSuccess(symbolData);
         (extractSymbols as jest.Mock).mockImplementation(mocks.extractSymbols);
 
-        const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_symbol', {
+        const response = await callRegisteredTool(mockServer, 'sany_symbol', {
           fileName: 'jarfile:/tools/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla'
         });
 
@@ -322,7 +322,7 @@ describe('SANY Tools', () => {
           throw new Error('Entry not found in JAR');
         });
 
-        const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_symbol', {
+        const response = await callRegisteredTool(mockServer, 'sany_symbol', {
           fileName: 'jarfile:/tools/test.jar!/nonexistent.tla'
         });
 
@@ -339,7 +339,7 @@ describe('SANY Tools', () => {
       const mocks = mockExtractSymbolsSuccess();
       (extractSymbols as jest.Mock).mockImplementation(mocks.extractSymbols);
 
-      await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_symbol', {
+      await callRegisteredTool(mockServer, 'sany_symbol', {
         fileName: '/mock/test.tla'
       });
 
@@ -352,7 +352,7 @@ describe('SANY Tools', () => {
     });
   });
 
-  describe('tlaplus_mcp_sany_modules', () => {
+  describe('sany_modules', () => {
     beforeEach(async () => {
       await registerSanyTools(mockServer, MINIMAL_CONFIG);
     });
@@ -367,7 +367,7 @@ describe('SANY Tools', () => {
         'readme.txt'
       ]);
 
-      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_modules', {});
+      const response = await callRegisteredTool(mockServer, 'sany_modules', {});
 
       expectMcpTextResponse(response, 'Naturals.tla');
       expectMcpTextResponse(response, 'Sequences.tla');
@@ -380,7 +380,7 @@ describe('SANY Tools', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.promises.readdir as jest.Mock).mockResolvedValue([]);
 
-      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_modules', {});
+      const response = await callRegisteredTool(mockServer, 'sany_modules', {});
 
       expectMcpErrorResponse(response, 'No TLA+ modules found');
       expectMcpErrorResponse(response, 'JAR file support');
@@ -389,7 +389,7 @@ describe('SANY Tools', () => {
     it('handles missing StandardModules directory', async () => {
       (fs.existsSync as jest.Mock).mockReturnValue(false);
 
-      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_modules', {});
+      const response = await callRegisteredTool(mockServer, 'sany_modules', {});
 
       expectMcpErrorResponse(response, 'No TLA+ modules found');
     });
@@ -397,7 +397,7 @@ describe('SANY Tools', () => {
     it('returns error when tools directory not configured', async () => {
       await registerSanyTools(mockServer, NO_TOOLS_CONFIG);
 
-      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_modules', {});
+      const response = await callRegisteredTool(mockServer, 'sany_modules', {});
 
       expectMcpErrorResponse(response, 'tools directory not configured');
     });
@@ -408,7 +408,7 @@ describe('SANY Tools', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.promises.readdir as jest.Mock).mockRejectedValue(new Error('Permission denied'));
 
-      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_modules', {});
+      const response = await callRegisteredTool(mockServer, 'sany_modules', {});
 
       expectMcpErrorResponse(response, 'Warning: Failed to read');
       expectMcpErrorResponse(response, 'Permission denied');
@@ -437,7 +437,7 @@ describe('SANY Tools', () => {
           'jarfile:/tools/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla',
         ]);
 
-        const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_modules', {});
+        const response = await callRegisteredTool(mockServer, 'sany_modules', {});
 
         expect(response.content[0].text).toContain('Naturals.tla');
         expect(response.content[0].text).toContain('Sequences.tla');
@@ -456,7 +456,7 @@ describe('SANY Tools', () => {
           'jarfile:/tools/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla',
         ]);
 
-        const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_sany_modules', {});
+        const response = await callRegisteredTool(mockServer, 'sany_modules', {});
 
         expect(response.content[0].text).toContain('LocalModule.tla');
         expect(response.content[0].text).toContain('Naturals.tla');

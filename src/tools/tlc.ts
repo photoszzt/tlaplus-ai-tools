@@ -153,7 +153,7 @@ export async function registerTlcTools(
 ): Promise<void> {
   // Tool 1: Model check
   server.tool(
-    'tlaplus_mcp_tlc_check',
+    'tlc_check',
     'Perform an exhaustive model check of the TLA+ module provided as an input file using TLC. Model checking is a formal verification method that systematically explores all reachable states of a system to verify its correctness. This includes checking both safety and liveness properties, and identifying any counterexamples that violate the specified properties. Please note that TLC requires the fully qualified file path to the TLA+ module. Be aware that, due to the potential for state-space explosion, exhaustive model checking may be computationally intensive and time-consuming. In some cases, it may be infeasible to check very large models exhaustively. For guidance on TLC configuration files, see the tlc-config-files.md knowledgebase article.',
     {
       fileName: z.string(),
@@ -247,7 +247,7 @@ export async function registerTlcTools(
 
   // Tool 2: Smoke test
   server.tool(
-    'tlaplus_mcp_tlc_smoke',
+    'tlc_smoke',
     'Smoke test the TLA+ module using TLC with the provided input file. Smoke testing is a lightweight verification technique that runs TLC in simulation mode to randomly explore as many behaviors as possible within a specified time limit. This method does not attempt to exhaustively explore the entire state space. If no counterexample is found, it does not imply that the module is correct—only that no violations were observed within the constraints of the test. If a counterexample is found, it demonstrates that the module violates at least one of its specified properties. Note that any counterexample produced may not be minimal due to the non-exhaustive nature of the search. TLC expects the fully qualified file path to the input module.',
     {
       fileName: z.string(),
@@ -351,7 +351,7 @@ export async function registerTlcTools(
 
   // Tool 3: Explore behaviors
   server.tool(
-    'tlaplus_mcp_tlc_explore',
+    'tlc_explore',
     'Explore the given TLA+ module by using TLC to randomly generate and print a behavior—a sequence of states, where each state represents an assignment of values to the module\'s variables. Choose a meaningful value for the behavior length N that is neither too small nor too large, based on your estimate of what constitutes an interesting behavior for this particular module.',
     {
       fileName: z.string(),
@@ -463,8 +463,8 @@ export async function registerTlcTools(
 
   // Tool 4: Trace replay
   server.tool(
-    'tlaplus_mcp_tlc_trace',
-    'Load and replay a previously generated TLC trace file. This tool is particularly useful after tlaplus_mcp_tlc_check finds a counterexample and automatically generates a trace file. Trace files are .tlc files stored in the .vscode/tlc/ directory with the naming pattern: {specName}_trace_T{timestamp}_F{fp}_W{workers}_M{mode}.tlc. By rerunning TLC with -loadtrace, you can add or modify ALIAS expressions in the configuration file to derive compound values, rename variables, filter out variables, or create custom animations of the trace for better analysis. The ALIAS feature allows you to evaluate expressions on pairs of states (s -> t) in the error trace and display custom formatted output instead of raw state dumps. For comprehensive guidance on ALIAS expressions, see resource tlaplus://knowledge/tlc-alias-expressions.md.',
+    'tlc_trace',
+    'Load and replay a previously generated TLC trace file. This tool is particularly useful after tlc_check finds a counterexample and automatically generates a trace file. Trace files are .tlc files stored in the .vscode/tlc/ directory with the naming pattern: {specName}_trace_T{timestamp}_F{fp}_W{workers}_M{mode}.tlc. By rerunning TLC with -loadtrace, you can add or modify ALIAS expressions in the configuration file to derive compound values, rename variables, filter out variables, or create custom animations of the trace for better analysis. The ALIAS feature allows you to evaluate expressions on pairs of states (s -> t) in the error trace and display custom formatted output instead of raw state dumps. For comprehensive guidance on ALIAS expressions, see resource tlaplus://knowledge/tlc-alias-expressions.md.',
     {
       fileName: z.string(),
       traceFile: z.string(),
