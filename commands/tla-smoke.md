@@ -3,7 +3,7 @@ name: tla-smoke
 description: Run quick smoke test using random simulation (3 seconds)
 argument-hint: "@spec.tla [duration]"
 allowed-tools:
-  [Read, Bash, Grep, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke]
+  [Read, Bash, Grep, mcp__plugin_tlaplus_tlaplus__tlc_smoke]
 agent: build
 ---
 
@@ -25,7 +25,7 @@ Run a quick 3-second random simulation to catch obvious bugs in your TLA+ specif
 
 1. Validates and normalizes the spec path from `$ARGUMENTS`
 2. Applies deterministic `.cfg` selection algorithm (see below)
-3. Calls `tlaplus_mcp_tlc_smoke` to run random simulation
+3. Calls `tlc_smoke` to run random simulation
 4. Reports results (states explored, violations found)
 
 ## Implementation
@@ -133,7 +133,7 @@ Store final cfg path in `FINAL_CFG`.
 Invoke TLC smoke test:
 
 ```
-tlaplus_mcp_tlc_smoke \
+tlc_smoke \
   --fileName "$SPEC_PATH" \
   --cfgFile "$FINAL_CFG" \
   --extraJavaOpts '["-Dtlc2.TLC.stopAfter='$SECONDS'"]'

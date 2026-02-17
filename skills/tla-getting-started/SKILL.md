@@ -141,7 +141,7 @@ INVARIANT BoundInvariant
 Use MCP tools to validate syntax:
 
 ```
-tlaplus_mcp_sany_parse --file Counter.tla
+sany_parse --file Counter.tla
 ```
 
 Or use the command: `/tla-parse @Counter.tla`
@@ -151,7 +151,7 @@ Or use the command: `/tla-parse @Counter.tla`
 Run TLC to verify the specification:
 
 ```
-tlaplus_mcp_tlc_check --file Counter.tla
+tlc_check --file Counter.tla
 ```
 
 Or use the command: `/tla-check @Counter.tla`
@@ -289,10 +289,10 @@ Access knowledge base articles for deeper topics:
 ### MCP Tools
 
 Use these tools for learning:
-- `tlaplus_mcp_sany_parse` - Validate syntax
-- `tlaplus_mcp_sany_modules` - List available modules
-- `tlaplus_mcp_tlc_smoke` - Quick testing (3 seconds)
-- `tlaplus_mcp_tlc_explore` - Generate example behaviors
+- `sany_parse` - Validate syntax
+- `sany_modules` - List available modules
+- `tlc_smoke` - Quick testing (3 seconds)
+- `tlc_explore` - Generate example behaviors
 
 ### Commands
 

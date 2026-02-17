@@ -34,17 +34,17 @@ Successfully implemented a comprehensive Claude Code and OpenCode plugin that br
 
 **SANY Tools Implementation:**
 
-- Implemented tlaplus_mcp_sany_parse tool (fully functional, supports `jarfile:` URIs)
-- Implemented tlaplus_mcp_sany_symbol tool (fully functional with XMLExporter, supports `jarfile:` URIs)
-- Built tlaplus_mcp_sany_modules tool (filesystem + JAR scanning)
+- Implemented sany_parse tool (fully functional, supports `jarfile:` URIs)
+- Implemented sany_symbol tool (fully functional with XMLExporter, supports `jarfile:` URIs)
+- Built sany_modules tool (filesystem + JAR scanning)
 - Integrated all tools with MCP server
 - Added JAR module scanning with `adm-zip` for reading standard/community modules from JAR archives
 
 **TLC Model Checking Tools:**
 
-- Implemented tlaplus_mcp_tlc_check (exhaustive model checking)
-- Created tlaplus_mcp_tlc_smoke (quick random simulation)
-- Built tlaplus_mcp_tlc_explore (behavior trace generation)
+- Implemented tlc_check (exhaustive model checking)
+- Created tlc_smoke (quick random simulation)
+- Built tlc_explore (behavior trace generation)
 - All tools tested and functional
 
 **Knowledge Base Resources:**
@@ -312,12 +312,12 @@ src/utils/errors/__tests__/
 
 ### MCP Tools (6)
 
-1. **tlaplus_mcp_sany_parse** - Parse TLA+ modules for errors (supports `jarfile:` URIs)
-2. **tlaplus_mcp_sany_symbol** - Extract symbols with TLC config suggestions (supports `jarfile:` URIs)
-3. **tlaplus_mcp_sany_modules** - List available modules (scans filesystem + JAR archives)
-4. **tlaplus_mcp_tlc_check** - Exhaustive model checking
-5. **tlaplus_mcp_tlc_smoke** - Quick smoke testing
-6. **tlaplus_mcp_tlc_explore** - Behavior exploration
+1. **sany_parse** - Parse TLA+ modules for errors (supports `jarfile:` URIs)
+2. **sany_symbol** - Extract symbols with TLC config suggestions (supports `jarfile:` URIs)
+3. **sany_modules** - List available modules (scans filesystem + JAR archives)
+4. **tlc_check** - Exhaustive model checking
+5. **tlc_smoke** - Quick smoke testing
+6. **tlc_explore** - Behavior exploration
 
 ### MCP Resources (20)
 

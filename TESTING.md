@@ -131,7 +131,7 @@ Test parsing via MCP (requires MCP client):
 {
   "method": "tools/call",
   "params": {
-    "name": "tlaplus_mcp_sany_parse",
+    "name": "sany_parse",
     "arguments": {
       "fileName": "/tmp/TestSpec.tla"
     }
@@ -148,7 +148,7 @@ Test parsing via MCP (requires MCP client):
 {
   "method": "tools/call",
   "params": {
-    "name": "tlaplus_mcp_sany_symbol",
+    "name": "sany_symbol",
     "arguments": {
       "fileName": "/tmp/TestSpec.tla"
     }

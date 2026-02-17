@@ -275,7 +275,7 @@ Explain to user:
 #    (done by this agent)
 
 # 2. Explore with TLC
-tlaplus_mcp_tlc_explore \
+tlc_explore \
   --fileName SpecNameAnim.tla \
   --behaviorLength 10
 

@@ -46,7 +46,7 @@ Run TLC with only invariants enabled:
 
 ```bash
 # Use MCP tool
-tlaplus_mcp_tlc_check --config minimal.cfg
+tlc_check --config minimal.cfg
 ```
 
 **If invariants fail**:
@@ -86,9 +86,9 @@ If invariants pass but properties fail, re-enable properties one at a time:
 
 ## MCP Tools for Debugging
 
-- `tlaplus_mcp_tlc_check`: Run model checker with config
-- `tlaplus_mcp_tlc_explore`: Explore state space interactively
-- `tlaplus_mcp_sany_parse`: Verify syntax after fixes
+- `tlc_check`: Run model checker with config
+- `tlc_explore`: Explore state space interactively
+- `sany_parse`: Verify syntax after fixes
 
 ## Tips
 

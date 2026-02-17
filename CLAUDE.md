@@ -130,7 +130,7 @@ hooks/
 
 ### MCP Tools Exposed
 
-The server exposes these tools via MCP (prefix: `tlaplus_mcp_`):
+The server exposes these tools via MCP:
 
 **SANY Parser Tools:**
 
@@ -154,10 +154,10 @@ When a user runs `/tla-check @Counter.tla`:
 
 1. **Command** (`commands/tla-check.md`) is executed
 2. Command reads `Counter.tla` using Read tool
-3. Command calls MCP tool `tlaplus_mcp_sany_parse` to validate syntax
-4. If config missing, command calls `tlaplus_mcp_sany_symbol` to extract symbols
+3. Command calls MCP tool `sany_parse` to validate syntax
+4. If config missing, command calls `sany_symbol` to extract symbols
 5. Command prompts user to generate `Counter.cfg` if needed
-6. Command calls `tlaplus_mcp_tlc_check` to run model checking
+6. Command calls `tlc_check` to run model checking
 7. Results are formatted and presented to user
 
 ### Hook Behaviors
@@ -295,7 +295,7 @@ Generate configs using `/tla-symbols` command or `config-generator` agent.
 1. Create `commands/command-name.md` with YAML frontmatter
 2. Add `allowed-tools` list (Read, Write, Bash, Grep, etc.)
 3. Write clear instructions for Claude on how to execute the command
-4. Reference MCP tools using exact names (e.g., `tlaplus_mcp_sany_parse`)
+4. Reference MCP tools using exact names (e.g., `sany_parse`)
 5. Test by running `/command-name` in Claude Code
 
 ### Adding a New Skill

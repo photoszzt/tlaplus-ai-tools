@@ -235,10 +235,10 @@ Reduces state space by treating equivalent states as identical.
 
 ```javascript
 // Parse first
-tlaplus_mcp_sany_parse({ fileName: "/path/to/Spec.tla" })
+sany_parse({ fileName: "/path/to/Spec.tla" })
 
 // Model check
-tlaplus_mcp_tlc_check({
+tlc_check({
   fileName: "/path/to/Spec.tla",
   cfgFile: "/path/to/Config.cfg",
   extraOpts: ["-workers", "4"],
@@ -246,7 +246,7 @@ tlaplus_mcp_tlc_check({
 })
 
 // Smoke test
-tlaplus_mcp_tlc_smoke({
+tlc_smoke({
   fileName: "/path/to/Spec.tla"
 })
 ```

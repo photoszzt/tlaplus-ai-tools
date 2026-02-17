@@ -65,14 +65,14 @@ AnimWatch ==
 
 Use the MCP server to check syntax:
 ```
-tlaplus_mcp_sany_parse MySpec_anim.tla
+sany_parse MySpec_anim.tla
 ```
 
 ### 3. Generate Animation SVGs
 
 Create configuration file and use MCP to explore states:
 ```
-tlaplus_mcp_tlc_explore MySpec_anim.tla -depth 10
+tlc_explore MySpec_anim.tla -depth 10
 ```
 
 ## Animation File Structure
@@ -350,10 +350,10 @@ Use MCP to generate animation frames:
 
 ```
 # First validate the syntax
-tlaplus_mcp_sany_parse CounterSystem_anim.tla
+sany_parse CounterSystem_anim.tla
 
 # Then generate animation states
-tlaplus_mcp_tlc_explore CounterSystem_anim.tla -depth 20
+tlc_explore CounterSystem_anim.tla -depth 20
 ```
 
 This will create SVG files: `CounterSystem_anim_0.svg`, `CounterSystem_anim_1.svg`, etc.
@@ -497,7 +497,7 @@ Use the `@@` operator to combine attributes:
 Before generating animations, validate your syntax:
 
 ```
-tlaplus_mcp_sany_parse MySpec_anim.tla
+sany_parse MySpec_anim.tla
 ```
 
 This checks for:
@@ -510,7 +510,7 @@ This checks for:
 To explore states and generate SVG files:
 
 ```
-tlaplus_mcp_tlc_explore MySpec_anim.tla -depth 10
+tlc_explore MySpec_anim.tla -depth 10
 ```
 
 This will:
@@ -754,7 +754,7 @@ AnimView ==
 
 #### Syntax Validation Fails
 
-**Symptom**: `tlaplus_mcp_sany_parse` reports errors
+**Symptom**: `sany_parse` reports errors
 
 **Solutions**:
 1. Check all required modules are extended

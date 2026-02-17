@@ -27,7 +27,7 @@ describe('SANY Tool Error Formatting', () => {
     mockFsExistsSync.mockReturnValue(true);
   });
 
-  describe('tlaplus_mcp_sany_symbol XMLExporter error formatting', () => {
+  describe('sany_symbol XMLExporter error formatting', () => {
     it('formats XMLEXPORTER_USAGE_ERROR with suggested actions', async () => {
       const mockServer = {
         handlers: new Map(),
@@ -52,7 +52,7 @@ describe('SANY Tool Error Formatting', () => {
 
       await registerSanyTools(mockServer as any, config);
 
-      const symbolHandler = mockServer.handlers.get('tlaplus_mcp_sany_symbol');
+      const symbolHandler = mockServer.handlers.get('sany_symbol');
       expect(symbolHandler).toBeDefined();
 
       const response = await symbolHandler({ fileName: '/fake/work/Test.tla' });
@@ -92,7 +92,7 @@ describe('SANY Tool Error Formatting', () => {
 
       await registerSanyTools(mockServer as any, config);
 
-      const symbolHandler = mockServer.handlers.get('tlaplus_mcp_sany_symbol');
+      const symbolHandler = mockServer.handlers.get('sany_symbol');
 
       const response = await symbolHandler({ fileName: '/fake/work/Test.tla' });
       const text = response.content[0].text;
@@ -128,7 +128,7 @@ describe('SANY Tool Error Formatting', () => {
 
       await registerSanyTools(mockServer as any, config);
 
-      const symbolHandler = mockServer.handlers.get('tlaplus_mcp_sany_symbol');
+      const symbolHandler = mockServer.handlers.get('sany_symbol');
 
       const response = await symbolHandler({ fileName: '/fake/work/Missing.tla' });
       const text = response.content[0].text;
@@ -139,7 +139,7 @@ describe('SANY Tool Error Formatting', () => {
     });
   });
 
-  describe('tlaplus_mcp_sany_parse error formatting', () => {
+  describe('sany_parse error formatting', () => {
     it('formats errors with error codes', async () => {
       const mockServer = {
         handlers: new Map(),
@@ -164,7 +164,7 @@ describe('SANY Tool Error Formatting', () => {
 
       await registerSanyTools(mockServer as any, config);
 
-      const parseHandler = mockServer.handlers.get('tlaplus_mcp_sany_parse');
+      const parseHandler = mockServer.handlers.get('sany_parse');
       expect(parseHandler).toBeDefined();
 
       const response = await parseHandler({ fileName: '/fake/work/Test.tla' });
@@ -200,7 +200,7 @@ describe('SANY Tool Error Formatting', () => {
 
       await registerSanyTools(mockServer as any, config);
 
-      const symbolHandler = mockServer.handlers.get('tlaplus_mcp_sany_symbol');
+      const symbolHandler = mockServer.handlers.get('sany_symbol');
 
       const response = await symbolHandler({ fileName: '/fake/work/Test.tla' });
       const text = response.content[0].text;
@@ -233,7 +233,7 @@ describe('SANY Tool Error Formatting', () => {
 
       await registerSanyTools(mockServer as any, config);
 
-      const symbolHandler = mockServer.handlers.get('tlaplus_mcp_sany_symbol');
+      const symbolHandler = mockServer.handlers.get('sany_symbol');
 
       const response = await symbolHandler({ fileName: '/fake/work/Test.tla' });
       const text = response.content[0].text;
