@@ -322,8 +322,12 @@ async function downloadAndVerifyPreRelease(name, url, destPath, lockKey) {
   let currentAssetUrl = null;
   try {
     process.stdout.write(`Checking ${name} asset URL...`);
-    currentAssetUrl = await resolveAssetUrl(url);
-    // Print the last path segment of the CDN URL as a short identifier
+    const rawUrl = await resolveAssetUrl(url);
+    // Strip query string: the CDN URL contains time-limited SAS tokens
+    // (se=, sig=, jwt=, etc.) that change on every request. Only the path
+    // encodes the asset ID, which is the stable staleness signal we care about.
+    currentAssetUrl = new URL(rawUrl).origin + new URL(rawUrl).pathname;
+    // Print the last two path segments as a short identifier
     const id = currentAssetUrl.split('/').slice(-2).join('/');
     console.log(` ${id}`);
   } catch (err) {
