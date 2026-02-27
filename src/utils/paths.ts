@@ -5,6 +5,9 @@ import * as path from 'path';
 /**
  * Resolve a file path and optionally validate it's within the working directory.
  *
+ * @implements REQ-CODEX-003, SCN-CODEX-003-01, SCN-CODEX-003-02, SCN-CODEX-003-03, SCN-CODEX-003-04
+ * @implements REQ-CODEX-004, SCN-CODEX-004-01
+ *
  * @param filePath - The file path to resolve (absolute or relative)
  * @param workingDir - Optional working directory to restrict access to
  * @returns Absolute path to the file
@@ -14,27 +17,41 @@ export function resolveAndValidatePath(
   filePath: string,
   workingDir: string | null
 ): string {
-  // Resolve to absolute path
   const absolute = path.isAbsolute(filePath)
     ? filePath
     : path.resolve(workingDir || process.cwd(), filePath);
 
-  // If no workingDir specified, allow any path
   if (!workingDir) {
     return absolute;
   }
 
-  // Validate path is within workingDir
-  const relative = path.relative(workingDir, absolute);
+  // Attempt symlink-aware containment check
+  try {
+    const realAbsolute = fs.realpathSync(absolute);
+    const realWorkingDir = fs.realpathSync(workingDir);
+    const relative = path.relative(realWorkingDir, realAbsolute);
 
-  // Check for path traversal attempts
-  if (relative.startsWith('..') || path.isAbsolute(relative)) {
-    throw new Error(
-      `Access denied: Path ${filePath} is outside the working directory ${workingDir}`
-    );
+    if (relative.startsWith('..') || path.isAbsolute(relative)) {
+      throw new Error(
+        `Access denied: Path ${filePath} resolves to ${realAbsolute} which is outside the working directory ${realWorkingDir}`
+      );
+    }
+
+    return absolute;
+  } catch (err) {
+    // If realpathSync fails because the file doesn't exist yet, fall back to lexical check
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+      const relative = path.relative(workingDir, absolute);
+      if (relative.startsWith('..') || path.isAbsolute(relative)) {
+        throw new Error(
+          `Access denied: Path ${filePath} is outside the working directory ${workingDir}`
+        );
+      }
+      return absolute;
+    }
+    // Re-throw non-ENOENT errors (including our own "Access denied" thrown above)
+    throw err;
   }
-
-  return absolute;
 }
 
 /**

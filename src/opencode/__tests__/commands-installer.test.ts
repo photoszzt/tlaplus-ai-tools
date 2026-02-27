@@ -206,7 +206,59 @@ describe('commands-installer', () => {
       expect(result.commands[0].error).toContain('Source file not found');
     });
 
-    it('reports error when target exists but incorrect', () => {
+    // @tests REQ-CODEX-011, SCN-CODEX-011-01
+    it('removes stale target and reinstalls when target exists but incorrect', () => {
+      const targetPath = path.join(targetDir, 'tla-parse.md');
+      const sourcePath = path.join(sourceDir, 'tla-parse.md');
+
+      // First call: existsSync for sourceDir, sourcePath, targetPath (isAlreadyInstalled check),
+      // and targetPath again (stale removal check) all return true.
+      // After rmSync removes the stale target, the next existsSync for targetPath returns false
+      // (so the symlink path proceeds without error).
+      let rmSyncCalled = false;
+      mockFs.existsSync.mockImplementation((p) => {
+        const normalized = normalizePath(p.toString());
+        if (normalized === normalizePath(sourceDir)) return true;
+        if (normalized === normalizePath(sourcePath)) return true;
+        if (normalized === normalizePath(targetPath)) {
+          // After rmSync is called, the target no longer exists
+          return !rmSyncCalled;
+        }
+        return false;
+      });
+
+      mockFs.readdirSync.mockReturnValue([
+        { name: 'tla-parse.md', isFile: () => true, isDirectory: () => false } as any,
+      ]);
+
+      mockFs.lstatSync.mockReturnValue({
+        isSymbolicLink: () => true,
+        isFile: () => false,
+        isDirectory: () => false,
+      } as any);
+
+      mockFs.readlinkSync.mockReturnValue('/wrong/path');
+
+      mockFs.rmSync.mockImplementation(() => {
+        rmSyncCalled = true;
+      });
+
+      mockFs.symlinkSync.mockImplementation(() => {});
+
+      const result = installCommands(projectRoot);
+
+      expect(result.success).toBe(true);
+      expect(result.installedCount).toBe(1);
+      expect(result.failedCount).toBe(0);
+      expect(result.commands[0].installed).toBe(true);
+      expect(result.commands[0].symlinked).toBe(true);
+      expect(result.commands[0].error).toBeUndefined();
+      expect(mockFs.rmSync).toHaveBeenCalledWith(targetPath, { force: true });
+      expect(mockFs.symlinkSync).toHaveBeenCalledTimes(1);
+    });
+
+    // @tests SCN-CODEX-011-03
+    it('reports error when permission denied removing stale target', () => {
       const targetPath = path.join(targetDir, 'tla-parse.md');
       const sourcePath = path.join(sourceDir, 'tla-parse.md');
 
@@ -230,11 +282,19 @@ describe('commands-installer', () => {
 
       mockFs.readlinkSync.mockReturnValue('/wrong/path');
 
+      const permissionError = new Error('EPERM: operation not permitted');
+      (permissionError as NodeJS.ErrnoException).code = 'EPERM';
+      mockFs.rmSync.mockImplementation(() => {
+        throw permissionError;
+      });
+
       const result = installCommands(projectRoot);
 
       expect(result.success).toBe(false);
       expect(result.failedCount).toBe(1);
-      expect(result.commands[0].error).toContain('Target already exists but is not correctly installed');
+      expect(result.commands[0].installed).toBe(false);
+      expect(result.commands[0].error).toContain('Failed to remove stale target');
+      expect(mockFs.symlinkSync).not.toHaveBeenCalled();
     });
 
     it('is idempotent - running twice produces same result', () => {

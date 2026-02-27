@@ -121,10 +121,16 @@ function isAlreadyInstalled(targetPath: string, sourcePath: string): boolean {
     return resolvedLink === resolvedSource;
   }
 
-  // If it's a file, we consider it already installed
-  // (We don't verify content equality - too expensive)
+  // @implements REQ-CODEX-009, SCN-CODEX-009-01, SCN-CODEX-009-02
   if (targetStat.isFile()) {
-    return true;
+    try {
+      const targetContent = fs.readFileSync(targetPath, 'utf-8');
+      const sourceContent = fs.readFileSync(sourcePath, 'utf-8');
+      return targetContent === sourceContent;
+    } catch {
+      // If we can't read either file, consider it not installed
+      return false;
+    }
   }
 
   return false;
@@ -172,16 +178,21 @@ function installCommand(
     };
   }
 
-  // If target exists but is not correctly installed, report error
+  // @implements REQ-CODEX-011, SCN-CODEX-011-01, SCN-CODEX-011-03
+  // If target exists but is stale, remove before reinstalling
   if (fs.existsSync(targetPath)) {
-    return {
-      commandName,
-      sourcePath,
-      targetPath,
-      installed: false,
-      symlinked: false,
-      error: `Target already exists but is not correctly installed: ${targetPath}`,
-    };
+    try {
+      fs.rmSync(targetPath, { force: true });
+    } catch (rmError) {
+      return {
+        commandName,
+        sourcePath,
+        targetPath,
+        installed: false,
+        symlinked: false,
+        error: `Failed to remove stale target: ${rmError instanceof Error ? rmError.message : String(rmError)}`,
+      };
+    }
   }
 
   // Try to create symlink first

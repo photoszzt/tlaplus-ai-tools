@@ -284,12 +284,78 @@ export function parseConfigFile(configPath: string): unknown {
  * @param content - JSON content with comments
  * @returns JSON content with comments stripped
  */
+// @implements REQ-CODEX-007, SCN-CODEX-007-01, SCN-CODEX-007-02, SCN-CODEX-007-03, SCN-CODEX-007-04
+// @implements REQ-CODEX-008, SCN-CODEX-008-01, SCN-CODEX-008-02, SCN-CODEX-008-03
 function stripJsonComments(content: string): string {
-  // Remove single-line comments
-  let result = content.replace(/\/\/.*$/gm, '');
+  let result = '';
+  let i = 0;
+  let inString = false;
 
-  // Remove multi-line comments
-  result = result.replace(/\/\*[\s\S]*?\*\//g, '');
+  while (i < content.length) {
+    const ch = content[i];
+
+    if (inString) {
+      // Inside a JSON string literal
+      if (ch === '\\') {
+        // Escaped character -- copy both the backslash and the next char
+        result += ch;
+        i++;
+        if (i < content.length) {
+          result += content[i];
+          i++;
+        }
+        continue;
+      }
+      if (ch === '"') {
+        // End of string
+        inString = false;
+        result += ch;
+        i++;
+        continue;
+      }
+      // Any other character inside string -- copy as-is
+      result += ch;
+      i++;
+      continue;
+    }
+
+    // Outside string literal
+    if (ch === '"') {
+      // Start of string
+      inString = true;
+      result += ch;
+      i++;
+      continue;
+    }
+
+    if (ch === '/' && i + 1 < content.length) {
+      const next = content[i + 1];
+      if (next === '/') {
+        // Single-line comment: skip to end of line
+        i += 2;
+        while (i < content.length && content[i] !== '\n') {
+          i++;
+        }
+        // Keep the newline (preserves line structure)
+        continue;
+      }
+      if (next === '*') {
+        // Multi-line comment: skip to closing */
+        i += 2;
+        while (i + 1 < content.length && !(content[i] === '*' && content[i + 1] === '/')) {
+          i++;
+        }
+        if (i + 1 < content.length) {
+          i += 2; // skip the closing */
+        }
+        continue;
+      }
+    }
+
+    // Regular character outside string
+    result += ch;
+    i++;
+  }
 
   // Remove trailing commas before } or ]
   result = result.replace(/,(\s*[}\]])/g, '$1');

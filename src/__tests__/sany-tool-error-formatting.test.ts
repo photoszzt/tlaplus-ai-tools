@@ -4,11 +4,13 @@ import * as path from 'path';
 
 jest.mock('../utils/symbols');
 jest.mock('../utils/sany');
+jest.mock('../utils/paths');
 jest.mock('fs');
 
 import { registerSanyTools } from '../tools/sany';
 import { extractSymbols } from '../utils/symbols';
 import { runSanyParse, parseSanyOutput } from '../utils/sany';
+import { resolveAndValidatePath } from '../utils/paths';
 
 describe('SANY Tool Error Formatting', () => {
   let mockExtractSymbols: jest.MockedFunction<typeof extractSymbols>;
@@ -18,13 +20,15 @@ describe('SANY Tool Error Formatting', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     mockExtractSymbols = extractSymbols as jest.MockedFunction<typeof extractSymbols>;
     mockRunSanyParse = runSanyParse as jest.MockedFunction<typeof runSanyParse>;
     mockParseSanyOutput = parseSanyOutput as jest.MockedFunction<typeof parseSanyOutput>;
     mockFsExistsSync = fs.existsSync as jest.MockedFunction<typeof fs.existsSync>;
-    
+
     mockFsExistsSync.mockReturnValue(true);
+    // resolveAndValidatePath is mocked to return its input path
+    (resolveAndValidatePath as jest.Mock).mockImplementation((p: string) => p);
   });
 
   describe('tlaplus_mcp_sany_symbol XMLExporter error formatting', () => {

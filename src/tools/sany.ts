@@ -105,7 +105,23 @@ export async function registerSanyTools(
 
         let absolutePath: string;
 
+        // @implements REQ-CODEX-005, SCN-CODEX-005-01, SCN-CODEX-005-03
+        // @implements REQ-CODEX-006, SCN-CODEX-006-01
         if (isJarfileUri(fileName)) {
+          // Validate JAR file path against workingDir when confined
+          if (config.workingDir) {
+            try {
+              const { jarPath } = parseJarfileUri(fileName);
+              resolveAndValidatePath(jarPath, config.workingDir);
+            } catch (err) {
+              return {
+                content: [{
+                  type: 'text',
+                  text: `Access denied: ${err instanceof Error ? err.message : String(err)}`
+                }]
+              };
+            }
+          }
           try {
             absolutePath = resolveJarfilePath(fileName);
           } catch (err) {
@@ -182,7 +198,23 @@ export async function registerSanyTools(
 
         let absolutePath: string;
 
+        // @implements REQ-CODEX-005, SCN-CODEX-005-02, SCN-CODEX-005-03
+        // @implements REQ-CODEX-006, SCN-CODEX-006-01
         if (isJarfileUri(fileName)) {
+          // Validate JAR file path against workingDir when confined
+          if (config.workingDir) {
+            try {
+              const { jarPath } = parseJarfileUri(fileName);
+              resolveAndValidatePath(jarPath, config.workingDir);
+            } catch (err) {
+              return {
+                content: [{
+                  type: 'text',
+                  text: `Access denied: ${err instanceof Error ? err.message : String(err)}`
+                }]
+              };
+            }
+          }
           try {
             absolutePath = resolveJarfilePath(fileName);
           } catch (err) {

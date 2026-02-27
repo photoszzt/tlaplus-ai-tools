@@ -4,8 +4,10 @@ const mockStat = jest.fn();
 const mockAccess = jest.fn();
 const mockReaddir = jest.fn();
 const mockExecSync = jest.fn();
+const mockRealpathSync = jest.fn();
 
 jest.mock('fs', () => ({
+  realpathSync: (...args: unknown[]) => mockRealpathSync(...args),
   promises: {
     stat: (...args: unknown[]) => mockStat(...args),
     access: (...args: unknown[]) => mockAccess(...args),
@@ -30,6 +32,9 @@ describe('paths', () => {
     mockAccess.mockReset();
     mockReaddir.mockReset();
     mockExecSync.mockReset();
+    mockRealpathSync.mockReset();
+    // Default: realpathSync returns its input (no symlinks)
+    mockRealpathSync.mockImplementation((p: string) => p);
   });
 
   describe('resolveAndValidatePath', () => {
