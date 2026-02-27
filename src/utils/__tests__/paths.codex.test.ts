@@ -33,16 +33,17 @@ describe('resolveAndValidatePath - Codex Symlink Fixes', () => {
   it('symlink inside workingDir pointing outside throws Access denied', () => {
     // Simulate: /workspace/link.tla is a symlink to /etc/passwd
     mockRealpathSync.mockImplementation((p: string) => {
-      if (p === '/workspace/link.tla') return '/etc/passwd';
-      if (p === '/workspace') return '/workspace';
+      if (p === path.resolve('/workspace', 'link.tla')) return path.resolve('/etc/passwd');
+      if (p === '/workspace') return path.resolve('/workspace');
       return p;
     });
 
     expect(() => resolveAndValidatePath('link.tla', '/workspace'))
       .toThrow('Access denied');
 
+    const escaped = path.resolve('/etc/passwd').replace(/\\/g, '\\\\');
     expect(() => resolveAndValidatePath('link.tla', '/workspace'))
-      .toThrow(/resolves to \/etc\/passwd/);
+      .toThrow(new RegExp(`resolves to ${escaped}`));
   });
 
   // @tests REQ-CODEX-003, SCN-CODEX-003-02
@@ -75,8 +76,8 @@ describe('resolveAndValidatePath - Codex Symlink Fixes', () => {
     // /tmp/workspace-link -> /real/workspace
     // /tmp/workspace-link/spec.tla resolves to /real/workspace/spec.tla
     mockRealpathSync.mockImplementation((p: string) => {
-      if (p === '/tmp/workspace-link/spec.tla') return '/real/workspace/spec.tla';
-      if (p === '/tmp/workspace-link') return '/real/workspace';
+      if (p === path.resolve('/tmp/workspace-link', 'spec.tla')) return path.resolve('/real/workspace', 'spec.tla');
+      if (p === '/tmp/workspace-link') return path.resolve('/real/workspace');
       return p;
     });
 
@@ -133,8 +134,8 @@ describe('resolveAndValidatePath - Codex Symlink Fixes', () => {
   // TC-SEC-002: symlink escape via realpathSync
   it('symlink to /etc/passwd inside workingDir is blocked', () => {
     mockRealpathSync.mockImplementation((p: string) => {
-      if (p === '/workspace/malicious') return '/etc/passwd';
-      if (p === '/workspace') return '/workspace';
+      if (p === path.resolve('/workspace', 'malicious')) return path.resolve('/etc/passwd');
+      if (p === '/workspace') return path.resolve('/workspace');
       return p;
     });
 
