@@ -1,6 +1,7 @@
 node_modules/
 dist/
 tools/*.jar
+tools/.setup-lock.json
 coverage/
 .env
 __pycache__/
