@@ -93,7 +93,7 @@ function writeLock(key, entry) {
  * using a HEAD request (no body downloaded).
  *
  * GitHub release assets redirect to a CDN URL that embeds an asset ID,
- * e.g. https://objects.githubusercontent.com/github-production-release-asset-*/
+ * e.g. https://objects.githubusercontent.com/github-production-release-asset-NNN/
  * That URL changes whenever the release asset is replaced, even if the
  * tag/release name stays the same — making it a reliable staleness signal
  * without needing GitHub API authentication.
