@@ -21,8 +21,6 @@
   "skills": "./skills/",
   "commands": "./commands/",
   "agents": [
-    "./agents/spec-validator.md",
-    "./agents/config-generator.md",
     "./agents/animation-creator.md",
     "./agents/trace-analyzer.md"
   ],

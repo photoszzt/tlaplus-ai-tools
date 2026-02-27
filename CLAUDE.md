@@ -119,8 +119,6 @@ commands/             # Slash commands (user-invocable actions)
 └── tla-setup.md      # Interactive setup and verification
 
 agents/               # Autonomous agents (self-directed tasks)
-├── spec-validator.md    # Validate spec syntax and semantics
-├── config-generator.md  # Generate TLC config from symbols
 ├── animation-creator.md # Create animation specs
 └── trace-analyzer.md    # Analyze counterexample traces
 
@@ -277,7 +275,7 @@ INVARIANT SafetyProperty
 CONSTANT MaxValue = 10
 ```
 
-Generate configs using `/tla-symbols` command or `config-generator` agent.
+Generate configs using the `/tla-symbols` command.
 
 ## Common Development Tasks
 
