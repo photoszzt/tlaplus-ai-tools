@@ -114,10 +114,12 @@ export async function registerSanyTools(
               const { jarPath } = parseJarfileUri(fileName);
               resolveAndValidatePath(jarPath, config.workingDir);
             } catch (err) {
+              const message = err instanceof Error ? err.message : String(err);
+              const normalizedMessage = message.startsWith('Access denied:') ? message : `Access denied: ${message}`;
               return {
                 content: [{
                   type: 'text',
-                  text: `Access denied: ${err instanceof Error ? err.message : String(err)}`
+                  text: normalizedMessage
                 }]
               };
             }
@@ -207,10 +209,12 @@ export async function registerSanyTools(
               const { jarPath } = parseJarfileUri(fileName);
               resolveAndValidatePath(jarPath, config.workingDir);
             } catch (err) {
+              const message = err instanceof Error ? err.message : String(err);
+              const normalizedMessage = message.startsWith('Access denied:') ? message : `Access denied: ${message}`;
               return {
                 content: [{
                   type: 'text',
-                  text: `Access denied: ${err instanceof Error ? err.message : String(err)}`
+                  text: normalizedMessage
                 }]
               };
             }

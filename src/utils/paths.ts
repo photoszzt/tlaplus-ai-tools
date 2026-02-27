@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 /**
- * Resolve a file path and optionally validate it's within the working directory.
+ * Resolve a file path and optionally validate its containment within the working directory.
  *
  * @implements REQ-CODEX-003, SCN-CODEX-003-01, SCN-CODEX-003-02, SCN-CODEX-003-03, SCN-CODEX-003-04
  * @implements REQ-CODEX-004, SCN-CODEX-004-01

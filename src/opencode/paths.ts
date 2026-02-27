@@ -287,7 +287,7 @@ export function parseConfigFile(configPath: string): unknown {
 // @implements REQ-CODEX-007, SCN-CODEX-007-01, SCN-CODEX-007-02, SCN-CODEX-007-03, SCN-CODEX-007-04
 // @implements REQ-CODEX-008, SCN-CODEX-008-01, SCN-CODEX-008-02, SCN-CODEX-008-03
 function stripJsonComments(content: string): string {
-  let result = '';
+  const parts: string[] = [];
   let i = 0;
   let inString = false;
 
@@ -298,10 +298,10 @@ function stripJsonComments(content: string): string {
       // Inside a JSON string literal
       if (ch === '\\') {
         // Escaped character -- copy both the backslash and the next char
-        result += ch;
+        parts.push(ch);
         i++;
         if (i < content.length) {
-          result += content[i];
+          parts.push(content[i]);
           i++;
         }
         continue;
@@ -309,12 +309,12 @@ function stripJsonComments(content: string): string {
       if (ch === '"') {
         // End of string
         inString = false;
-        result += ch;
+        parts.push(ch);
         i++;
         continue;
       }
       // Any other character inside string -- copy as-is
-      result += ch;
+      parts.push(ch);
       i++;
       continue;
     }
@@ -323,7 +323,7 @@ function stripJsonComments(content: string): string {
     if (ch === '"') {
       // Start of string
       inString = true;
-      result += ch;
+      parts.push(ch);
       i++;
       continue;
     }
@@ -353,9 +353,11 @@ function stripJsonComments(content: string): string {
     }
 
     // Regular character outside string
-    result += ch;
+    parts.push(ch);
     i++;
   }
+
+  let result = parts.join('');
 
   // Remove trailing commas before } or ]
   result = result.replace(/,(\s*[}\]])/g, '$1');
