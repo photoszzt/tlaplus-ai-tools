@@ -85,67 +85,59 @@ function writeLock(key, entry) {
 }
 
 // ---------------------------------------------------------------------------
-// GitHub API helpers
+// Asset URL resolution (no GitHub API auth required)
 // ---------------------------------------------------------------------------
 
 /**
- * Make a simple HTTPS GET request, returning parsed JSON.
- * @param {string} url
- * @param {number} timeoutMs
- * @returns {Promise<object>}
+ * Resolve the final URL of a download link by following HTTP redirects
+ * using a HEAD request (no body downloaded).
+ *
+ * GitHub release assets redirect to a CDN URL that embeds an asset ID,
+ * e.g. https://objects.githubusercontent.com/github-production-release-asset-*/
+ * That URL changes whenever the release asset is replaced, even if the
+ * tag/release name stays the same — making it a reliable staleness signal
+ * without needing GitHub API authentication.
+ *
+ * @param {string} url           - Starting URL
+ * @param {number} redirectCount - Internal recursion counter
+ * @returns {Promise<string>}    - Final URL after all redirects
  */
-function httpsGetJson(url, timeoutMs = GITHUB_API_TIMEOUT_MS) {
+function resolveAssetUrl(url, redirectCount = 0) {
   return new Promise((resolve, reject) => {
-    const req = https.get(url, {
-      headers: {
-        'User-Agent': 'tlaplus-ai-tools-setup',
-        'Accept': 'application/vnd.github+json'
+    if (redirectCount > MAX_REDIRECTS) {
+      reject(new Error(`Too many redirects resolving asset URL`));
+      return;
+    }
+
+    const parsed = new URL(url);
+    const req = https.request(
+      {
+        hostname: parsed.hostname,
+        path: parsed.pathname + parsed.search,
+        method: 'HEAD',
+        headers: { 'User-Agent': 'tlaplus-ai-tools-setup' }
+      },
+      (res) => {
+        if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
+          const next = res.headers.location.startsWith('http')
+            ? res.headers.location
+            : `https://${parsed.hostname}${res.headers.location}`;
+          resolveAssetUrl(next, redirectCount + 1).then(resolve).catch(reject);
+        } else if (res.statusCode === 200) {
+          resolve(url);
+        } else {
+          reject(new Error(`HEAD request returned HTTP ${res.statusCode} for ${url}`));
+        }
       }
-    }, (res) => {
-      let body = '';
-      res.on('data', chunk => { body += chunk; });
-      res.on('end', () => {
-        if (res.statusCode !== 200) {
-          reject(new Error(`GitHub API returned HTTP ${res.statusCode} for ${url}`));
-          return;
-        }
-        try {
-          resolve(JSON.parse(body));
-        } catch (e) {
-          reject(new Error(`Failed to parse GitHub API response: ${e.message}`));
-        }
-      });
-    });
-    req.setTimeout(timeoutMs, () => {
+    );
+
+    req.setTimeout(GITHUB_API_TIMEOUT_MS, () => {
       req.destroy();
-      reject(new Error(`GitHub API request timed out after ${timeoutMs / 1000}s`));
+      reject(new Error(`HEAD request timed out`));
     });
     req.on('error', reject);
+    req.end();
   });
-}
-
-/**
- * Resolve the commit SHA that a GitHub tag currently points to.
- * Handles both lightweight tags (type: "commit") and annotated tags
- * (type: "tag", which must be dereferenced to get the commit SHA).
- *
- * @param {string} owner  - GitHub repo owner, e.g. "tlaplus"
- * @param {string} repo   - GitHub repo name, e.g. "tlaplus"
- * @param {string} tag    - Tag name without "v" prefix, e.g. "1.8.0"
- * @returns {Promise<string>} Commit SHA (40-char hex)
- */
-async function fetchTagCommitSha(owner, repo, tag) {
-  const refUrl = `https://api.github.com/repos/${owner}/${repo}/git/refs/tags/v${tag}`;
-  const ref = await httpsGetJson(refUrl);
-
-  if (ref.object.type === 'commit') {
-    return ref.object.sha;
-  }
-
-  // Annotated tag — dereference to the underlying commit
-  const tagUrl = `https://api.github.com/repos/${owner}/${repo}/git/tags/${ref.object.sha}`;
-  const tagObj = await httpsGetJson(tagUrl);
-  return tagObj.object.sha;
 }
 
 // ---------------------------------------------------------------------------
@@ -301,68 +293,64 @@ async function downloadAndVerify(name, url, destPath, algorithm, expectedChecksu
 }
 
 /**
- * Download a pre-release file, pinning by the commit SHA the tag points to.
+ * Download a pre-release file, pinning by the CDN asset URL the release
+ * tag currently resolves to.
  *
  * Strategy:
- *  1. Query the GitHub API for the current commit SHA of the release tag.
- *  2. If the lockfile records the same commit SHA and the file exists,
- *     verify the stored checksum and skip the download.
+ *  1. Send a HEAD request to the download URL and follow redirects to the
+ *     final CDN URL. GitHub's CDN URL embeds an asset ID that changes
+ *     whenever the release asset is replaced (even if the tag stays the same).
+ *     This requires no GitHub API authentication.
+ *  2. If the lockfile records the same CDN URL and the file exists,
+ *     verify the stored sha256 and skip the download.
  *  3. Otherwise download the file, compute its sha256, and update the lock.
  *
- * If the GitHub API is unreachable (no network, rate-limited, etc.) and the
- * file already exists with a valid stored checksum, we fall back to the
- * cached version with a warning rather than failing the setup.
+ * If the HEAD request fails (offline, network error) and the file already
+ * exists with a valid stored sha256, we fall back to the cached version
+ * with a warning rather than failing the setup.
  *
- * @param {string} name       - Display name, e.g. "tla2tools.jar"
- * @param {string} url        - Download URL
- * @param {string} destPath   - Local destination path
- * @param {string} lockKey    - Key inside the lockfile, e.g. "tla2tools"
- * @param {string} owner      - GitHub owner, e.g. "tlaplus"
- * @param {string} repo       - GitHub repo, e.g. "tlaplus"
- * @param {string} tag        - Version tag without "v", e.g. "1.8.0"
+ * @param {string} name     - Display name, e.g. "tla2tools.jar"
+ * @param {string} url      - Download URL
+ * @param {string} destPath - Local destination path
+ * @param {string} lockKey  - Key inside the lockfile, e.g. "tla2tools"
  */
-async function downloadAndVerifyPreRelease(name, url, destPath, lockKey, owner, repo, tag) {
+async function downloadAndVerifyPreRelease(name, url, destPath, lockKey) {
   const lock = readLock();
   const entry = lock[lockKey] || {};
 
-  // --- Step 1: resolve current commit SHA via GitHub API ---
-  let currentCommitSha = null;
+  // --- Step 1: resolve current CDN asset URL via HEAD + redirect ---
+  let currentAssetUrl = null;
   try {
-    process.stdout.write(`Checking ${name} commit SHA for v${tag}...`);
-    currentCommitSha = await fetchTagCommitSha(owner, repo, tag);
-    console.log(` ${currentCommitSha.slice(0, 12)}`);
+    process.stdout.write(`Checking ${name} asset URL...`);
+    currentAssetUrl = await resolveAssetUrl(url);
+    // Print the last path segment of the CDN URL as a short identifier
+    const id = currentAssetUrl.split('/').slice(-2).join('/');
+    console.log(` ${id}`);
   } catch (err) {
     console.log('');
-    console.warn(`  Warning: could not reach GitHub API (${err.message})`);
+    console.warn(`  Warning: could not resolve asset URL (${err.message})`);
   }
 
-  // --- Step 2: fast path — tag hasn't moved and file exists ---
-  if (
-    currentCommitSha &&
-    currentCommitSha === entry.commitSha &&
-    fs.existsSync(destPath) &&
-    entry.sha256
-  ) {
+  // --- Step 2: fast path — asset hasn't changed and file exists ---
+  if (currentAssetUrl && currentAssetUrl === entry.assetUrl && fs.existsSync(destPath) && entry.sha256) {
     const result = verifyChecksum(destPath, 'sha256', entry.sha256);
     if (result.valid) {
-      console.log(`✓ ${name} up-to-date (commit ${currentCommitSha.slice(0, 12)}, sha256 verified)`);
+      console.log(`✓ ${name} up-to-date (asset unchanged, sha256 verified)`);
       return;
     }
     console.warn(`  Stored checksum mismatch — re-downloading ${name}`);
-  } else if (!currentCommitSha && fs.existsSync(destPath) && entry.sha256) {
-    // API unreachable: verify cached file and continue with a warning
+  } else if (!currentAssetUrl && fs.existsSync(destPath) && entry.sha256) {
+    // Offline fallback: verify cached file and continue with a warning
     const result = verifyChecksum(destPath, 'sha256', entry.sha256);
     if (result.valid) {
-      console.log(`✓ ${name} using cached version (offline mode, sha256 verified)`);
+      console.log(`✓ ${name} using cached version (offline, sha256 verified)`);
       return;
     }
-    console.warn(`  Cached ${name} checksum invalid and GitHub API unreachable.`);
+    console.warn(`  Cached ${name} sha256 invalid and network unreachable.`);
     console.warn(`  Delete ${destPath} and retry with network access.`);
     process.exit(1);
-  } else if (currentCommitSha && currentCommitSha !== entry.commitSha) {
-    if (entry.commitSha) {
-      console.log(`  Tag v${tag} moved: ${entry.commitSha.slice(0, 12)} → ${currentCommitSha.slice(0, 12)}`);
-    }
+  } else if (currentAssetUrl && currentAssetUrl !== entry.assetUrl && entry.assetUrl) {
+    console.log(`  Asset updated — re-downloading ${name}`);
   }
 
   // --- Step 3: download ---
@@ -375,16 +363,15 @@ async function downloadAndVerifyPreRelease(name, url, destPath, lockKey, owner, 
     process.exit(1);
   }
 
-  // --- Step 4: compute checksum and update lockfile ---
+  // --- Step 4: compute sha256 and update lockfile ---
   const sha256 = calculateChecksum(destPath, 'sha256');
   writeLock(lockKey, {
-    commitSha: currentCommitSha || null,
+    assetUrl: currentAssetUrl || null,
     sha256,
     downloadedAt: new Date().toISOString()
   });
 
-  const commitLabel = currentCommitSha ? ` (commit ${currentCommitSha.slice(0, 12)})` : '';
-  console.log(`✓ ${name} locked${commitLabel} — sha256: ${sha256}`);
+  console.log(`✓ ${name} locked — sha256: ${sha256}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -405,15 +392,7 @@ async function setup() {
   }
 
   if (PRE_RELEASE_VERSIONS.includes(TLA_TOOLS_VERSION)) {
-    await downloadAndVerifyPreRelease(
-      'tla2tools.jar',
-      TLA_TOOLS_URL,
-      TLA_TOOLS_PATH,
-      'tla2tools',
-      'tlaplus',
-      'tlaplus',
-      TLA_TOOLS_VERSION
-    );
+    await downloadAndVerifyPreRelease('tla2tools.jar', TLA_TOOLS_URL, TLA_TOOLS_PATH, 'tla2tools');
   } else {
     await downloadAndVerify(
       'tla2tools.jar',
@@ -454,7 +433,7 @@ module.exports = {
   downloadFile,
   downloadAndVerify,
   downloadAndVerifyPreRelease,
-  fetchTagCommitSha,
+  resolveAssetUrl,
   readLock,
   writeLock,
   setup,
