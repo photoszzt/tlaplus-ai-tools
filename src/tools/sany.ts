@@ -87,7 +87,7 @@ export async function registerSanyTools(
 ): Promise<void> {
   // Tool 1: Parse
   server.tool(
-    'sany_parse',
+    'tlaplus_mcp_sany_parse',
     'Parse the input TLA+ module using SANY from the TLA+ tools. Use SANY to perform syntax and level-checking of the module. Ensure that the input is provided as a fully qualified file path, as required by the tool.',
     {
       fileName: z.string()
@@ -163,7 +163,7 @@ export async function registerSanyTools(
 
   // Tool 2: Symbol extraction
   server.tool(
-    'sany_symbol',
+    'tlaplus_mcp_sany_symbol',
     'Extract all symbols from the given TLA+ module. Use this tool to identify the symbols defined in a TLA+ specification—such as when generating a TLC configuration file. It assists in determining the list of CONSTANTS, the initialization predicate, the next-state relation, the overall behavior specification (Spec), and any defined safety or liveness properties. Note: SANY expects the fully qualified file path to the TLA+ module.',
     {
       fileName: z.string().describe('The full path to the file containing the TLA+ module (including jarfile:... paths for modules inside JAR archives).'),
@@ -231,7 +231,7 @@ export async function registerSanyTools(
 
   // Tool 3: List modules
   server.tool(
-    'sany_modules',
+    'tlaplus_mcp_sany_modules',
     'Retrieves a list of all TLA+ modules recognized by SANY, making it easy to see which modules can be imported into a TLA+ specification.',
     {},
     async () => {

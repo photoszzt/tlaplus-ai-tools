@@ -32,16 +32,16 @@ describe('TLC Tools', () => {
     it('registers all four TLC tools', async () => {
       await registerTlcTools(mockServer, MINIMAL_CONFIG);
 
-      expectToolRegistered(mockServer, 'tlc_check');
-      expectToolRegistered(mockServer, 'tlc_smoke');
-      expectToolRegistered(mockServer, 'tlc_explore');
-      expectToolRegistered(mockServer, 'tlc_trace');
+      expectToolRegistered(mockServer, 'tlaplus_mcp_tlc_check');
+      expectToolRegistered(mockServer, 'tlaplus_mcp_tlc_smoke');
+      expectToolRegistered(mockServer, 'tlaplus_mcp_tlc_explore');
+      expectToolRegistered(mockServer, 'tlaplus_mcp_tlc_trace');
 
       expect(mockServer.tool).toHaveBeenCalledTimes(4);
     });
   });
 
-  describe('tlc_check', () => {
+  describe('tlaplus_mcp_tlc_check', () => {
     beforeEach(async () => {
       await registerTlcTools(mockServer, MINIMAL_CONFIG);
     });
@@ -52,7 +52,7 @@ describe('TLC Tools', () => {
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
       (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
 
-      const response = await callRegisteredTool(mockServer, 'tlc_check', {
+      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_check', {
         fileName: '/mock/spec.tla'
       });
 
@@ -76,7 +76,7 @@ describe('TLC Tools', () => {
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
       (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
 
-      const response = await callRegisteredTool(mockServer, 'tlc_check', {
+      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_check', {
         fileName: '/mock/spec.tla'
       });
 
@@ -87,7 +87,7 @@ describe('TLC Tools', () => {
     it('returns error for missing file', async () => {
       (fs.existsSync as jest.Mock).mockReturnValue(false);
 
-      const response = await callRegisteredTool(mockServer, 'tlc_check', {
+      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_check', {
         fileName: '/mock/missing.tla'
       });
 
@@ -98,7 +98,7 @@ describe('TLC Tools', () => {
       await registerTlcTools(mockServer, NO_TOOLS_CONFIG);
       (fs.existsSync as jest.Mock).mockReturnValue(true);
 
-      const response = await callRegisteredTool(mockServer, 'tlc_check', {
+      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_check', {
         fileName: '/mock/spec.tla'
       });
 
@@ -110,7 +110,7 @@ describe('TLC Tools', () => {
       const mocks = mockTlcNoConfig();
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
 
-      const response = await callRegisteredTool(mockServer, 'tlc_check', {
+      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_check', {
         fileName: '/mock/spec.tla'
       });
 
@@ -124,7 +124,7 @@ describe('TLC Tools', () => {
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
       (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
 
-      await callRegisteredTool(mockServer, 'tlc_check', {
+      await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_check', {
         fileName: '/mock/spec.tla',
         cfgFile: '/mock/custom.cfg'
       });
@@ -145,7 +145,7 @@ describe('TLC Tools', () => {
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
       (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
 
-      await callRegisteredTool(mockServer, 'tlc_check', {
+      await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_check', {
         fileName: '/mock/spec.tla',
         extraOpts: ['-workers', '4']
       });
@@ -166,7 +166,7 @@ describe('TLC Tools', () => {
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
       (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
 
-      await callRegisteredTool(mockServer, 'tlc_check', {
+      await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_check', {
         fileName: '/mock/spec.tla',
         extraJavaOpts: ['-Xmx4G']
       });
@@ -187,7 +187,7 @@ describe('TLC Tools', () => {
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
       (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
 
-      const response = await callRegisteredTool(mockServer, 'tlc_check', {
+      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_check', {
         fileName: '/mock/spec.tla'
       });
 
@@ -197,7 +197,7 @@ describe('TLC Tools', () => {
     });
   });
 
-  describe('tlc_smoke', () => {
+  describe('tlaplus_mcp_tlc_smoke', () => {
     beforeEach(async () => {
       await registerTlcTools(mockServer, MINIMAL_CONFIG);
     });
@@ -208,7 +208,7 @@ describe('TLC Tools', () => {
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
       (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
 
-      const response = await callRegisteredTool(mockServer, 'tlc_smoke', {
+      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_smoke', {
         fileName: '/mock/spec.tla'
       });
 
@@ -234,7 +234,7 @@ describe('TLC Tools', () => {
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
       (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
 
-      await callRegisteredTool(mockServer, 'tlc_smoke', {
+      await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_smoke', {
         fileName: '/mock/spec.tla'
       });
 
@@ -257,7 +257,7 @@ describe('TLC Tools', () => {
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
       (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
 
-      await callRegisteredTool(mockServer, 'tlc_smoke', {
+      await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_smoke', {
         fileName: '/mock/spec.tla',
         extraJavaOpts: ['-Xmx2G']
       });
@@ -282,7 +282,7 @@ describe('TLC Tools', () => {
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
       (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
 
-      await callRegisteredTool(mockServer, 'tlc_smoke', {
+      await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_smoke', {
         fileName: '/mock/spec.tla'
       });
 
@@ -309,7 +309,7 @@ describe('TLC Tools', () => {
 
       await callRegisteredTool(
         mockServer,
-        'tlc_smoke',
+        'tlaplus_mcp_tlc_smoke',
         { fileName: '/mock/spec.tla' },
         { signal: controller.signal }
       );
@@ -332,7 +332,7 @@ describe('TLC Tools', () => {
       const mocks = mockTlcNoConfig();
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
 
-      const response = await callRegisteredTool(mockServer, 'tlc_smoke', {
+      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_smoke', {
         fileName: '/mock/spec.tla'
       });
 
@@ -340,7 +340,7 @@ describe('TLC Tools', () => {
     });
   });
 
-  describe('tlc_explore', () => {
+  describe('tlaplus_mcp_tlc_explore', () => {
     beforeEach(async () => {
       await registerTlcTools(mockServer, MINIMAL_CONFIG);
     });
@@ -351,7 +351,7 @@ describe('TLC Tools', () => {
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
       (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
 
-      const response = await callRegisteredTool(mockServer, 'tlc_explore', {
+      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_explore', {
         fileName: '/mock/spec.tla',
         behaviorLength: 5
       });
@@ -378,7 +378,7 @@ describe('TLC Tools', () => {
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
       (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
 
-      await callRegisteredTool(mockServer, 'tlc_explore', {
+      await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_explore', {
         fileName: '/mock/spec.tla',
         behaviorLength: 10
       });
@@ -403,7 +403,7 @@ describe('TLC Tools', () => {
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
       (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
 
-      await callRegisteredTool(mockServer, 'tlc_explore', {
+      await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_explore', {
         fileName: '/mock/spec.tla',
         behaviorLength: 10,
         timeoutMs: 5000
@@ -428,7 +428,7 @@ describe('TLC Tools', () => {
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
       (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
 
-      await callRegisteredTool(mockServer, 'tlc_explore', {
+      await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_explore', {
         fileName: '/mock/spec.tla',
         behaviorLength: 5,
         cfgFile: '/mock/custom.cfg'
@@ -453,7 +453,7 @@ describe('TLC Tools', () => {
       (getSpecFiles as jest.Mock).mockImplementation(mocks.getSpecFiles);
       (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
 
-      const response = await callRegisteredTool(mockServer, 'tlc_explore', {
+      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_explore', {
         fileName: '/mock/spec.tla',
         behaviorLength: 5
       });
@@ -464,7 +464,7 @@ describe('TLC Tools', () => {
     });
   });
 
-  describe('tlc_trace', () => {
+  describe('tlaplus_mcp_tlc_trace', () => {
     beforeEach(async () => {
       await registerTlcTools(mockServer, MINIMAL_CONFIG);
     });
@@ -476,7 +476,7 @@ describe('TLC Tools', () => {
       (runTlcAndWait as jest.Mock).mockImplementation(mocks.runTlcAndWait);
 
       const traceFilePath = '/mock/.vscode/tlc/spec_trace_T2024-01-15_10-30-45_F42_W1_Mbfs.tlc';
-      const response = await callRegisteredTool(mockServer, 'tlc_trace', {
+      const response = await callRegisteredTool(mockServer, 'tlaplus_mcp_tlc_trace', {
         fileName: '/mock/spec.tla',
         traceFile: traceFilePath
       });

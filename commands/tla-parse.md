@@ -3,7 +3,7 @@ name: tla-parse
 description: Parse and validate TLA+ specification syntax and semantics using SANY
 argument-hint: "@spec.tla"
 allowed-tools:
-  [Read, Bash, Grep, mcp__plugin_tlaplus_tlaplus__sany_parse]
+  [Read, Bash, Grep, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse]
 agent: build
 ---
 
@@ -148,7 +148,7 @@ Check that the file exists and ends with `.tla`:
 Invoke the SANY parser:
 
 ```
-sany_parse --fileName "$SPEC_PATH"
+tlaplus_mcp_sany_parse --fileName "$SPEC_PATH"
 ```
 
 **Step 5: Report Results**

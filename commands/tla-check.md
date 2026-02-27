@@ -3,7 +3,7 @@ name: tla-check
 description: Run exhaustive model checking on TLA+ specification with TLC
 argument-hint: "@spec.tla [config.cfg] [--workers N]"
 allowed-tools:
-  [Read, Bash, Grep, Write, mcp__plugin_tlaplus_tlaplus__tlc_check]
+  [Read, Bash, Grep, Write, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check]
 agent: build
 ---
 
@@ -26,7 +26,7 @@ Run exhaustive model checking to verify all reachable states of your TLA+ specif
 
 1. Validates and normalizes the spec path from `$ARGUMENTS`
 2. Applies deterministic `.cfg` selection algorithm (see below)
-3. Calls `tlc_check` to run exhaustive model checking
+3. Calls `tlaplus_mcp_tlc_check` to run exhaustive model checking
 4. Reports results (states explored, violations, counterexamples)
 
 ## Implementation
@@ -165,7 +165,7 @@ fi
 Invoke TLC model checker:
 
 ```
-tlc_check \
+tlaplus_mcp_tlc_check \
   --fileName "$SPEC_PATH" \
   --cfgFile "$FINAL_CFG" \
   --extraOpts $EXTRA_OPTS \

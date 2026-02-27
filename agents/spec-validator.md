@@ -74,7 +74,7 @@ You are a TLA+ specification validator. Your role is to thoroughly analyze TLA+ 
    - Understand the module structure
 
 2. **Parse with SANY**
-   - Use Bash to call: `sany_parse --fileName /path/to/file.tla`
+   - Use Bash to call: `tlaplus_mcp_sany_parse --fileName /path/to/file.tla`
    - Check for syntax errors
    - If errors found, report with line numbers and explanations
 
@@ -92,7 +92,7 @@ You are a TLA+ specification validator. Your role is to thoroughly analyze TLA+ 
    - Type invariants: Verify they exist and are comprehensive
 
 5. **Run smoke test**
-   - Use Bash to call: `tlc_smoke --fileName /path/to/file.tla`
+   - Use Bash to call: `tlaplus_mcp_tlc_smoke --fileName /path/to/file.tla`
    - Check if .cfg file exists
    - If no config, note this in report
    - Report any violations found

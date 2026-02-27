@@ -76,12 +76,12 @@ Use this skill when reviewing TLA+ specifications to ensure correctness, complet
 
 Use MCP tools to validate the spec:
 
-- [ ] **Parse check**: Use `sany_parse` to verify syntax
-- [ ] **Module structure**: Use `sany_modules` to check dependencies
-- [ ] **Symbol resolution**: Use `sany_symbol` to verify all symbols defined
-- [ ] **Smoke test**: Use `tlc_smoke` for quick validation
-- [ ] **Model checking**: Use `tlc_check` with appropriate config
-- [ ] **State exploration**: Use `tlc_explore` to understand state space
+- [ ] **Parse check**: Use `tlaplus_mcp_sany_parse` to verify syntax
+- [ ] **Module structure**: Use `tlaplus_mcp_sany_modules` to check dependencies
+- [ ] **Symbol resolution**: Use `tlaplus_mcp_sany_symbol` to verify all symbols defined
+- [ ] **Smoke test**: Use `tlaplus_mcp_tlc_smoke` for quick validation
+- [ ] **Model checking**: Use `tlaplus_mcp_tlc_check` with appropriate config
+- [ ] **State exploration**: Use `tlaplus_mcp_tlc_explore` to understand state space
 
 ## Common Issues
 
@@ -92,9 +92,9 @@ Use MCP tools to validate the spec:
 
 ## MCP Tools Reference
 
-- `sany_parse`: Parse and validate TLA+ syntax
-- `sany_modules`: Analyze module structure and dependencies
-- `sany_symbol`: Look up symbol definitions
-- `tlc_smoke`: Quick smoke test (small state space)
-- `tlc_check`: Full model checking with config
-- `tlc_explore`: Explore state space interactively
+- `tlaplus_mcp_sany_parse`: Parse and validate TLA+ syntax
+- `tlaplus_mcp_sany_modules`: Analyze module structure and dependencies
+- `tlaplus_mcp_sany_symbol`: Look up symbol definitions
+- `tlaplus_mcp_tlc_smoke`: Quick smoke test (small state space)
+- `tlaplus_mcp_tlc_check`: Full model checking with config
+- `tlaplus_mcp_tlc_explore`: Explore state space interactively

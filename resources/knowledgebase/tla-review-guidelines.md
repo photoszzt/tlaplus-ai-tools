@@ -28,13 +28,13 @@ This document uses a **producer-consumer** (bounded buffer) specification as a r
 
 ## Spec Structure
 
-* Use SANY to perform syntax and level-checking of a TLA+ module before reviewing. This catches syntax errors early and ensures the spec is well-formed. If you are an AI assistant, use the `sany_parse` tool to parse the spec.
+* Use SANY to perform syntax and level-checking of a TLA+ module before reviewing. This catches syntax errors early and ensures the spec is well-formed. If you are an AI assistant, use the `tlaplus_mcp_sany_parse` tool to parse the spec.
 
 ### Module
 
 * The TLA+ CommunityModules are a collection of modules that provide useful operators and definitions for TLA+. Use of the CommunityModules is encouraged because most are well-tested and well-documented. Some operators even have TLC Java overrides that make them more efficient. The CommunityModules are available at https://github.com/tlaplus/CommunityModules, but they are already readily available in the VSCode/Cursor extension without manual installation.
 
-* Use the `sany_modules` tool to list all available TLA+ modules, including the CommunityModules. Use the `sany_symbol` tool to extract and inspect the symbols (constants, operators, definitions) defined in any module.
+* Use the `tlaplus_mcp_sany_modules` tool to list all available TLA+ modules, including the CommunityModules. Use the `tlaplus_mcp_sany_symbol` tool to extract and inspect the symbols (constants, operators, definitions) defined in any module.
 
 * `EXTENDS TLC` is rarely needed in ordinary TLA+ specs. The operators defined in the TLC module are for special use cases.
   - The only notable exception is the `TLC!@@` operator, which merges two functions.
@@ -112,9 +112,9 @@ This document uses a **producer-consumer** (bounded buffer) specification as a r
 
 ### Simulation and Exhaustive Model Checking
 
-* It is good practice to validate the spec with TLC's simulation mode. Simulation usually catches many shallow bugs that model checking may only catch after a long time. This is because model checking explores the entire state space breadth-first, while simulation immediately explores long traces. Simulation will run forever unless it finds a bug or is terminated by the user. Running TLC on a spec shall not report any warnings or errors—any warnings or errors should be investigated and fixed. Use the `tlc_smoke` tool to run TLC in simulation mode for smoke testing. 
+* It is good practice to validate the spec with TLC's simulation mode. Simulation usually catches many shallow bugs that model checking may only catch after a long time. This is because model checking explores the entire state space breadth-first, while simulation immediately explores long traces. Simulation will run forever unless it finds a bug or is terminated by the user. Running TLC on a spec shall not report any warnings or errors—any warnings or errors should be investigated and fixed. Use the `tlaplus_mcp_tlc_smoke` tool to run TLC in simulation mode for smoke testing. 
 
-* In addition to simulation and exploration, perform exhaustive model checking to verify that all reachable states satisfy the specified invariants and properties. To keep checking tractable, rely on the small-scope hypothesis: most bugs manifest even in small configurations of the system. For example, most bugs in a producer-consumer system will be found with one or two producers, one or two consumers, and a buffer of size between 1 and 3. TLC's configuration file should be set to a small enough configuration to make model checking tractable. See `tla-different-configurations.md` for guidance on checking models across different constant combinations. Use the `tlc_check` tool to perform exhaustive model checking of a TLA+ specification.
+* In addition to simulation and exploration, perform exhaustive model checking to verify that all reachable states satisfy the specified invariants and properties. To keep checking tractable, rely on the small-scope hypothesis: most bugs manifest even in small configurations of the system. For example, most bugs in a producer-consumer system will be found with one or two producers, one or two consumers, and a buffer of size between 1 and 3. TLC's configuration file should be set to a small enough configuration to make model checking tractable. See `tla-different-configurations.md` for guidance on checking models across different constant combinations. Use the `tlaplus_mcp_tlc_check` tool to perform exhaustive model checking of a TLA+ specification.
 
 ### Always Be Suspicious of Success
 
@@ -122,7 +122,7 @@ This document uses a **producer-consumer** (bounded buffer) specification as a r
 
 #### Exploration
 
-* Use the `tlc_explore` tool to generate random behaviors of a given length. Sanity check for plausibility as many traces as practical to validate that the spec captures the intended system behaviors—each trace should represent a plausible execution of the system. Look for unexpected state transitions and implausible combinations of variable values. This manual inspection complements automated checking: simulation and model checking verify that invariants and properties hold, but only human review can confirm that the modeled behaviors match the designer's intent.
+* Use the `tlaplus_mcp_tlc_explore` tool to generate random behaviors of a given length. Sanity check for plausibility as many traces as practical to validate that the spec captures the intended system behaviors—each trace should represent a plausible execution of the system. Look for unexpected state transitions and implausible combinations of variable values. This manual inspection complements automated checking: simulation and model checking verify that invariants and properties hold, but only human review can confirm that the modeled behaviors match the designer's intent.
 
 #### Bug Injection
 
@@ -139,7 +139,7 @@ Each injected bug should be caught by at least one invariant or property. If not
 
 * TLC reports coverage statistics. Check the number of (distinct) states reported by TLC: if this number is unreasonably low, the specification is likely to be irrelevant.
 
-* Extended coverage statistics help identify which parts of the spec were exercised during model checking (run `tlc_check` with the `-coverage 1` option). Like line or statement coverage in traditional testing, TLC's coverage reveals "dead code"—formulas that are never evaluated to TRUE. Examples include IF-THEN-ELSE expressions where one branch is never taken, disjuncts that are never satisfied, or implications whose antecedent is never true.
+* Extended coverage statistics help identify which parts of the spec were exercised during model checking (run `tlaplus_mcp_tlc_check` with the `-coverage 1` option). Like line or statement coverage in traditional testing, TLC's coverage reveals "dead code"—formulas that are never evaluated to TRUE. Examples include IF-THEN-ELSE expressions where one branch is never taken, disjuncts that are never satisfied, or implications whose antecedent is never true.
 
 * Beyond line-level coverage, TLC provides metrics specific to state-machine verification:
   - **State coverage per action**: For each action, TLC reports how many distinct states the action was enabled in, and how many state transitions it generated. If an action never fires (zero transitions), its enablement condition may be too restrictive or conflicting with other parts of the spec.

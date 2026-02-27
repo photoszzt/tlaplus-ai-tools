@@ -2,7 +2,7 @@
 name: tla-symbols
 description: Extract symbols from TLA+ spec and generate TLC configuration
 argument-hint: "@spec.tla [--extended]"
-allowed-tools: [Read, Write, Bash, Grep, mcp__plugin_tlaplus_tlaplus__sany_parse, mcp__plugin_tlaplus_tlaplus__sany_symbol]
+allowed-tools: [Read, Write, Bash, Grep, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol]
 agent: build
 ---
 
@@ -23,8 +23,8 @@ Preferred (always works):
 ## What This Does
 
 1. Validates and normalizes the spec path from `$ARGUMENTS`
-2. Calls `sany_parse` to check for syntax errors
-3. Calls `sany_symbol` to extract symbols
+2. Calls `tlaplus_mcp_sany_parse` to check for syntax errors
+3. Calls `tlaplus_mcp_sany_symbol` to extract symbols
 4. Generates a `.cfg` file with best-guess configuration
 
 ## Implementation
@@ -48,7 +48,7 @@ Print `Spec path: $SPEC_PATH`
 
 **Step 3: Parse Spec**
 
-Call `sany_parse` with `fileName=$SPEC_PATH`
+Call `tlaplus_mcp_sany_parse` with `fileName=$SPEC_PATH`
 
 If parse errors exist, print them and exit.
 
@@ -58,7 +58,7 @@ Determine `includeExtendedModules`:
 - If `$ARGUMENTS` contains `--extended`, set to `true`
 - Else set to `false`
 
-Call `sany_symbol` with:
+Call `tlaplus_mcp_sany_symbol` with:
 - `fileName=$SPEC_PATH`
 - `includeExtendedModules=<flag>`
 

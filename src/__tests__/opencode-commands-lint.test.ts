@@ -30,11 +30,11 @@ const EXPECTED_COMMANDS = [
 
 // MCP tool requirements per command (from plan lines 661-668)
 const REQUIRED_MCP_TOOLS: Record<string, string[]> = {
-  'tla-parse.md': ['sany_parse'],
-  'tla-symbols.md': ['sany_parse', 'sany_symbol'],
-  'tla-smoke.md': ['tlc_smoke'],
-  'tla-check.md': ['tlc_check'],
-  'tla-review.md': ['sany_parse', 'sany_symbol', 'tlc_smoke'],
+  'tla-parse.md': ['tlaplus_mcp_sany_parse'],
+  'tla-symbols.md': ['tlaplus_mcp_sany_parse', 'tlaplus_mcp_sany_symbol'],
+  'tla-smoke.md': ['tlaplus_mcp_tlc_smoke'],
+  'tla-check.md': ['tlaplus_mcp_tlc_check'],
+  'tla-review.md': ['tlaplus_mcp_sany_parse', 'tlaplus_mcp_sany_symbol', 'tlaplus_mcp_tlc_smoke'],
   'tla-setup.md': [] // No MCP tools, validation only
 };
 

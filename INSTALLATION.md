@@ -45,7 +45,6 @@ npm link
 ### Method 1: Claude Code Marketplace (Coming Soon)
 
 ```
-0. claude plugin marketplace add https://github.com/photoszzt/tlaplus-ai-tools.git
 1. Open Claude Code
 2. Run: /plugin install tlaplus
 3. Plugin auto-downloads TLA+ tools
