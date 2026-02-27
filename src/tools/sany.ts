@@ -108,18 +108,28 @@ export async function registerSanyTools(
         // @implements REQ-CODEX-005, SCN-CODEX-005-01, SCN-CODEX-005-03
         // @implements REQ-CODEX-006, SCN-CODEX-006-01
         if (isJarfileUri(fileName)) {
+          // Parse the jarfile URI first — report parse errors distinctly
+          let jarPath: string;
+          try {
+            ({ jarPath } = parseJarfileUri(fileName));
+          } catch (err) {
+            return {
+              content: [{
+                type: 'text',
+                text: `Invalid jarfile URI: ${err instanceof Error ? err.message : String(err)}`
+              }]
+            };
+          }
           // Validate JAR file path against workingDir when confined
           if (config.workingDir) {
             try {
-              const { jarPath } = parseJarfileUri(fileName);
               resolveAndValidatePath(jarPath, config.workingDir);
             } catch (err) {
               const message = err instanceof Error ? err.message : String(err);
-              const normalizedMessage = message.startsWith('Access denied:') ? message : `Access denied: ${message}`;
               return {
                 content: [{
                   type: 'text',
-                  text: normalizedMessage
+                  text: message.startsWith('Access denied:') ? message : `Access denied: ${message}`
                 }]
               };
             }
@@ -203,18 +213,28 @@ export async function registerSanyTools(
         // @implements REQ-CODEX-005, SCN-CODEX-005-02, SCN-CODEX-005-03
         // @implements REQ-CODEX-006, SCN-CODEX-006-01
         if (isJarfileUri(fileName)) {
+          // Parse the jarfile URI first — report parse errors distinctly
+          let jarPath: string;
+          try {
+            ({ jarPath } = parseJarfileUri(fileName));
+          } catch (err) {
+            return {
+              content: [{
+                type: 'text',
+                text: `Invalid jarfile URI: ${err instanceof Error ? err.message : String(err)}`
+              }]
+            };
+          }
           // Validate JAR file path against workingDir when confined
           if (config.workingDir) {
             try {
-              const { jarPath } = parseJarfileUri(fileName);
               resolveAndValidatePath(jarPath, config.workingDir);
             } catch (err) {
               const message = err instanceof Error ? err.message : String(err);
-              const normalizedMessage = message.startsWith('Access denied:') ? message : `Access denied: ${message}`;
               return {
                 content: [{
                   type: 'text',
-                  text: normalizedMessage
+                  text: message.startsWith('Access denied:') ? message : `Access denied: ${message}`
                 }]
               };
             }

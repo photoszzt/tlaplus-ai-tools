@@ -31,7 +31,7 @@ export function resolveAndValidatePath(
     const realWorkingDir = fs.realpathSync(workingDir);
     const relative = path.relative(realWorkingDir, realAbsolute);
 
-    if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    if (relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) {
       throw new Error(
         `Access denied: Path ${filePath} resolves to ${realAbsolute} which is outside the working directory ${realWorkingDir}`
       );
@@ -42,7 +42,7 @@ export function resolveAndValidatePath(
     // If realpathSync fails because the file doesn't exist yet, fall back to lexical check
     if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
       const relative = path.relative(workingDir, absolute);
-      if (relative.startsWith('..') || path.isAbsolute(relative)) {
+      if (relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) {
         throw new Error(
           `Access denied: Path ${filePath} is outside the working directory ${workingDir}`
         );
