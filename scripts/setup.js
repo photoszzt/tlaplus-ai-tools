@@ -326,7 +326,8 @@ async function downloadAndVerifyPreRelease(name, url, destPath, lockKey) {
     // Strip query string: the CDN URL contains time-limited SAS tokens
     // (se=, sig=, jwt=, etc.) that change on every request. Only the path
     // encodes the asset ID, which is the stable staleness signal we care about.
-    currentAssetUrl = new URL(rawUrl).origin + new URL(rawUrl).pathname;
+    const parsedUrl = new URL(rawUrl);
+    currentAssetUrl = parsedUrl.origin + parsedUrl.pathname;
     // Print the last two path segments as a short identifier
     const id = currentAssetUrl.split('/').slice(-2).join('/');
     console.log(` ${id}`);
@@ -398,12 +399,24 @@ async function setup() {
   if (PRE_RELEASE_VERSIONS.includes(TLA_TOOLS_VERSION)) {
     await downloadAndVerifyPreRelease('tla2tools.jar', TLA_TOOLS_URL, TLA_TOOLS_PATH, 'tla2tools');
   } else {
+    const tla2toolsChecksums = EXPECTED_CHECKSUMS.tla2tools;
+    if (
+      !tla2toolsChecksums ||
+      !tla2toolsChecksums.algorithm ||
+      !tla2toolsChecksums.checksum
+    ) {
+      throw new Error(
+        `Missing expected checksums for TLA+ Tools version "${TLA_TOOLS_VERSION}". ` +
+          'Please add a "tla2tools" entry with "algorithm" and "checksum" to EXPECTED_CHECKSUMS.'
+      );
+    }
+
     await downloadAndVerify(
       'tla2tools.jar',
       TLA_TOOLS_URL,
       TLA_TOOLS_PATH,
-      EXPECTED_CHECKSUMS.tla2tools.algorithm,
-      EXPECTED_CHECKSUMS.tla2tools.checksum
+      tla2toolsChecksums.algorithm,
+      tla2toolsChecksums.checksum
     );
   }
 
