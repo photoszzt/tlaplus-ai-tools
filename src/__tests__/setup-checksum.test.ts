@@ -5,7 +5,7 @@ import * as crypto from 'crypto';
 
 // Import setup helpers
 const setupModule = require('../../scripts/setup.js');
-const { calculateChecksum, verifyChecksum, EXPECTED_CHECKSUMS } = setupModule;
+const { calculateChecksum, verifyChecksum, EXPECTED_CHECKSUMS, PRE_RELEASE_VERSIONS, DEFAULT_TLA_TOOLS_VERSION } = setupModule;
 
 describe('Setup Checksum Verification', () => {
   let tempDir: string;
@@ -138,11 +138,11 @@ describe('Setup Checksum Verification', () => {
   });
 
   describe('EXPECTED_CHECKSUMS', () => {
-    it('has correct structure for tla2tools', () => {
-      expect(EXPECTED_CHECKSUMS.tla2tools).toBeDefined();
-      expect(EXPECTED_CHECKSUMS.tla2tools.version).toBe('1.8.0');
-      expect(EXPECTED_CHECKSUMS.tla2tools.algorithm).toBe('sha1');
-      expect(EXPECTED_CHECKSUMS.tla2tools.checksum).toMatch(/^[a-f0-9]{40}$/); // SHA1 is 40 hex chars
+    it('does not have tla2tools entry (pre-release versions use commit SHA pinning)', () => {
+      // tla2tools 1.8.0 is a pre-release, so it's pinned by commit SHA
+      // rather than artifact checksum in EXPECTED_CHECKSUMS
+      expect(EXPECTED_CHECKSUMS.tla2tools).toBeUndefined();
+      expect(PRE_RELEASE_VERSIONS).toContain(DEFAULT_TLA_TOOLS_VERSION);
     });
 
     it('has correct structure for communityModules', () => {
@@ -153,7 +153,7 @@ describe('Setup Checksum Verification', () => {
     });
 
     it('uses pinned version 1.8.0 for tla2tools', () => {
-      expect(EXPECTED_CHECKSUMS.tla2tools.version).toBe('1.8.0');
+      expect(DEFAULT_TLA_TOOLS_VERSION).toBe('1.8.0');
     });
   });
 
