@@ -205,12 +205,20 @@ export async function registerTlcTools(
         }
 
         // Use provided cfgFile if specified
+        // @implements REQ-CODEX-001, SCN-CODEX-001-01, SCN-CODEX-001-02
         let configFilePath = specFiles.cfgFilePath;
         if (cfgFile) {
           const resolvedCfgPath = resolveAndValidatePath(cfgFile, config.workingDir);
-          if (fs.existsSync(resolvedCfgPath)) {
-            configFilePath = resolvedCfgPath;
+          if (!fs.existsSync(resolvedCfgPath)) {
+            return {
+              content: [{
+                type: 'text',
+                text: `Config file ${resolvedCfgPath} does not exist on disk.`
+              }]
+            };
           }
+          // @implements REQ-CODEX-002, SCN-CODEX-002-01
+          configFilePath = resolvedCfgPath;
         }
 
         // Build TLC options: -cleanup -modelcheck [extraOpts]
@@ -301,12 +309,20 @@ export async function registerTlcTools(
         }
 
         // Use provided cfgFile if specified
+        // @implements REQ-CODEX-001, SCN-CODEX-001-01, SCN-CODEX-001-02
         let configFilePath = specFiles.cfgFilePath;
         if (cfgFile) {
           const resolvedCfgPath = resolveAndValidatePath(cfgFile, config.workingDir);
-          if (fs.existsSync(resolvedCfgPath)) {
-            configFilePath = resolvedCfgPath;
+          if (!fs.existsSync(resolvedCfgPath)) {
+            return {
+              content: [{
+                type: 'text',
+                text: `Config file ${resolvedCfgPath} does not exist on disk.`
+              }]
+            };
           }
+          // @implements REQ-CODEX-002, SCN-CODEX-002-01
+          configFilePath = resolvedCfgPath;
         }
 
         // Build TLC options: -cleanup -simulate [extraOpts]
@@ -407,12 +423,20 @@ export async function registerTlcTools(
         }
 
         // Use provided cfgFile if specified
+        // @implements REQ-CODEX-001, SCN-CODEX-001-01, SCN-CODEX-001-02
         let configFilePath = specFiles.cfgFilePath;
         if (cfgFile) {
           const resolvedCfgPath = resolveAndValidatePath(cfgFile, config.workingDir);
-          if (fs.existsSync(resolvedCfgPath)) {
-            configFilePath = resolvedCfgPath;
+          if (!fs.existsSync(resolvedCfgPath)) {
+            return {
+              content: [{
+                type: 'text',
+                text: `Config file ${resolvedCfgPath} does not exist on disk.`
+              }]
+            };
           }
+          // @implements REQ-CODEX-002, SCN-CODEX-002-01
+          configFilePath = resolvedCfgPath;
         }
 
         // Build TLC options: -cleanup -simulate -invlevel <behaviorLength> [extraOpts]
@@ -512,12 +536,20 @@ export async function registerTlcTools(
           };
         }
 
+        // @implements REQ-CODEX-001, SCN-CODEX-001-01, SCN-CODEX-001-03
         let configFilePath = specFiles.cfgFilePath;
         if (cfgFile) {
           const resolvedCfgPath = resolveAndValidatePath(cfgFile, config.workingDir);
-          if (fs.existsSync(resolvedCfgPath)) {
-            configFilePath = resolvedCfgPath;
+          if (!fs.existsSync(resolvedCfgPath)) {
+            return {
+              content: [{
+                type: 'text',
+                text: `Config file ${resolvedCfgPath} does not exist on disk.`
+              }]
+            };
           }
+          // @implements REQ-CODEX-002, SCN-CODEX-002-01
+          configFilePath = resolvedCfgPath;
         }
 
         const absoluteTracePath = resolveAndValidatePath(traceFile, config.workingDir);

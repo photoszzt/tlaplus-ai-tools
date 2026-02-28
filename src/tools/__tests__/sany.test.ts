@@ -121,6 +121,17 @@ describe('SANY Tools', () => {
     });
 
     describe('jarfile: URI support', () => {
+      beforeEach(() => {
+        (jarfile.parseJarfileUri as jest.Mock).mockImplementation((uri: string) => {
+          const withoutScheme = uri.slice('jarfile:'.length);
+          const sepIdx = withoutScheme.indexOf('!');
+          return {
+            jarPath: withoutScheme.slice(0, sepIdx),
+            innerPath: withoutScheme.slice(sepIdx + 2),
+          };
+        });
+      });
+
       it('resolves jarfile: URI to filesystem before parsing', async () => {
         (jarfile.resolveJarfilePath as jest.Mock).mockReturnValue('/tmp/cache/Naturals.tla');
         (fs.existsSync as jest.Mock).mockReturnValue(true);
@@ -281,6 +292,17 @@ describe('SANY Tools', () => {
     });
 
     describe('jarfile: URI support', () => {
+      beforeEach(() => {
+        (jarfile.parseJarfileUri as jest.Mock).mockImplementation((uri: string) => {
+          const withoutScheme = uri.slice('jarfile:'.length);
+          const sepIdx = withoutScheme.indexOf('!');
+          return {
+            jarPath: withoutScheme.slice(0, sepIdx),
+            innerPath: withoutScheme.slice(sepIdx + 2),
+          };
+        });
+      });
+
       it('resolves jarfile: URI to filesystem before extracting symbols', async () => {
         (jarfile.resolveJarfilePath as jest.Mock).mockReturnValue('/tmp/cache/Naturals.tla');
         (fs.existsSync as jest.Mock).mockReturnValue(true);
