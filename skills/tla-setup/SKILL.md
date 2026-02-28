@@ -1,14 +1,15 @@
 ---
 name: tla-setup
 description: Verify TLA+ tools installation and fix common issues
-argument-hint: ""
+version: 1.0.0
 allowed-tools: [Bash, Read, Write, Grep, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_modules, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse]
-agent: build
 ---
 
 # TLA+ Tools Setup
 
 Interactive guide to verify and setup TLA+ tools (Java, tla2tools.jar, CommunityModules).
+
+**IMPORTANT: Always use the MCP tools listed above for TLA+ operations. Only use Bash for system checks like `java -version`. Never fall back to running Java or TLC commands via Bash for parsing or model checking.**
 
 ## Usage
 
@@ -16,7 +17,7 @@ Interactive guide to verify and setup TLA+ tools (Java, tla2tools.jar, Community
 /tla-setup
 ```
 
-**Note:** This command does not require a spec file argument. It validates the TLA+ tools installation.
+**Note:** This skill does not require a spec file argument. It validates the TLA+ tools installation.
 
 ## What This Does
 
@@ -26,7 +27,7 @@ Interactive guide to verify and setup TLA+ tools (Java, tla2tools.jar, Community
 4. Guides user through any missing dependencies
 5. Runs verification tests
 
-**IMPORTANT:** This command does NOT mutate repository state unless explicitly instructed by the user within the session.
+**IMPORTANT:** This skill does NOT mutate repository state unless explicitly instructed by the user within the session.
 
 ## Implementation
 
@@ -52,7 +53,7 @@ Checking:
 
 **Step 2: Check Java**
 
-Run:
+Run via Bash:
 
 ```bash
 java -version
@@ -63,7 +64,7 @@ Parse output to extract version number.
 If Java not found:
 
 ```
-✗ Java not found
+Java not found
 
 Java 11 or higher is required to run TLA+ tools.
 
@@ -78,7 +79,7 @@ After installing, verify with: java -version
 If Java version < 11:
 
 ```
-✗ Java version too old (found: <version>, required: 11+)
+Java version too old (found: <version>, required: 11+)
 
 Please upgrade Java:
   macOS:   brew install openjdk@17
@@ -89,12 +90,12 @@ Please upgrade Java:
 If Java version >= 11:
 
 ```
-✓ Java found: <version>
+Java found: <version>
 ```
 
 **Step 3: Check TLA+ Tools**
 
-Check for tools in expected locations:
+Check for tools in expected locations using Read tool:
 
 1. `tools/tla2tools.jar` (relative to repo root)
 2. `tools/CommunityModules-deps.jar`
@@ -102,7 +103,7 @@ Check for tools in expected locations:
 If tools not found:
 
 ```
-✗ TLA+ tools not found
+TLA+ tools not found
 
 Expected location: tools/tla2tools.jar
 
@@ -123,19 +124,19 @@ For CommunityModules:
 If tools found:
 
 ```
-✓ TLA+ tools found
+TLA+ tools found
   - tla2tools.jar: <size> bytes
   - CommunityModules-deps.jar: <size> bytes
 ```
 
 **Step 4: Check MCP Server Connection**
 
-Try calling `tlaplus_mcp_sany_modules` to list available modules.
+Try calling `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_modules` to list available modules.
 
 If MCP call fails:
 
 ```
-✗ MCP server connection failed
+MCP server connection failed
 
 The MCP server may not be running or configured correctly.
 
@@ -143,13 +144,13 @@ Troubleshooting:
   1. Verify plugin is loaded: /plugin list
   2. Check MCP server logs
   3. Rebuild: npm run build
-  4. Restart OpenCode/Claude Code
+  4. Restart Claude Code
 ```
 
 If MCP call succeeds:
 
 ```
-✓ MCP server connected
+MCP server connected
   Available TLA+ modules: <count>
 ```
 
@@ -170,18 +171,18 @@ Next == x' = x + 1
 
 Write to temporary file: `/tmp/tlaplus-setup-test.tla`
 
-Call `tlaplus_mcp_sany_parse` with the test file.
+Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse` with the test file.
 
 If parse succeeds:
 
 ```
-✓ SANY parser working
+SANY parser working
 ```
 
 If parse fails:
 
 ```
-✗ SANY parser test failed
+SANY parser test failed
 
 This may indicate a problem with the TLA+ tools or Java setup.
 Check the error message above for details.
@@ -199,7 +200,7 @@ SETUP VERIFICATION SUMMARY
 ─────────────────────────────────────────────────────────
 
 <if all checks passed>
-✓ All checks passed!
+All checks passed!
 
 Your TLA+ tools are ready to use.
 
@@ -212,14 +213,14 @@ Next steps:
 
 For learning TLA+, ask: "teach me TLA+"
 <else>
-⚠ Some checks failed
+Some checks failed
 
 Please address the issues above before using TLA+ tools.
 
 Common issues:
-  - Java not installed or too old → Install Java 11+
-  - TLA+ tools missing → Run: npm run setup
-  - MCP server not running → Rebuild and restart
+  - Java not installed or too old -> Install Java 11+
+  - TLA+ tools missing -> Run: npm run setup
+  - MCP server not running -> Rebuild and restart
 
 Need help? Check INSTALLATION.md or ask for assistance.
 <endif>
@@ -260,19 +261,19 @@ Checking:
 
 ─────────────────────────────────────────────────────────
 
-✓ Java found: openjdk 17.0.2
-✓ TLA+ tools found
+Java found: openjdk 17.0.2
+TLA+ tools found
   - tla2tools.jar: 15234567 bytes
   - CommunityModules-deps.jar: 8765432 bytes
-✓ MCP server connected
+MCP server connected
   Available TLA+ modules: 47
-✓ SANY parser working
+SANY parser working
 
 ─────────────────────────────────────────────────────────
 SETUP VERIFICATION SUMMARY
 ─────────────────────────────────────────────────────────
 
-✓ All checks passed!
+All checks passed!
 
 Your TLA+ tools are ready to use.
 

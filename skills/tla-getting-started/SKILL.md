@@ -141,20 +141,20 @@ INVARIANT BoundInvariant
 Use MCP tools to validate syntax:
 
 ```
-tlaplus_mcp_sany_parse --file Counter.tla
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse --fileName Counter.tla
 ```
 
-Or use the command: `/tla-parse @Counter.tla`
+Or use the skill: `/tla-parse @Counter.tla`
 
 ### Model Check
 
 Run TLC to verify the specification:
 
 ```
-tlaplus_mcp_tlc_check --file Counter.tla
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check --fileName Counter.tla
 ```
 
-Or use the command: `/tla-check @Counter.tla`
+Or use the skill: `/tla-check @Counter.tla`
 
 ### Interpret Results
 
@@ -289,12 +289,12 @@ Access knowledge base articles for deeper topics:
 ### MCP Tools
 
 Use these tools for learning:
-- `tlaplus_mcp_sany_parse` - Validate syntax
-- `tlaplus_mcp_sany_modules` - List available modules
-- `tlaplus_mcp_tlc_smoke` - Quick testing (3 seconds)
-- `tlaplus_mcp_tlc_explore` - Generate example behaviors
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse` - Validate syntax
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_modules` - List available modules
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke` - Quick testing (3 seconds)
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore` - Generate example behaviors
 
-### Commands
+### Skills
 
 Available slash commands:
 - `/tla-parse` - Parse and validate syntax
@@ -311,4 +311,4 @@ After mastering basics:
 3. **Practice** - Write specs for simple systems (queue, stack, state machine)
 4. **Advanced topics** - Explore refinement, temporal properties, and proofs
 
-For comprehensive reviews, use `/tla-review` command to check specifications against best practices.
+For comprehensive reviews, use `/tla-review` to check specifications against best practices.

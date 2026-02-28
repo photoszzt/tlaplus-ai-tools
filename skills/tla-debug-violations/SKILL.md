@@ -86,9 +86,9 @@ If invariants pass but properties fail, re-enable properties one at a time:
 
 ## MCP Tools for Debugging
 
-- `tlaplus_mcp_tlc_check`: Run model checker with config
-- `tlaplus_mcp_tlc_explore`: Explore state space interactively
-- `tlaplus_mcp_sany_parse`: Verify syntax after fixes
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check`: Run model checker with config
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore`: Explore state space interactively
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse`: Verify syntax after fixes
 
 ## Tips
 

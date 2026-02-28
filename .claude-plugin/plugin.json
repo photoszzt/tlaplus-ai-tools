@@ -19,7 +19,6 @@
     "formal-methods"
   ],
   "skills": "./skills/",
-  "commands": "./commands/",
   "agents": [
     "./agents/animation-creator.md",
     "./agents/trace-analyzer.md"

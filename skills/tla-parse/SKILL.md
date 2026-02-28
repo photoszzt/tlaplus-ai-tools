@@ -1,15 +1,15 @@
 ---
 name: tla-parse
 description: Parse and validate TLA+ specification syntax and semantics using SANY
-argument-hint: "@spec.tla"
-allowed-tools:
-  [Read, Bash, Grep, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse]
-agent: build
+version: 1.0.0
+allowed-tools: [Read, Grep, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse]
 ---
 
 # Parse TLA+ Specification
 
 Validate the syntax and semantics of a TLA+ specification using the SANY parser. This catches errors before model checking.
+
+**IMPORTANT: Always use the MCP tools listed above. Never fall back to running Java or TLC commands via Bash.**
 
 ## Usage
 
@@ -25,16 +25,16 @@ Validate the syntax and semantics of a TLA+ specification using the SANY parser.
 /tla-parse @Counter.tla
 ```
 
-Both forms work identically—the `@` is optional and strips during path normalization.
+Both forms work identically---the `@` is optional and strips during path normalization.
 
 ## What This Does
 
 SANY (Semantic ANalYzer) performs comprehensive syntax and semantic validation:
 
-✓ **Syntax Checking** - Catches parse errors, malformed operators, incorrect indentation
-✓ **Semantic Analysis** - Validates operator definitions, type compatibility, module imports
-✓ **Module Resolution** - Verifies EXTENDS and INSTANCE statements reference valid modules
-✓ **Error Reporting** - Provides line/column locations and helpful error messages
+- **Syntax Checking** - Catches parse errors, malformed operators, incorrect indentation
+- **Semantic Analysis** - Validates operator definitions, type compatibility, module imports
+- **Module Resolution** - Verifies EXTENDS and INSTANCE statements reference valid modules
+- **Error Reporting** - Provides line/column locations and helpful error messages
 
 ## When to Use
 
@@ -45,7 +45,7 @@ Use `/tla-parse` to:
 - **Understand semantic issues** with operator definitions or module dependencies
 - **Get detailed error messages** with exact line locations
 
-Do NOT use for model checking—that's `/tla-check` or `/tla-smoke`.
+Do NOT use for model checking---that's `/tla-check` or `/tla-smoke`.
 
 ## Common Error Messages
 
@@ -88,11 +88,11 @@ Do NOT use for model checking—that's `/tla-check` or `/tla-smoke`.
 
 ## Next Steps
 
-- **✓ Parse succeeds** → Run `/tla-symbols` to generate `.cfg`, then `/tla-smoke` for quick test
-- **✗ Parse fails** → Fix errors and re-run `/tla-parse` until valid
-- **Need help** → Review [tla-getting-started skill](skill://tla-getting-started) or knowledge base articles
+- **Parse succeeds** -> Run `/tla-symbols` to generate `.cfg`, then `/tla-smoke` for quick test
+- **Parse fails** -> Fix errors and re-run `/tla-parse` until valid
+- **Need help** -> Review [tla-getting-started skill](skill://tla-getting-started) or knowledge base articles
 
-## Related Commands
+## Related Skills
 
 - `/tla-symbols` - Extract symbols and generate TLC config
 - `/tla-smoke` - Quick 3-second smoke test
@@ -114,50 +114,40 @@ See these articles for TLA+ syntax help:
 
 **Step 1: Validate Arguments**
 
-Check that `$ARGUMENTS` is provided:
+Check that the spec file path was provided as the argument to this skill:
 
-- If `$ARGUMENTS` is empty, print "Error: No file path provided. Usage: /tla-parse <path.tla>" and exit
-- Print "Raw argument: $ARGUMENTS"
+- If no argument is provided, print "Error: No file path provided. Usage: /tla-parse <path.tla>" and exit
+- Print "Raw argument: <argument>"
 
 **Step 2: Strip Leading @ Symbol**
 
-If `$ARGUMENTS` starts with `@`, remove it:
+If the argument starts with `@`, remove it to get the spec path. Otherwise, use the argument as-is.
 
-```bash
-SPEC_PATH="${ARGUMENTS#@}"
-```
-
-Otherwise, use `$ARGUMENTS` as-is:
-
-```bash
-SPEC_PATH="$ARGUMENTS"
-```
-
-Print "Spec path: $SPEC_PATH"
+Print "Spec path: <spec_path>"
 
 **Step 3: Validate File Path**
 
 Check that the file exists and ends with `.tla`:
 
 - If path doesn't end with `.tla`, print "Error: File must have .tla extension" and exit
-- If file doesn't exist, print "Error: File not found: $SPEC_PATH" and exit
-- Print "File validated: $SPEC_PATH"
+- Use the Read tool to verify the file exists. If file doesn't exist, print "Error: File not found: <spec_path>" and exit
+- Print "File validated: <spec_path>"
 
 **Step 4: Call MCP Tool**
 
 Invoke the SANY parser:
 
 ```
-tlaplus_mcp_sany_parse --fileName "$SPEC_PATH"
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse --fileName "<spec_path>"
 ```
 
 **Step 5: Report Results**
 
 If parsing succeeds:
 
-- Print "✓ Parsing successful. No errors found."
+- Print "Parsing successful. No errors found."
 
 If parsing fails:
 
-- Print "✗ Parsing failed. See errors above."
+- Print "Parsing failed. See errors above."
 - Offer to explain common TLA+ syntax errors if user wants help

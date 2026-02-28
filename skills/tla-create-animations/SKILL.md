@@ -53,12 +53,12 @@ AnimWatch == AnimView
 
 Use MCP tools to generate animation:
 
-```bash
+```
 # Parse the animation spec
-tlaplus_mcp_sany_parse --file MySpecAnim.tla
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse --fileName MySpecAnim.tla
 
 # Explore with animation
-tlaplus_mcp_tlc_explore --spec MySpecAnim --config MySpec.cfg
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore --fileName MySpecAnim.tla --cfgFile MySpec.cfg
 ```
 
 ## SVG Element Reference
@@ -157,9 +157,9 @@ IN [shape |-> "g", elements |-> SetToSeq(Elements)]
 
 ## MCP Tools for Animations
 
-- `tlaplus_mcp_sany_parse`: Validate animation spec syntax
-- `tlaplus_mcp_tlc_explore`: Generate and view animation
-- `tlaplus_mcp_tlc_check`: Run model checker with animation output
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse`: Validate animation spec syntax
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore`: Generate and view animation
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check`: Run model checker with animation output
 
 ## Complete Example
 

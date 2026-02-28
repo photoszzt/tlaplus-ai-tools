@@ -76,12 +76,12 @@ Use this skill when reviewing TLA+ specifications to ensure correctness, complet
 
 Use MCP tools to validate the spec:
 
-- [ ] **Parse check**: Use `tlaplus_mcp_sany_parse` to verify syntax
-- [ ] **Module structure**: Use `tlaplus_mcp_sany_modules` to check dependencies
-- [ ] **Symbol resolution**: Use `tlaplus_mcp_sany_symbol` to verify all symbols defined
-- [ ] **Smoke test**: Use `tlaplus_mcp_tlc_smoke` for quick validation
-- [ ] **Model checking**: Use `tlaplus_mcp_tlc_check` with appropriate config
-- [ ] **State exploration**: Use `tlaplus_mcp_tlc_explore` to understand state space
+- [ ] **Parse check**: Use `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse` to verify syntax
+- [ ] **Module structure**: Use `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_modules` to check dependencies
+- [ ] **Symbol resolution**: Use `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol` to verify all symbols defined
+- [ ] **Smoke test**: Use `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke` for quick validation
+- [ ] **Model checking**: Use `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check` with appropriate config
+- [ ] **State exploration**: Use `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore` to understand state space
 
 ## Common Issues
 
@@ -92,9 +92,9 @@ Use MCP tools to validate the spec:
 
 ## MCP Tools Reference
 
-- `tlaplus_mcp_sany_parse`: Parse and validate TLA+ syntax
-- `tlaplus_mcp_sany_modules`: Analyze module structure and dependencies
-- `tlaplus_mcp_sany_symbol`: Look up symbol definitions
-- `tlaplus_mcp_tlc_smoke`: Quick smoke test (small state space)
-- `tlaplus_mcp_tlc_check`: Full model checking with config
-- `tlaplus_mcp_tlc_explore`: Explore state space interactively
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse`: Parse and validate TLA+ syntax
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_modules`: Analyze module structure and dependencies
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol`: Look up symbol definitions
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke`: Quick smoke test (small state space)
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check`: Full model checking with config
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore`: Explore state space interactively

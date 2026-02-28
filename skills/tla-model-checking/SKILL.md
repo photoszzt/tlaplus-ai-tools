@@ -235,10 +235,10 @@ Reduces state space by treating equivalent states as identical.
 
 ```javascript
 // Parse first
-tlaplus_mcp_sany_parse({ fileName: "/path/to/Spec.tla" })
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse({ fileName: "/path/to/Spec.tla" })
 
 // Model check
-tlaplus_mcp_tlc_check({
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check({
   fileName: "/path/to/Spec.tla",
   cfgFile: "/path/to/Config.cfg",
   extraOpts: ["-workers", "4"],
@@ -246,7 +246,7 @@ tlaplus_mcp_tlc_check({
 })
 
 // Smoke test
-tlaplus_mcp_tlc_smoke({
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke({
   fileName: "/path/to/Spec.tla"
 })
 ```
@@ -522,7 +522,7 @@ For long checks:
 - `tla-debug-violations` - Debug counterexamples
 - `tla-spec-review` - Review before checking
 
-### Related Commands
+### Related Skills
 
 - `/tla-parse` - Syntax check
 - `/tla-symbols` - Generate config
@@ -532,8 +532,6 @@ For long checks:
 
 ### Related Agents
 
-- `spec-validator` - Automated validation
-- `config-generator` - Generate configs
 - `trace-analyzer` - Analyze violations
 
 ## Quick Reference

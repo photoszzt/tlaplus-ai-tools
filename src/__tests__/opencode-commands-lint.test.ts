@@ -2,44 +2,43 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 /**
- * OpenCode Commands Lint Tests
- * 
- * These tests validate the structure and content of merged command files
- * in commands/ directory (used by both Claude Code and OpenCode). They ensure:
- * - All expected command files exist
- * - Each has valid YAML frontmatter with required keys for both platforms
- * - Each references the appropriate MCP tools
+ * Operational Skills Lint Tests
+ *
+ * These tests validate the structure and content of operational skill files
+ * in skills/ directory. They ensure:
+ * - All expected operational skill files exist
+ * - Each has valid YAML frontmatter with required keys
+ * - Each references the appropriate MCP tools using full names
  * - Each includes usage examples and @ handling notes
- * - Documentation accurately reflects command support
- * - OpenCode marker strings are present for E2E validation
+ * - Marker strings are present for E2E validation
  * - No positional $N tokens (cross-platform compatibility)
  */
 
-const COMMANDS_DIR = path.join(__dirname, '../../commands');
+const SKILLS_DIR = path.join(__dirname, '../../skills');
 const OPENCODE_DOC = path.join(__dirname, '../../OPENCODE.md');
 
-// Expected command files (from plan)
-const EXPECTED_COMMANDS = [
-  'tla-parse.md',
-  'tla-symbols.md',
-  'tla-smoke.md',
-  'tla-check.md',
-  'tla-review.md',
-  'tla-setup.md'
+// Expected operational skill directories (formerly commands)
+const EXPECTED_SKILLS = [
+  'tla-parse',
+  'tla-symbols',
+  'tla-smoke',
+  'tla-check',
+  'tla-review',
+  'tla-setup'
 ];
 
-// MCP tool requirements per command (from plan lines 661-668)
+// MCP tool requirements per skill (using full MCP tool names)
 const REQUIRED_MCP_TOOLS: Record<string, string[]> = {
-  'tla-parse.md': ['tlaplus_mcp_sany_parse'],
-  'tla-symbols.md': ['tlaplus_mcp_sany_parse', 'tlaplus_mcp_sany_symbol'],
-  'tla-smoke.md': ['tlaplus_mcp_tlc_smoke'],
-  'tla-check.md': ['tlaplus_mcp_tlc_check'],
-  'tla-review.md': ['tlaplus_mcp_sany_parse', 'tlaplus_mcp_sany_symbol', 'tlaplus_mcp_tlc_smoke'],
-  'tla-setup.md': [] // No MCP tools, validation only
+  'tla-parse': ['mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse'],
+  'tla-symbols': ['mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse', 'mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol'],
+  'tla-smoke': ['mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke'],
+  'tla-check': ['mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check'],
+  'tla-review': ['mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse', 'mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol', 'mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke'],
+  'tla-setup': [] // No MCP tools in body, validation only
 };
 
 /**
- * Minimal frontmatter parser (plan lines 655-659)
+ * Minimal frontmatter parser
  * Reads between first two --- lines and extracts key: value pairs
  */
 function parseFrontmatter(content: string): Record<string, string> {
@@ -55,7 +54,7 @@ function parseFrontmatter(content: string): Record<string, string> {
   // Parse simple key: value pairs (single-line only)
   const lines = frontmatterText.split(/\r?\n/);
   for (const line of lines) {
-    const match = line.match(/^(\w+):\s*(.+)$/);
+    const match = line.match(/^([\w-]+):\s*(.+)$/);
     if (match) {
       const [, key, value] = match;
       result[key] = value.trim();
@@ -83,88 +82,70 @@ function readFile(filePath: string): string {
   return fs.readFileSync(filePath, 'utf-8');
 }
 
-describe('OpenCode Commands Lint Tests', () => {
-  describe('Command Files Existence', () => {
-    it('should have commands directory', () => {
-      expect(fileExists(COMMANDS_DIR)).toBe(true);
+describe('Operational Skills Lint Tests', () => {
+  describe('Skill Files Existence', () => {
+    it('should have skills directory', () => {
+      expect(fileExists(SKILLS_DIR)).toBe(true);
     });
 
-    it('should have exactly 6 expected command files', () => {
-      if (!fileExists(COMMANDS_DIR)) {
-        throw new Error('commands directory does not exist');
-      }
-
-      const actualFiles = fs.readdirSync(COMMANDS_DIR)
-        .filter(f => f.endsWith('.md'));
-      
-      if (actualFiles.length !== EXPECTED_COMMANDS.length) {
-        const missing = EXPECTED_COMMANDS.filter(cmd => !actualFiles.includes(cmd));
-        const extra = actualFiles.filter(f => !EXPECTED_COMMANDS.includes(f));
-        
-        let message = `Expected exactly ${EXPECTED_COMMANDS.length} command files, found ${actualFiles.length}.`;
-        if (missing.length > 0) {
-          message += `\nMissing: ${missing.join(', ')}`;
-        }
-        if (extra.length > 0) {
-          message += `\nUnexpected: ${extra.join(', ')}`;
-        }
-        throw new Error(message);
-      }
-      
-      expect(actualFiles.length).toBe(EXPECTED_COMMANDS.length);
+    it('should not have commands directory (commands migrated to skills)', () => {
+      const commandsDir = path.join(__dirname, '../../commands');
+      expect(fileExists(commandsDir)).toBe(false);
     });
 
-    EXPECTED_COMMANDS.forEach(commandFile => {
-      it(`should have ${commandFile}`, () => {
-        const filePath = path.join(COMMANDS_DIR, commandFile);
+    it('should have all expected operational skill directories', () => {
+      const missing = EXPECTED_SKILLS.filter(skill =>
+        !fileExists(path.join(SKILLS_DIR, skill, 'SKILL.md'))
+      );
+
+      if (missing.length > 0) {
+        throw new Error(`Missing operational skill files:\n${missing.map(s => `  skills/${s}/SKILL.md`).join('\n')}`);
+      }
+
+      expect(missing.length).toBe(0);
+    });
+
+    EXPECTED_SKILLS.forEach(skillName => {
+      it(`should have ${skillName}/SKILL.md`, () => {
+        const filePath = path.join(SKILLS_DIR, skillName, 'SKILL.md');
         if (!fileExists(filePath)) {
-          throw new Error(`Missing command file: ${commandFile}. Expected at ${filePath}`);
+          throw new Error(`Missing skill file: ${skillName}/SKILL.md. Expected at ${filePath}`);
         }
         expect(fileExists(filePath)).toBe(true);
       });
     });
 
-    it('should have filenames matching command names', () => {
-      if (!fileExists(COMMANDS_DIR)) {
-        throw new Error('commands directory does not exist');
-      }
-
-      const actualFiles = fs.readdirSync(COMMANDS_DIR)
-        .filter(f => f.endsWith('.md'));
-      
+    it('should have skill names matching frontmatter names', () => {
       const mismatches: string[] = [];
-      
-      actualFiles.forEach(filename => {
-        const filePath = path.join(COMMANDS_DIR, filename);
-        const content = readFile(filePath);
-        const frontmatter = parseFrontmatter(content);
-        
-        // Extract command name from filename (e.g., "tla-parse.md" -> "tla-parse")
-        const expectedCommandName = filename.replace('.md', '');
-        
-        // Check if content references the command with /command-name
-        const commandPattern = new RegExp(`/${expectedCommandName}\\b`);
-        if (!commandPattern.test(content)) {
-          mismatches.push(`${filename}: does not reference /${expectedCommandName} in content`);
+
+      EXPECTED_SKILLS.forEach(skillName => {
+        const filePath = path.join(SKILLS_DIR, skillName, 'SKILL.md');
+        if (fileExists(filePath)) {
+          const content = readFile(filePath);
+          const frontmatter = parseFrontmatter(content);
+
+          if (frontmatter.name !== skillName) {
+            mismatches.push(`${skillName}: frontmatter name "${frontmatter.name}" does not match directory name "${skillName}"`);
+          }
         }
       });
-      
+
       if (mismatches.length > 0) {
-        throw new Error(`Filename/command name mismatches:\n${mismatches.join('\n')}`);
+        throw new Error(`Name mismatches:\n${mismatches.join('\n')}`);
       }
-      
+
       expect(mismatches.length).toBe(0);
     });
   });
 
   describe('Frontmatter Validation', () => {
-    EXPECTED_COMMANDS.forEach(commandFile => {
-      describe(commandFile, () => {
+    EXPECTED_SKILLS.forEach(skillName => {
+      describe(skillName, () => {
         let content: string;
         let frontmatter: Record<string, string>;
 
         beforeAll(() => {
-          const filePath = path.join(COMMANDS_DIR, commandFile);
+          const filePath = path.join(SKILLS_DIR, skillName, 'SKILL.md');
           if (fileExists(filePath)) {
             content = readFile(filePath);
             frontmatter = parseFrontmatter(content);
@@ -175,9 +156,8 @@ describe('OpenCode Commands Lint Tests', () => {
           expect(Object.keys(frontmatter).length).toBeGreaterThan(0);
         });
 
-        it('should have name key matching filename', () => {
-          const expectedName = commandFile.replace('.md', '');
-          expect(content).toMatch(new RegExp(`^name:\\s*${expectedName}\\s*$`, 'm'));
+        it('should have name key matching skill directory', () => {
+          expect(content).toMatch(new RegExp(`^name:\\s*${skillName}\\s*$`, 'm'));
         });
 
         it('should have description key', () => {
@@ -186,9 +166,14 @@ describe('OpenCode Commands Lint Tests', () => {
           expect(content).toMatch(/^description:\s*.+$/m);
         });
 
-        it('should have agent: build', () => {
-          expect(frontmatter.agent).toBe('build');
-          expect(content).toMatch(/^agent:\s*build\s*$/m);
+        it('should have version key', () => {
+          expect(frontmatter.version).toBeDefined();
+          expect(content).toMatch(/^version:\s*.+$/m);
+        });
+
+        it('should NOT have agent: build (skills run in main context)', () => {
+          expect(frontmatter.agent).toBeUndefined();
+          expect(content).not.toMatch(/^agent:\s*build\s*$/m);
         });
 
         it('should have allowed-tools key', () => {
@@ -199,13 +184,13 @@ describe('OpenCode Commands Lint Tests', () => {
   });
 
   describe('MCP Tool References', () => {
-    EXPECTED_COMMANDS.forEach(commandFile => {
-      describe(commandFile, () => {
+    EXPECTED_SKILLS.forEach(skillName => {
+      describe(skillName, () => {
         let content: string;
-        const requiredTools = REQUIRED_MCP_TOOLS[commandFile];
+        const requiredTools = REQUIRED_MCP_TOOLS[skillName];
 
         beforeAll(() => {
-          const filePath = path.join(COMMANDS_DIR, commandFile);
+          const filePath = path.join(SKILLS_DIR, skillName, 'SKILL.md');
           if (fileExists(filePath)) {
             content = readFile(filePath);
           }
@@ -215,25 +200,63 @@ describe('OpenCode Commands Lint Tests', () => {
           requiredTools.forEach(tool => {
             it(`should reference ${tool}`, () => {
               expect(content).toContain(tool);
+            });
+          });
+        } else {
+          it('should not require MCP tools in body (validation only)', () => {
+            // tla-setup is validation only, no MCP tools required in body
+            expect(skillName).toBe('tla-setup');
+          });
+        }
+
+        it('should use full MCP tool names (not short names)', () => {
+          // Ensure no short MCP tool names are used in implementation sections
+          const implSection = content.split(/##\s+Implementation/i)[1];
+          if (implSection) {
+            // Check for short names that should be full names
+            const shortNamePatterns = [
+              /(?<!\w)tlaplus_mcp_sany_parse(?!\w)/,
+              /(?<!\w)tlaplus_mcp_sany_symbol(?!\w)/,
+              /(?<!\w)tlaplus_mcp_sany_modules(?!\w)/,
+              /(?<!\w)tlaplus_mcp_tlc_check(?!\w)/,
+              /(?<!\w)tlaplus_mcp_tlc_smoke(?!\w)/,
+              /(?<!\w)tlaplus_mcp_tlc_explore(?!\w)/,
+            ];
+
+            shortNamePatterns.forEach(pattern => {
+              const match = implSection.match(pattern);
+              if (match) {
+                // Verify it's the full name (prefixed with mcp__plugin_tlaplus_tlaplus__)
+                const fullPattern = new RegExp(`mcp__plugin_tlaplus_tlaplus__${match[0]}`);
+                const lineWithMatch = implSection.split('\n').find(line => pattern.test(line));
+                if (lineWithMatch && !fullPattern.test(lineWithMatch)) {
+                  throw new Error(`${skillName}: Uses short MCP tool name "${match[0]}" in implementation. Use full name "mcp__plugin_tlaplus_tlaplus__${match[0]}" instead.`);
+                }
+              }
+            });
+          }
+        });
+      });
+    });
   });
 
-  describe('OpenCode Marker Contract', () => {
+  describe('Marker Contract', () => {
     const REQUIRED_MARKERS: Record<string, string[]> = {
-      'tla-parse.md': ['Spec path:'],
-      'tla-symbols.md': ['Spec path:', 'CFG written:'],
-      'tla-smoke.md': ['Spec path:', 'CFG used:'],
-      'tla-check.md': ['Spec path:', 'CFG used:'],
-      'tla-review.md': ['Spec path:', 'TLA+ SPECIFICATION REVIEW'],
-      'tla-setup.md': ['TLA+ TOOLS SETUP & VERIFICATION']
+      'tla-parse': ['Spec path:'],
+      'tla-symbols': ['Spec path:', 'CFG written:'],
+      'tla-smoke': ['Spec path:', 'CFG used:'],
+      'tla-check': ['Spec path:', 'CFG used:'],
+      'tla-review': ['Spec path:', 'TLA+ SPECIFICATION REVIEW'],
+      'tla-setup': ['TLA+ TOOLS SETUP & VERIFICATION']
     };
 
-    EXPECTED_COMMANDS.forEach(commandFile => {
-      describe(commandFile, () => {
+    EXPECTED_SKILLS.forEach(skillName => {
+      describe(skillName, () => {
         let content: string;
-        const requiredMarkers = REQUIRED_MARKERS[commandFile];
+        const requiredMarkers = REQUIRED_MARKERS[skillName];
 
         beforeAll(() => {
-          const filePath = path.join(COMMANDS_DIR, commandFile);
+          const filePath = path.join(SKILLS_DIR, skillName, 'SKILL.md');
           if (fileExists(filePath)) {
             content = readFile(filePath);
           }
@@ -249,22 +272,29 @@ describe('OpenCode Commands Lint Tests', () => {
   });
 
   describe('Cross-Platform Compatibility', () => {
-    EXPECTED_COMMANDS.forEach(commandFile => {
-      describe(commandFile, () => {
+    EXPECTED_SKILLS.forEach(skillName => {
+      describe(skillName, () => {
         let content: string;
 
         beforeAll(() => {
-          const filePath = path.join(COMMANDS_DIR, commandFile);
+          const filePath = path.join(SKILLS_DIR, skillName, 'SKILL.md');
           if (fileExists(filePath)) {
             content = readFile(filePath);
           }
         });
 
         it('should not contain positional $N tokens', () => {
-          // Check no $0, $1, $2, etc. (allow $ARGUMENTS)
+          // Check no $0, $1, $2, etc. (allow $ARGUMENTS for backward compat references)
           const positionalMatch = content.match(/\$[0-9]\b/);
           if (positionalMatch) {
-            throw new Error(`${commandFile} uses positional variable ${positionalMatch[0]} - use $ARGUMENTS instead`);
+            throw new Error(`${skillName} uses positional variable ${positionalMatch[0]} - not supported in skills`);
+          }
+        });
+
+        it('should not reference $ARGUMENTS (skills use contextual language)', () => {
+          // Skills should not use $ARGUMENTS since they run in main context
+          if (content.includes('$ARGUMENTS')) {
+            throw new Error(`${skillName} references $ARGUMENTS which is not available in skills. Use contextual language like "the argument to this skill" instead.`);
           }
         });
       });
@@ -272,150 +302,25 @@ describe('OpenCode Commands Lint Tests', () => {
   });
 
   describe('Repository Configuration', () => {
-    it('opencode.json should exist at repo root with MCP config', () => {
-      const configPath = path.join(__dirname, '../../opencode.json');
-      expect(fileExists(configPath)).toBe(true);
-      
-      const configContent = readFile(configPath);
-      const config = JSON.parse(configContent);
-      
-      expect(config.mcp).toBeDefined();
-      expect(config.mcp.tlaplus).toBeDefined();
-    });
+    it('plugin.json should not reference commands directory', () => {
+      const pluginPath = path.join(__dirname, '../../.claude-plugin/plugin.json');
+      expect(fileExists(pluginPath)).toBe(true);
 
-    it('OPENCODE.md should document OPENCODE_CONFIG_DIR', () => {
-      const docPath = path.join(__dirname, '../../OPENCODE.md');
-      if (fileExists(docPath)) {
-        const content = readFile(docPath);
-        expect(content).toMatch(/OPENCODE_CONFIG_DIR/);
-      }
-    });
-  });
-          });
-        } else {
-          it('should not require MCP tools (validation only)', () => {
-            // tla-setup is validation only, no MCP tools required
-            expect(commandFile).toBe('tla-setup.md');
-          });
-        }
-      });
+      const pluginContent = readFile(pluginPath);
+      const plugin = JSON.parse(pluginContent);
+
+      expect(plugin.commands).toBeUndefined();
+      expect(plugin.skills).toBeDefined();
     });
   });
 
-  describe('Usage Examples and @ Handling', () => {
-    EXPECTED_COMMANDS.forEach(commandFile => {
-      describe(commandFile, () => {
+  describe('Skill Content Quality', () => {
+    EXPECTED_SKILLS.forEach(skillName => {
+      describe(skillName, () => {
         let content: string;
 
         beforeAll(() => {
-          const filePath = path.join(COMMANDS_DIR, commandFile);
-          if (fileExists(filePath)) {
-            content = readFile(filePath);
-          }
-        });
-
-        // tla-setup doesn't take file arguments, so skip these tests
-        if (commandFile !== 'tla-setup.md') {
-          it('should include usage example with plain path', () => {
-            // Look for example invocations like: /tla-parse test-specs/Counter.tla
-            const commandName = commandFile.replace('.md', '');
-            const plainPathPattern = new RegExp(`/${commandName}\\s+[^@\\s][^\\s]*\\.tla`);
-            expect(content).toMatch(plainPathPattern);
-          });
-
-          it('should include note about @ handling', () => {
-            // Check for @ stripping or @ handling documentation
-            const hasAtHandling = 
-              content.includes('Strip Leading @ Symbol') ||
-              content.includes('leading `@`') ||
-              content.includes('@$1') ||
-              content.includes('@ prefix') ||
-              content.includes('strip') && content.includes('@');
-            
-            expect(hasAtHandling).toBe(true);
-          });
-        }
-
-        it('should include "Preferred" usage example or equivalent', () => {
-          // Look for "Preferred" marker or clear usage examples
-          const hasPreferredOrExample = 
-            content.includes('Preferred') ||
-            content.includes('Usage:') ||
-            content.includes('Example') ||
-            content.includes('Test Invocations');
-          
-          expect(hasPreferredOrExample).toBe(true);
-        });
-      });
-    });
-  });
-
-  describe('Documentation Accuracy', () => {
-    it('OPENCODE.md should not claim commands are unsupported', () => {
-      if (!fileExists(OPENCODE_DOC)) {
-        return;
-      }
-
-      const content = readFile(OPENCODE_DOC);
-      
-      // Check for outdated claims like "Commands | ❌ Not Supported"
-      const unsupportedPatterns = [
-        /Commands\*\*\s*\|\s*❌\s*Not Supported/i,
-        /Commands\*\*\s*\|\s*❌/i,
-        /\|\s*Commands\s*\|\s*❌/i,
-        /Commands.*Not Supported/i
-      ];
-      
-      const foundPatterns = unsupportedPatterns
-        .map((pattern, idx) => ({ pattern, idx, match: pattern.test(content) }))
-        .filter(result => result.match);
-      
-      if (foundPatterns.length > 0) {
-        const patternDescriptions = foundPatterns.map(r => 
-          `Pattern ${r.idx + 1}: ${unsupportedPatterns[r.idx]}`
-        ).join('\n');
-        
-        throw new Error(
-          `OPENCODE.md contains outdated "Commands not supported" claims.\n` +
-          `Found patterns:\n${patternDescriptions}\n\n` +
-          `Action: Update OPENCODE.md to reflect that commands ARE supported.\n` +
-          `Expected: Commands should be marked as ✅ Supported with examples.`
-        );
-      }
-      
-      expect(foundPatterns.length).toBe(0);
-    });
-
-    it('OPENCODE.md should document command support if it exists', () => {
-      if (fileExists(OPENCODE_DOC)) {
-        const content = readFile(OPENCODE_DOC);
-        
-        // If commands exist, docs should mention them
-        const commandsExist = EXPECTED_COMMANDS.some(cmd => 
-          fileExists(path.join(COMMANDS_DIR, cmd))
-        );
-        
-        if (commandsExist) {
-          // Should have some mention of commands being available
-          const mentionsCommands = 
-            content.includes('/tla-parse') ||
-            content.includes('/tla-check') ||
-            content.includes('custom commands') ||
-            content.includes('Commands') && content.includes('✅');
-          
-          expect(mentionsCommands).toBe(true);
-        }
-      }
-    });
-  });
-
-  describe('Command Content Quality', () => {
-    EXPECTED_COMMANDS.forEach(commandFile => {
-      describe(commandFile, () => {
-        let content: string;
-
-        beforeAll(() => {
-          const filePath = path.join(COMMANDS_DIR, commandFile);
+          const filePath = path.join(SKILLS_DIR, skillName, 'SKILL.md');
           if (fileExists(filePath)) {
             content = readFile(filePath);
           }
@@ -427,23 +332,71 @@ describe('OpenCode Commands Lint Tests', () => {
 
         it('should have step-by-step instructions', () => {
           // Look for numbered steps or clear structure
-          const hasSteps = 
+          const hasSteps =
             content.includes('Step 1') ||
             content.includes('**1.') ||
             content.match(/\d+\.\s+\w+/);
-          
+
           expect(hasSteps).toBeTruthy();
         });
 
         it('should validate file path', () => {
-          // Commands should validate .tla extension and file existence
-          const hasValidation = 
+          // Skills should validate .tla extension and file existence
+          const hasValidation =
             content.includes('.tla') &&
-            (content.includes('validate') || 
-             content.includes('check') || 
+            (content.includes('validate') ||
+             content.includes('check') ||
              content.includes('exists'));
-          
+
           expect(hasValidation).toBe(true);
+        });
+
+        it('should include anti-fallback warning', () => {
+          // All operational skills should warn against using Bash for Java/TLC
+          expect(content).toMatch(/Never fall back to running Java/i);
+        });
+      });
+    });
+  });
+
+  describe('Usage Examples and @ Handling', () => {
+    EXPECTED_SKILLS.forEach(skillName => {
+      describe(skillName, () => {
+        let content: string;
+
+        beforeAll(() => {
+          const filePath = path.join(SKILLS_DIR, skillName, 'SKILL.md');
+          if (fileExists(filePath)) {
+            content = readFile(filePath);
+          }
+        });
+
+        // tla-setup doesn't take file arguments, so skip these tests
+        if (skillName !== 'tla-setup') {
+          it('should include usage example with plain path', () => {
+            // Look for example invocations like: /tla-parse test-specs/Counter.tla
+            const plainPathPattern = new RegExp(`/${skillName}\\s+[^@\\s][^\\s]*\\.tla`);
+            expect(content).toMatch(plainPathPattern);
+          });
+
+          it('should include note about @ handling', () => {
+            // Check for @ stripping or @ handling documentation
+            const hasAtHandling =
+              content.includes('leading `@`') ||
+              content.includes('@ prefix') ||
+              (content.includes('strip') && content.includes('@'));
+
+            expect(hasAtHandling).toBe(true);
+          });
+        }
+
+        it('should include usage section', () => {
+          const hasUsage =
+            content.includes('## Usage') ||
+            content.includes('Usage:') ||
+            content.includes('Example');
+
+          expect(hasUsage).toBe(true);
         });
       });
     });

@@ -7,10 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 TLA+ AI Tools is a comprehensive Claude Code plugin that integrates TLA+ formal specification and model checking into AI-assisted development workflows. The plugin combines:
 
 - **MCP Server** (`src/`) - TypeScript-based Model Context Protocol server providing TLA+ toolchain access
-- **AI Skills** (`skills/`) - Progressive disclosure knowledge modules for learning TLA+
-- **Slash Commands** (`commands/`) - User-invocable actions for parsing, checking, and validating specs
+- **AI Skills** (`skills/`) - Both educational knowledge modules and operational skills (parsing, checking, validating specs)
 - **Autonomous Agents** (`agents/`) - Self-directed tasks for validation, config generation, and trace analysis
-- **Event Hooks** (`hooks/`) - Automatic tooling integration triggered on file saves and session events
 - **Knowledge Base** (`resources/knowledgebase/`) - 20+ articles on TLA+ best practices and patterns
 
 ## Common Commands
@@ -102,28 +100,23 @@ The plugin follows Claude Code's component model:
 .claude-plugin/
 └── plugin.json       # Plugin manifest (name, version, component paths, MCP server config)
 
-skills/               # AI skills (progressive disclosure knowledge modules)
-├── tla-getting-started/
-├── tla-model-checking/
-├── tla-refinement-proofs/
-├── tla-spec-review/
-├── tla-debug-violations/
-└── tla-create-animations/
-
-commands/             # Slash commands (user-invocable actions)
-├── tla-parse.md      # Parse spec with SANY
-├── tla-symbols.md    # Extract symbols and generate config
-├── tla-smoke.md      # Quick 3-second smoke test
-├── tla-check.md      # Full model checking with TLC
-├── tla-review.md     # Comprehensive spec review
-└── tla-setup.md      # Interactive setup and verification
+skills/               # AI skills (educational + operational)
+├── tla-getting-started/  # Educational: TLA+ basics
+├── tla-model-checking/   # Educational: Model checking workflow
+├── tla-refinement-proofs/ # Educational: Refinement proofs
+├── tla-spec-review/      # Educational: Spec review checklist
+├── tla-debug-violations/ # Educational: Debugging violations
+├── tla-create-animations/ # Educational: Creating animations
+├── tla-parse/            # Operational: Parse spec with SANY
+├── tla-symbols/          # Operational: Extract symbols and generate config
+├── tla-smoke/            # Operational: Quick 3-second smoke test
+├── tla-check/            # Operational: Full model checking with TLC
+├── tla-review/           # Operational: Comprehensive spec review
+└── tla-setup/            # Operational: Interactive setup and verification
 
 agents/               # Autonomous agents (self-directed tasks)
 ├── animation-creator.md # Create animation specs
 └── trace-analyzer.md    # Analyze counterexample traces
-
-hooks/
-└── hooks.json        # Event hooks (SessionStart, PreToolUse, PostToolUse)
 ```
 
 ### MCP Tools Exposed
@@ -150,13 +143,15 @@ The server exposes these tools via MCP (prefix: `tlaplus_mcp_`):
 
 When a user runs `/tla-check @Counter.tla`:
 
-1. **Command** (`commands/tla-check.md`) is executed
-2. Command reads `Counter.tla` using Read tool
-3. Command calls MCP tool `tlaplus_mcp_sany_parse` to validate syntax
-4. If config missing, command calls `tlaplus_mcp_sany_symbol` to extract symbols
-5. Command prompts user to generate `Counter.cfg` if needed
-6. Command calls `tlaplus_mcp_tlc_check` to run model checking
+1. **Skill** (`skills/tla-check/SKILL.md`) is loaded into the main conversation context
+2. Skill reads `Counter.tla` using Read tool
+3. Skill calls MCP tool `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse` to validate syntax
+4. If config missing, skill calls `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol` to extract symbols
+5. Skill prompts user to generate `Counter.cfg` if needed
+6. Skill calls `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check` to run model checking
 7. Results are formatted and presented to user
+
+Skills run in the main conversation context where all MCP tools are registered, ensuring reliable tool invocation.
 
 ### Hook Behaviors
 
@@ -177,10 +172,9 @@ When a user runs `/tla-check @Counter.tla`:
 
 ### Plugin Components (Markdown)
 
-- **Skills**: Must have YAML frontmatter with `name`, `description`, `version`
-- **Commands**: Must have YAML frontmatter with `name`, `description`, `argument-hint`, `allowed-tools`
+- **Skills (educational)**: Must have YAML frontmatter with `name`, `description`, `version`
+- **Skills (operational)**: Must have YAML frontmatter with `name`, `description`, `version`, `allowed-tools`
 - **Agents**: Must have YAML frontmatter with `description`, `model`, `color`, `tools`
-- **Hooks**: JSON format with matchers and prompt-based hooks
 
 ### Testing
 
@@ -230,7 +224,6 @@ The server auto-detects paths in this order:
 - **`src/tools/tlc.ts`** - TLC model checker integration, handles all model checking operations
 - **`src/utils/symbols/`** - Symbol extraction from SANY XML (complex XML parsing logic)
 - **`.claude-plugin/plugin.json`** - Plugin manifest that Claude Code reads to load components
-- **`hooks/hooks.json`** - Event hook definitions (when and how hooks trigger)
 
 ## TLA+ Toolchain Integration
 
@@ -275,7 +268,7 @@ INVARIANT SafetyProperty
 CONSTANT MaxValue = 10
 ```
 
-Generate configs using the `/tla-symbols` command.
+Generate configs using `/tla-symbols`.
 
 ## Common Development Tasks
 
@@ -288,15 +281,16 @@ Generate configs using the `/tla-symbols` command.
 5. Add error handling with `enhanceError()`
 6. Update tests in `src/__tests__/`
 
-### Adding a New Command
+### Adding a New Operational Skill
 
-1. Create `commands/command-name.md` with YAML frontmatter
-2. Add `allowed-tools` list (Read, Write, Bash, Grep, etc.)
-3. Write clear instructions for Claude on how to execute the command
-4. Reference MCP tools using exact names (e.g., `tlaplus_mcp_sany_parse`)
-5. Test by running `/command-name` in Claude Code
+1. Create `skills/skill-name/` directory
+2. Add `SKILL.md` with YAML frontmatter (`name`, `description`, `version`, `allowed-tools`)
+3. Reference MCP tools using full names (e.g., `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse`)
+4. Add "IMPORTANT: Always use the MCP tools listed above. Never fall back to running Java or TLC commands via Bash."
+5. Write clear implementation steps for Claude to follow
+6. Test by running `/skill-name` in Claude Code
 
-### Adding a New Skill
+### Adding a New Educational Skill
 
 1. Create `skills/skill-name/` directory
 2. Add `SKILL.md` with YAML frontmatter (`name`, `description`, `version`)
