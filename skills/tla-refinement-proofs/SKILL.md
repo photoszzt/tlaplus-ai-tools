@@ -373,7 +373,7 @@ See `examples/` directory:
 
 - `tla-model-checking` - Run TLC checks
 - `tla-getting-started` - TLA+ basics
-- `tla-spec-review` - Review specifications
+- `tla-debug-violations` - Debug counterexamples
 
 ### Related Commands
 

@@ -33,7 +33,6 @@ TLA+ AI Tools is a comprehensive plugin that brings the power of TLA+ formal met
 
 **For Development:**
 
-- **tla-spec-review** - Comprehensive specification review checklist
 - **tla-debug-violations** - Systematic debugging of counterexamples
 - **tla-create-animations** - Visualize specifications with SVG animations
 

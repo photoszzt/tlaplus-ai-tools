@@ -286,7 +286,6 @@ npm run verify
 # - tla-getting-started
 # - tla-model-checking
 # - tla-refinement-proofs
-# - tla-spec-review
 # - tla-debug-violations
 # - tla-create-animations
 

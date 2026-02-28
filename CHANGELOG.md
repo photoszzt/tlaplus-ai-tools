@@ -12,7 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Complete Claude Code and OpenCode plugin structure
 - MCP server for TLA+ tools (SANY, TLC, knowledge base)
 - Three foundational skills:
-  - `tla-spec-review` - Specification review workflow
   - `tla-debug-violations` - Debug invariant/property violations
   - `tla-create-animations` - Create TLA+ animations
 - Six slash commands:

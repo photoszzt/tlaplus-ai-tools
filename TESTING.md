@@ -203,13 +203,6 @@ User: "How do I run model checking?"
 Expected: Skill loads, explains TLC workflow
 ```
 
-**Test tla-spec-review**:
-
-```
-User: "Can you review my TLA+ specification?"
-Expected: Skill loads, shows review checklist
-```
-
 **Test tla-debug-violations**:
 
 ```
@@ -292,9 +285,7 @@ Expected:
 /tla-review @TestSpec.tla
 
 Expected:
-- Loads tla-spec-review skill
-- Runs checklist
-- Spawns spec-validator agent
+- Runs review checklist
 - Provides review report
 ```
 

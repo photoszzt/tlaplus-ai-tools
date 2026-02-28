@@ -112,14 +112,7 @@ tlaplus-ai-tools/
    - TLAPS proof system overview
    - Triggers: "refinement", "prove implementation"
 
-**Development Skills:** 4. **tla-spec-review** (Enhanced)
-
-- Comprehensive review checklist
-- References: review-checklist.md (detailed)
-- Systematic validation workflow
-- Triggers: "review spec", "check specification"
-
-5. **tla-debug-violations** (Enhanced)
+4. **tla-debug-violations** (Enhanced)
    - Systematic debugging strategies
    - References: debugging-strategies.md (advanced)
    - Counterexample analysis workflow
@@ -158,8 +151,7 @@ tlaplus-ai-tools/
 
 **Workflow Commands:** 5. **/tla-review** - Comprehensive spec review
 
-- Loads tla-spec-review skill
-- Spawns spec-validator agent
+- Runs review checklist
 - Provides detailed review report
 
 6. **/tla-setup** - Interactive setup and verification
@@ -349,7 +341,6 @@ All TLA+ knowledge base articles registered as resources:
 - tla-getting-started
 - tla-model-checking
 - tla-refinement-proofs
-- tla-spec-review
 - tla-debug-violations
 - tla-create-animations
 

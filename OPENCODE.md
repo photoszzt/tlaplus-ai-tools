@@ -66,7 +66,6 @@ All 6 TLA+ skills are available in OpenCode:
 
 **Development Skills:**
 
-- `tla-spec-review` - Comprehensive spec review checklist
 - `tla-debug-violations` - Debug counterexamples systematically
 - `tla-create-animations` - Create SVG animations
 

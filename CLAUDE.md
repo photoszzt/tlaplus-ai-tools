@@ -104,7 +104,6 @@ skills/               # AI skills (educational + operational)
 ├── tla-getting-started/  # Educational: TLA+ basics
 ├── tla-model-checking/   # Educational: Model checking workflow
 ├── tla-refinement-proofs/ # Educational: Refinement proofs
-├── tla-spec-review/      # Educational: Spec review checklist
 ├── tla-debug-violations/ # Educational: Debugging violations
 ├── tla-create-animations/ # Educational: Creating animations
 ├── tla-parse/            # Operational: Parse spec with SANY

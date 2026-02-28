@@ -226,7 +226,6 @@ async function installGlobal() {
   console.log('   • tla-getting-started');
   console.log('   • tla-model-checking');
   console.log('   • tla-refinement-proofs');
-  console.log('   • tla-spec-review');
   console.log('   • tla-debug-violations');
   console.log('   • tla-create-animations');
   console.log('');
