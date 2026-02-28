@@ -15,7 +15,6 @@ import * as path from 'path';
  */
 
 const SKILLS_DIR = path.join(__dirname, '../../skills');
-const OPENCODE_DOC = path.join(__dirname, '../../OPENCODE.md');
 
 // Expected operational skill directories (formerly commands)
 const EXPECTED_SKILLS = [
@@ -146,10 +145,9 @@ describe('Operational Skills Lint Tests', () => {
 
         beforeAll(() => {
           const filePath = path.join(SKILLS_DIR, skillName, 'SKILL.md');
-          if (fileExists(filePath)) {
-            content = readFile(filePath);
-            frontmatter = parseFrontmatter(content);
-          }
+          expect(fileExists(filePath)).toBe(true);
+          content = readFile(filePath);
+          frontmatter = parseFrontmatter(content);
         });
 
         it('should have valid YAML frontmatter', () => {
@@ -191,9 +189,8 @@ describe('Operational Skills Lint Tests', () => {
 
         beforeAll(() => {
           const filePath = path.join(SKILLS_DIR, skillName, 'SKILL.md');
-          if (fileExists(filePath)) {
-            content = readFile(filePath);
-          }
+          expect(fileExists(filePath)).toBe(true);
+          content = readFile(filePath);
         });
 
         requiredTools.forEach(tool => {
@@ -250,9 +247,8 @@ describe('Operational Skills Lint Tests', () => {
 
         beforeAll(() => {
           const filePath = path.join(SKILLS_DIR, skillName, 'SKILL.md');
-          if (fileExists(filePath)) {
-            content = readFile(filePath);
-          }
+          expect(fileExists(filePath)).toBe(true);
+          content = readFile(filePath);
         });
 
         requiredMarkers.forEach(marker => {
@@ -271,13 +267,12 @@ describe('Operational Skills Lint Tests', () => {
 
         beforeAll(() => {
           const filePath = path.join(SKILLS_DIR, skillName, 'SKILL.md');
-          if (fileExists(filePath)) {
-            content = readFile(filePath);
-          }
+          expect(fileExists(filePath)).toBe(true);
+          content = readFile(filePath);
         });
 
         it('should not contain positional $N tokens', () => {
-          // Check no $0, $1, $2, etc. (allow $ARGUMENTS for backward compat references)
+          // Check no $0, $1, $2, etc. (positional tokens are not supported in skills)
           const positionalMatch = content.match(/\$[0-9]\b/);
           if (positionalMatch) {
             throw new Error(`${skillName} uses positional variable ${positionalMatch[0]} - not supported in skills`);
@@ -314,9 +309,8 @@ describe('Operational Skills Lint Tests', () => {
 
         beforeAll(() => {
           const filePath = path.join(SKILLS_DIR, skillName, 'SKILL.md');
-          if (fileExists(filePath)) {
-            content = readFile(filePath);
-          }
+          expect(fileExists(filePath)).toBe(true);
+          content = readFile(filePath);
         });
 
         it('should have implementation section', () => {
@@ -359,9 +353,8 @@ describe('Operational Skills Lint Tests', () => {
 
         beforeAll(() => {
           const filePath = path.join(SKILLS_DIR, skillName, 'SKILL.md');
-          if (fileExists(filePath)) {
-            content = readFile(filePath);
-          }
+          expect(fileExists(filePath)).toBe(true);
+          content = readFile(filePath);
         });
 
         // tla-setup doesn't take file arguments, so skip these tests
