@@ -58,7 +58,7 @@ Use MCP tools to generate animation:
 mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse --fileName MySpecAnim.tla
 
 # Explore with animation
-mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore --fileName MySpecAnim.tla --cfgFile MySpec.cfg
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore --fileName MySpecAnim.tla --cfgFile MySpec.cfg --behaviorLength 20
 ```
 
 ## SVG Element Reference

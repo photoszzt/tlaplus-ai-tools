@@ -34,7 +34,7 @@ const REQUIRED_MCP_TOOLS: Record<string, string[]> = {
   'tla-smoke': ['mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke'],
   'tla-check': ['mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check'],
   'tla-review': ['mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse', 'mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol', 'mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke'],
-  'tla-setup': [] // No MCP tools in body, validation only
+  'tla-setup': ['mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_modules', 'mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse']
 };
 
 /**
@@ -196,18 +196,11 @@ describe('Operational Skills Lint Tests', () => {
           }
         });
 
-        if (requiredTools.length > 0) {
-          requiredTools.forEach(tool => {
-            it(`should reference ${tool}`, () => {
-              expect(content).toContain(tool);
-            });
+        requiredTools.forEach(tool => {
+          it(`should reference ${tool}`, () => {
+            expect(content).toContain(tool);
           });
-        } else {
-          it('should not require MCP tools in body (validation only)', () => {
-            // tla-setup is validation only, no MCP tools required in body
-            expect(skillName).toBe('tla-setup');
-          });
-        }
+        });
 
         it('should use full MCP tool names (not short names)', () => {
           // Ensure no short MCP tool names are used in implementation sections
