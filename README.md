@@ -23,7 +23,7 @@ TLA+ AI Tools is a comprehensive plugin that brings the power of TLA+ formal met
 
 ## Features
 
-### AI Skills (6)
+### AI Skills (5)
 
 **For Learning:**
 

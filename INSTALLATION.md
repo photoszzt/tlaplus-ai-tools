@@ -251,7 +251,7 @@ opencode mcp list
 
 # Check skills
 opencode debug skill | grep tla-
-# Expected: All 6 TLA+ skills listed
+# Expected: All 5 TLA+ skills listed
 ```
 
 ## Verification

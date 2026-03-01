@@ -79,7 +79,7 @@ Successfully implemented a comprehensive Claude Code and OpenCode plugin that br
 tlaplus-ai-tools/
 ├── .claude-plugin/
 │   └── plugin.json          # Plugin manifest
-├── skills/                  # AI skills (6 skills)
+├── skills/                  # AI skills (5 skills)
 ├── commands/                # Slash commands (6 commands)
 ├── agents/                  # Autonomous agents (4 agents)
 ├── hooks/                   # Event hooks (1 file, 3 events)
@@ -336,7 +336,7 @@ All TLA+ knowledge base articles registered as resources:
 - tla-trace-explorer-expressions.md
 - tlc-config-files.md
 
-### AI Skills (6)
+### AI Skills (5)
 
 - tla-getting-started
 - tla-model-checking

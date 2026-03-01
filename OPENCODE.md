@@ -28,7 +28,7 @@ opencode
 | Component      | Status                    | Notes                                        |
 | -------------- | ------------------------- | -------------------------------------------- |
 | **MCP Tools**  | ✅ Full Support           | All TLA+ tools accessible via MCP            |
-| **Skills (6)** | ✅ Full Support           | All 6 skills discoverable                    |
+| **Skills (5)** | ✅ Full Support           | All 5 skills discoverable                    |
 | **Commands**   | ✅ Supported              | Custom commands via .opencode/commands/\*.md |
 | **Agents**     | ⚠️ Different Architecture | Requires oh-my-opencode JSON config          |
 | **Hooks**      | ⚠️ Different Architecture | Requires JavaScript plugin files             |
@@ -56,7 +56,7 @@ opencode mcp list
 
 ## Skills
 
-All 6 TLA+ skills are available in OpenCode:
+All 5 TLA+ skills are available in OpenCode:
 
 **Learning Skills:**
 
@@ -75,7 +75,7 @@ All 6 TLA+ skills are available in OpenCode:
 
 ```bash
 opencode debug skill | grep tla-
-# Should show all 6 TLA+ skills
+# Should show all 5 TLA+ skills
 ```
 
 ## Platform Differences
@@ -276,7 +276,7 @@ opencode mcp list
 
 # Check skills
 opencode debug skill | grep tla-
-# Expected: All 6 TLA+ skills listed
+# Expected: All 5 TLA+ skills listed
 ```
 
 ## Migrating from v1.x
@@ -383,7 +383,7 @@ The hooks in `hooks/hooks.json` use Claude Code's JSON format and cannot be dire
 | Feature             | Claude Code                  | OpenCode                           |
 | ------------------- | ---------------------------- | ---------------------------------- |
 | **MCP Server**      | ✅ Full                      | ✅ Full                            |
-| **Skills**          | ✅ 6 skills                  | ✅ 6 skills                        |
+| **Skills**          | ✅ 5 skills                  | ✅ 5 skills                        |
 | **Commands**        | ✅ 6 commands                | ✅ 6 commands (.opencode/commands) |
 | **Agents**          | ✅ 4 agents                  | ❌ Different format                |
 | **Hooks**           | ✅ 3 hooks                   | ❌ Different format                |
