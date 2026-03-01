@@ -82,7 +82,6 @@ The `npm run install-global` command installs the plugin globally for OpenCode:
 
 - Patches `~/.config/opencode/opencode.json` to enable MCP server
 - Installs skills to `~/.config/opencode/skills/` (symlink or copy)
-- Installs commands to `~/.config/opencode/commands/` (symlink or copy)
 - Writes installation marker to prevent repeated prompts
 
 **Idempotent**: Running `npm run install-global` multiple times is safe and won't duplicate or fail.
@@ -233,14 +232,7 @@ After running `npm run install-global`, the plugin is configured globally:
 
 - MCP server config: `~/.config/opencode/opencode.json`
 - Skills: `~/.config/opencode/skills/tla-*`
-- Commands: `~/.config/opencode/commands/tla-*`
 - Installation marker: `~/.config/opencode/.tlaplus-install-state.json`
-
-**Commands**: 6 TLA+ commands are available globally:
-
-- `/tla-parse`, `/tla-symbols`, `/tla-smoke`, `/tla-check`, `/tla-review`, `/tla-setup`
-
-These commands are automatically discovered by OpenCode and invoked as `/command-name` in the TUI.
 
 **Verification**:
 
@@ -251,7 +243,7 @@ opencode mcp list
 
 # Check skills
 opencode debug skill | grep tla-
-# Expected: All 5 TLA+ skills listed
+# Expected: All 11 TLA+ skills listed
 ```
 
 ## Verification
@@ -282,23 +274,10 @@ npm run verify
 # Check skills available
 /skills list
 
-# Should show:
-# - tla-getting-started
-# - tla-model-checking
-# - tla-refinement-proofs
-# - tla-debug-violations
-# - tla-create-animations
-
-# Check commands available
-/help
-
-# Should show:
-# - /tla-parse
-# - /tla-check
-# - /tla-smoke
-# - /tla-symbols
-# - /tla-review
-# - /tla-setup
+# Should show all 11 TLA+ skills:
+# Educational: tla-getting-started, tla-model-checking, tla-refinement-proofs,
+#              tla-debug-violations, tla-create-animations
+# Operational: tla-parse, tla-symbols, tla-smoke, tla-check, tla-review, tla-setup
 ```
 
 ### Test Basic Functionality
@@ -382,22 +361,6 @@ npm link
 claude --plugin-dir $(pwd)
 ```
 
-### Commands Not Showing
-
-**Error**: Commands don't appear in `/help`
-
-**Solution**:
-
-```bash
-# Verify commands directory
-ls -la commands/*.md
-
-# Check plugin.json
-cat .claude-plugin/plugin.json | grep commands
-
-# Restart Claude Code
-```
-
 ### Build Errors
 
 **Error**: TypeScript compilation fails
@@ -476,12 +439,10 @@ To completely remove the global OpenCode integration:
 ```bash
 # macOS/Linux
 rm -rf ~/.config/opencode/skills/tla-*
-rm -rf ~/.config/opencode/commands/tla-*
 rm ~/.config/opencode/.tlaplus-install-state.json
 
 # Windows (PowerShell)
 Remove-Item -Recurse -Force "$HOME\.config\opencode\skills\tla-*"
-Remove-Item -Recurse -Force "$HOME\.config\opencode\commands\tla-*"
 Remove-Item -Force "$HOME\.config\opencode\.tlaplus-install-state.json"
 ```
 
@@ -593,8 +554,8 @@ After installation:
 
 1. **Learn TLA+**: Trigger `tla-getting-started` skill
 2. **Create first spec**: Follow tutorial
-3. **Generate config**: Use `/tla-symbols`
-4. **Run model checking**: Use `/tla-check`
-5. **Review specs**: Use `/tla-review`
+3. **Generate config**: Use `tla-symbols` skill
+4. **Run model checking**: Use `tla-check` skill
+5. **Review specs**: Use `tla-review` skill
 
 Happy formal verification! 🎉

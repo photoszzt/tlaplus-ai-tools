@@ -375,10 +375,10 @@ See `examples/` directory:
 - `tla-getting-started` - TLA+ basics
 - `tla-debug-violations` - Debug counterexamples
 
-### Related Commands
+### Related Skills
 
-- `/tla-check` - Verify refinement
-- `/tla-review` - Review refinement structure
+- `tla-check` - Verify refinement
+- `tla-review` - Review refinement structure
 
 ## Quick Reference
 

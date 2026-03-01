@@ -47,48 +47,30 @@ bash ./scripts/claude-e2e.sh
 - Checks for deterministic output markers
 - Skips if `CLAUDE_CODE_E2E` not set to `1`
 
-The E2E script runs all 6 commands and checks for deterministic markers:
+The E2E script runs all 6 operational skills and checks for deterministic markers:
 
-- `Spec path:` (all commands)
-- `CFG used:` (TLC commands)
-- `CFG written:` (`/tla-symbols`)
-- `TLA+ SPECIFICATION REVIEW` (`/tla-review`)
-- `TLA+ TOOLS SETUP & VERIFICATION` (`/tla-setup`)
+- `Spec path:` (all operational skills)
+- `CFG used:` (TLC skills)
+- `CFG written:` (`tla-symbols`)
+- `TLA+ SPECIFICATION REVIEW` (`tla-review`)
+- `TLA+ TOOLS SETUP & VERIFICATION` (`tla-setup`)
 
-#### OpenCode Commands Testing
-
-Commands use unified format compatible with both platforms. To test:
-
-```bash
-# Ensure commands are synced first
-cp commands/tla-*.md .opencode/commands/
-
-# Run E2E (OPENCODE_MODEL env var should be set to your model)
-OPENCODE_E2E=1 OPENCODE_MODEL=<your-model> npm run opencode:e2e
-```
+#### Operational Skills Lint Tests
 
 **CI Lint Tests** (automated):
 
-- Validates all 6 command files exist under `commands/`
-- Checks unified frontmatter (Claude Code + OpenCode fields)
-- Verifies MCP tool references per command
-- Ensures usage examples and `@` handling notes present
-- Checks no positional `$N` variables (only `$ARGUMENTS`)
+- Validates all 11 skill directories exist under `skills/`
+- Checks YAML frontmatter (name, description, version, allowed-tools for operational skills)
+- Verifies fully-qualified MCP tool references
+- Ensures usage examples and `@` handling notes present for operational skills
 - Run via: `npm test -- opencode-commands-lint`
 
-**Local E2E Testing**:
+The E2E script runs all 6 operational skills and checks for deterministic markers:
 
-- Prerequisites: OpenCode installed + model provider configured
-- Run via: `OPENCODE_E2E=1 npm run opencode:e2e`
-- Validates command execution and output markers
-- Skips if `OPENCODE_E2E` not set to `1`
-
-The E2E script runs all 6 commands and checks for deterministic markers:
-
-- `Spec path:` (all commands)
-- `CFG used:` (TLC commands)
-- `CFG written:` (`/tla-symbols`)
-- `Review Summary` (`/tla-review`)
+- `Spec path:` (all operational skills)
+- `CFG used:` (TLC skills)
+- `CFG written:` (`tla-symbols`)
+- `Review Summary` (`tla-review`)
 
 ## Level 2: MCP Server Testing
 
@@ -306,31 +288,6 @@ Expected:
 
 Test agents spawn and execute correctly.
 
-**Test spec-validator**:
-
-```
-User: "Validate Counter.tla"
-
-Expected:
-- Agent spawns
-- Reads spec
-- Runs SANY parse
-- Runs smoke test
-- Generates validation report
-```
-
-**Test config-generator**:
-
-```
-User: "Generate config for Counter.tla"
-
-Expected:
-- Agent spawns
-- Extracts symbols
-- Creates .cfg file
-- Explains customization
-```
-
 **Test animation-creator**:
 
 ```
@@ -355,45 +312,6 @@ Expected:
 - Suggests fixes
 ```
 
-#### 3.5 Hooks Testing
-
-Test hooks activate on appropriate events.
-
-**Test SessionStart hook**:
-
-```
-1. Start Claude Code with plugin
-2. First message after startup
-
-Expected:
-- Silent if tools present
-- Warning if tools missing
-- Suggestion to run /tla-setup if issues
-```
-
-**Test PreToolUse hook (Write/Edit .tla)**:
-
-```
-1. Create or edit a .tla file
-2. Use Write or Edit tool
-
-Expected:
-- Parse runs automatically
-- Warning shown if parse fails
-- Write/edit proceeds regardless
-```
-
-**Test PostToolUse hook (Write .tla)**:
-
-```
-1. Create NEW .tla file
-2. No corresponding .cfg exists
-
-Expected:
-- Suggestion: "Run /tla-symbols to generate config?"
-- Only for new files, not edits
-```
-
 ### Level 4: End-to-End Workflows
 
 Test complete user workflows.
@@ -405,10 +323,9 @@ Test complete user workflows.
    → tla-getting-started skill loads
 
 2. Follow skill guidance to create Counter.tla
-   → PostToolUse hook suggests config generation
 
 3. User: "/tla-symbols @Counter.tla"
-   → Command generates Counter.cfg
+   → Skill generates Counter.cfg
 
 4. User: "/tla-smoke @Counter.tla"
    → Quick validation passes

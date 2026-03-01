@@ -15,48 +15,35 @@ TLA+ AI Tools is a comprehensive plugin that brings the power of TLA+ formal met
 **Key Capabilities:**
 
 - 🤖 **AI Skills** - Learn TLA+, model checking, refinement, and debugging
-- ⚡ **Slash Commands** - Parse, check, smoke test, review, and more
-- 🎯 **Autonomous Agents** - Automated validation, config generation, trace analysis
-- 🔗 **Event Hooks** - Auto-parse on save, suggest configs, verify tools
+- 🎯 **Autonomous Agents** - Automated animation creation and trace analysis
 - 🛠️ **MCP Integration** - Full access to SANY parser and TLC model checker
 - 📚 **Knowledge Base** - 20+ articles on TLA+ best practices
 
 ## Features
 
-### AI Skills (5)
+### AI Skills (11)
 
-**For Learning:**
+**Educational (5):**
 
 - **tla-getting-started** - Introduction to TLA+ with examples and tutorials
 - **tla-model-checking** - Complete guide to TLC configuration and workflows
 - **tla-refinement-proofs** - Specification refinement and verification
-
-**For Development:**
-
 - **tla-debug-violations** - Systematic debugging of counterexamples
 - **tla-create-animations** - Visualize specifications with SVG animations
 
-### Slash Commands (6)
+**Operational (6):**
 
-- `/tla-parse` - Parse and validate TLA+ specifications
-- `/tla-check` - Run exhaustive model checking with TLC
-- `/tla-smoke` - Quick 3-second smoke test
-- `/tla-symbols` - Extract symbols and generate TLC config
-- `/tla-review` - Comprehensive spec review with validation
-- `/tla-setup` - Interactive setup and verification
+- **tla-parse** - Parse and validate TLA+ specifications
+- **tla-check** - Run exhaustive model checking with TLC
+- **tla-smoke** - Quick 3-second smoke test
+- **tla-symbols** - Extract symbols and generate TLC config
+- **tla-review** - Comprehensive spec review with validation
+- **tla-setup** - Interactive setup and verification
 
-### Autonomous Agents (4)
+### Autonomous Agents (2)
 
-- **spec-validator** - Automatically validate specifications
-- **config-generator** - Generate TLC configuration files
 - **animation-creator** - Create visualization animations
 - **trace-analyzer** - Analyze and explain counterexamples
-
-### Event Hooks (3)
-
-- **SessionStart** - Verify TLA+ tools on startup
-- **PreToolUse** - Auto-parse TLA+ files before saving
-- **PostToolUse** - Suggest config generation for new specs
 
 ### MCP Tools
 
@@ -287,10 +274,8 @@ More examples in `skills/*/examples/` directories.
 
 ```
 tlaplus-ai-tools/
-├── skills/          # AI skills for TLA+ knowledge
-├── commands/        # Slash commands for user actions
+├── skills/          # AI skills (educational + operational)
 ├── agents/          # Autonomous agents for automation
-├── hooks/           # Event-driven automation
 ├── src/             # MCP server source code
 ├── dist/            # Compiled MCP server
 ├── tools/           # TLA+ tools (downloaded)
