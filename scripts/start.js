@@ -19,9 +19,12 @@ const npmCmd = isWin ? 'npm.cmd' : 'npm';
 const rootDir = path.resolve(__dirname, '..');
 process.chdir(rootDir);
 
-// Run npm install, directing stdout to stderr to avoid corrupting MCP stdio transport.
+// Install dependencies, suppressing stdout to avoid corrupting MCP stdio transport.
 function npmInstall() {
-  const npmArgs = ['install'];
+  const hasLockfile = fs.existsSync(path.join(rootDir, 'package-lock.json'));
+  const npmArgs = hasLockfile
+    ? ['ci', '--no-audit', '--no-fund']
+    : ['install', '--no-audit', '--no-fund'];
   if (process.env.NODE_ENV === 'production') {
     npmArgs.push('--omit=dev');
   }
@@ -43,7 +46,7 @@ if (!fs.existsSync(path.join(rootDir, 'node_modules'))) {
       process.exit(1);
     }
     process.stderr.write(
-      'Error: Failed to run "npm install".\n' + String(err) + '\n'
+      'Error: Failed to install dependencies.\n' + String(err) + '\n'
     );
     process.exit(typeof err.status === 'number' ? err.status : 1);
   }
@@ -73,7 +76,7 @@ if (fs.existsSync(srcEntry)) {
       }
       // If npm install or the second resolve fails, fall back to dist/ if available
       process.stderr.write(
-        'Warning: Failed to ensure "tsx" is installed via "npm install".\n' +
+        'Warning: Failed to ensure "tsx" is installed via dependency installation.\n' +
           String(installErr) +
           '\n'
       );
