@@ -3,7 +3,7 @@
 /**
  * Bootstrap script for TLA+ MCP server.
  *
- * - Auto-installs dependencies if node_modules is missing
+ * - Auto-installs dependencies if key runtime deps are not resolvable
  * - Runs from TypeScript source (via tsx) when available
  * - Falls back to pre-compiled dist/index.js when tsx is unavailable
  * - Cross-platform: uses Node.js instead of bash
@@ -29,16 +29,30 @@ function npmInstall() {
     npmArgs.push('--omit=dev');
   }
   execFileSync(npmCmd, npmArgs, {
-    stdio: ['ignore', 'ignore', 'inherit'],
+    stdio: ['ignore', 'pipe', 'pipe'],
     cwd: rootDir,
   });
 }
 
-// Auto-install dependencies if missing
-if (!fs.existsSync(path.join(rootDir, 'node_modules'))) {
+// Check whether key runtime dependencies are resolvable.
+// In npm-installed or hoisted setups, node_modules may not exist locally
+// but dependencies are still resolvable through the parent tree.
+function runtimeDepsResolvable() {
+  try {
+    require.resolve('@modelcontextprotocol/sdk');
+    require.resolve('fast-xml-parser');
+    require.resolve('zod');
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+// Auto-install dependencies if key runtime deps are not resolvable
+if (!runtimeDepsResolvable()) {
   if (process.env.TLAPLUS_NO_AUTO_INSTALL === '1') {
     process.stderr.write(
-      'Error: node_modules is missing and auto-install is disabled (TLAPLUS_NO_AUTO_INSTALL=1).\nRun "npm ci" manually before starting the server.\n'
+      'Error: Required dependencies are not resolvable and auto-install is disabled (TLAPLUS_NO_AUTO_INSTALL=1).\nRun "npm ci" manually before starting the server.\n'
     );
     process.exit(1);
   }

@@ -20,7 +20,8 @@ describe('INV-CODEX-002: No New Runtime Dependencies', () => {
     // actual baseline at the time of the codex fix. The spec lists:
     //   @modelcontextprotocol/sdk, adm-zip, express, fast-xml-parser, zod
     // The actual package.json also has @napi-rs/canvas and @opencode-ai/plugin
-    // which pre-date the codex fix. The invariant says "no NEW" deps added.
+    // which pre-date the codex fix, and tsx which was added as a runtime dep
+    // for running TypeScript source directly. The invariant says "no NEW" deps added.
     const allowedDependencies = new Set([
       '@modelcontextprotocol/sdk',
       '@napi-rs/canvas',
