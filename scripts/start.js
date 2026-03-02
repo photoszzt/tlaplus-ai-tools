@@ -19,10 +19,22 @@ const npmCmd = isWin ? 'npm.cmd' : 'npm';
 const rootDir = path.resolve(__dirname, '..');
 process.chdir(rootDir);
 
+// Run npm install, directing stdout to stderr to avoid corrupting MCP stdio transport.
+function npmInstall() {
+  const npmArgs = ['install'];
+  if (process.env.NODE_ENV === 'production') {
+    npmArgs.push('--omit=dev');
+  }
+  execFileSync(npmCmd, npmArgs, {
+    stdio: ['ignore', 'ignore', 'inherit'],
+    cwd: rootDir,
+  });
+}
+
 // Auto-install dependencies if missing
 if (!fs.existsSync(path.join(rootDir, 'node_modules'))) {
   try {
-    execFileSync(npmCmd, ['install'], { stdio: 'inherit', cwd: rootDir });
+    npmInstall();
   } catch (err) {
     if (err && err.code === 'ENOENT') {
       process.stderr.write(
@@ -47,7 +59,25 @@ if (fs.existsSync(srcEntry)) {
     require.resolve('tsx/cjs');
     hasTsx = true;
   } catch (_) {
-    // tsx not resolvable — will fall back to dist/ if available
+    // tsx not resolvable — attempt to (re)install dependencies, then retry
+    try {
+      npmInstall();
+      require.resolve('tsx/cjs');
+      hasTsx = true;
+    } catch (installErr) {
+      if (installErr && installErr.code === 'ENOENT') {
+        process.stderr.write(
+          'Error: npm executable not found. Ensure that Node.js and npm are installed and available on your PATH.\n'
+        );
+        process.exit(1);
+      }
+      // If npm install or the second resolve fails, fall back to dist/ if available
+      process.stderr.write(
+        'Warning: Failed to ensure "tsx" is installed via "npm install".\n' +
+          String(installErr) +
+          '\n'
+      );
+    }
   }
 }
 

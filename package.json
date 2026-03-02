@@ -23,6 +23,7 @@
   "files": [
     "dist/",
     "src/",
+    "!**/__tests__",
     ".claude-plugin/",
     "skills/",
     "commands/",
