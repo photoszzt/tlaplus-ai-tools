@@ -66,6 +66,8 @@ function runtimeDepsResolvable() {
     require.resolve('@modelcontextprotocol/sdk');
     require.resolve('fast-xml-parser');
     require.resolve('zod');
+    require.resolve('express');
+    require.resolve('adm-zip');
     return true;
   } catch (_) {
     return false;
@@ -75,9 +77,11 @@ function runtimeDepsResolvable() {
 // Auto-install dependencies if key runtime deps are not resolvable
 if (!runtimeDepsResolvable()) {
   if (!isAutoInstallAllowed()) {
+    const hasLockfile = fs.existsSync(path.join(rootDir, 'package-lock.json'));
+    const manualCmd = hasLockfile ? 'npm ci' : 'npm install';
     process.stderr.write(
       'Error: Required dependencies are not resolvable and auto-install is not enabled.\n' +
-        'Run "npm ci" manually, or set TLAPLUS_AUTO_INSTALL=1 to allow automatic installation.\n'
+        `Run "${manualCmd}" manually, or set TLAPLUS_AUTO_INSTALL=1 to allow automatic installation.\n`
     );
     process.exit(1);
   }
@@ -140,7 +144,7 @@ if (fs.existsSync(srcEntry) && hasTsx) {
     require(srcEntry);
   } catch (err) {
     process.stderr.write(
-      'Error: Failed to start server from src/index.ts.\n' + String(err) + '\n'
+      'Error: Failed to start server from src/index.ts.\n' + (err instanceof Error && err.stack ? err.stack : String(err)) + '\n'
     );
     process.exit(1);
   }
@@ -150,7 +154,7 @@ if (fs.existsSync(srcEntry) && hasTsx) {
     require(distEntry);
   } catch (err) {
     process.stderr.write(
-      'Error: Failed to start server from dist/index.js.\n' + String(err) + '\n'
+      'Error: Failed to start server from dist/index.js.\n' + (err instanceof Error && err.stack ? err.stack : String(err)) + '\n'
     );
     process.exit(1);
   }
