@@ -46,7 +46,7 @@ Run TLC with only invariants enabled:
 
 ```bash
 # Use MCP tool
-tlaplus_mcp_tlc_check --config minimal.cfg
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check --config minimal.cfg
 ```
 
 **If invariants fail**:

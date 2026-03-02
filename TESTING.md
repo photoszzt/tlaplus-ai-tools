@@ -59,7 +59,7 @@ The E2E script runs all 6 operational skills and checks for deterministic marker
 
 **CI Lint Tests** (automated):
 
-- Validates all 11 skill directories exist under `skills/`
+- Validates that directories exist under `skills/` for the 6 operational skills listed in `EXPECTED_SKILLS`
 - Checks YAML frontmatter (name, description, version, allowed-tools for operational skills)
 - Verifies fully-qualified MCP tool references
 - Ensures usage examples and `@` handling notes present for operational skills

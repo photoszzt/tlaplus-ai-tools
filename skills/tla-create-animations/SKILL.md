@@ -191,19 +191,19 @@ There are four rendering paths, selected based on your terminal capabilities:
 
 The terminal rendering workflow follows a detect-then-render pattern:
 
-1. **Detect**: Call `tlaplus_mcp_animation_detect` to query the terminal environment. This inspects environment variables (`TERM`, `TERM_PROGRAM`, `KITTY_WINDOW_ID`, `TMUX`, etc.) and returns a structured result describing your terminal capabilities.
+1. **Detect**: Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_detect` to query the terminal environment. This inspects environment variables (`TERM`, `TERM_PROGRAM`, `KITTY_WINDOW_ID`, `TMUX`, etc.) and returns a structured result describing your terminal capabilities.
 
 2. **Choose protocol**: Based on the detection result, select the appropriate protocol. If `protocol` is `"kitty"` or `"iterm2"` and passthrough is enabled (or no multiplexer is in use), use that protocol. If `protocol` is `"none"`, fall back to `"ascii"` or `"browser"`.
 
-3. **Render**: Call `tlaplus_mcp_animation_render` with the chosen protocol and your animation data (AnimView record, SVG string, or SVG file path). The tool returns the rendered frame for display.
+3. **Render**: Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render` with the chosen protocol and your animation data (AnimView record, SVG string, or SVG file path). The tool returns the rendered frame for display.
 
-4. **Navigate**: For trace visualizations with multiple frames, call `tlaplus_mcp_animation_frameCount` first to discover available frames, then render each frame individually by its file path.
+4. **Navigate**: For trace visualizations with multiple frames, call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_frameCount` first to discover available frames, then render each frame individually by its file path.
 
 ---
 
 ## Detection Result Interpretation
 
-When you call `tlaplus_mcp_animation_detect`, it returns a JSON object with the following fields:
+When you call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_detect`, it returns a JSON object with the following fields:
 
 ### Field Reference
 
@@ -248,14 +248,14 @@ ELSE (protocol = "none"):
 
 ## Frame Navigation Instructions
 
-For trace visualizations (counterexample traces, behavior exploration), animations consist of multiple frames stored as SVG files in a directory. Use the `tlaplus_mcp_animation_frameCount` tool to discover and navigate these frames.
+For trace visualizations (counterexample traces, behavior exploration), animations consist of multiple frames stored as SVG files in a directory. Use the `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_frameCount` tool to discover and navigate these frames.
 
 ### Step 1: Discover Available Frames
 
-Call `tlaplus_mcp_animation_frameCount` with the trace directory:
+Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_frameCount` with the trace directory:
 
 ```
-tlaplus_mcp_animation_frameCount
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_frameCount
   traceDirectory: "/path/to/trace/output/"
   filePattern: "MySpec_anim_*.svg"    (optional, default: "*_anim_*.svg")
 ```
@@ -278,10 +278,10 @@ The files list is sorted by frame number extracted from the filename.
 
 ### Step 2: Render a Specific Frame
 
-Use `tlaplus_mcp_animation_render` with the specific file path from the list:
+Use `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render` with the specific file path from the list:
 
 ```
-tlaplus_mcp_animation_render
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
   protocol: "kitty"
   useCase: "trace"
   frameIndex: 0
@@ -293,7 +293,7 @@ tlaplus_mcp_animation_render
 To show the next frame, increment the frame index and use the corresponding file path:
 
 ```
-tlaplus_mcp_animation_render
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
   protocol: "kitty"
   useCase: "trace"
   frameIndex: 1
@@ -352,7 +352,7 @@ Then reload: `tmux source-file ~/.tmux.conf`
 - If connecting via SSH, ensure your SSH client forwards the relevant environment variables, or use `SendEnv`/`AcceptEnv` configuration.
 - As a workaround, you can explicitly specify the protocol when calling render, bypassing detection:
   ```
-  tlaplus_mcp_animation_render
+  mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
     protocol: "kitty"
     ...
   ```
@@ -406,13 +406,13 @@ Then reload: `tmux source-file ~/.tmux.conf`
 | `STY` | Presence indicates GNU Screen multiplexer. |
 | `TERM` | General terminal type. Checked for `xterm-kitty` during detection. |
 
-### Tool Parameters: `tlaplus_mcp_animation_detect`
+### Tool Parameters: `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_detect`
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `timeout` | number (optional) | 500 | Detection timeout in milliseconds. |
 
-### Tool Parameters: `tlaplus_mcp_animation_render`
+### Tool Parameters: `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render`
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -435,7 +435,7 @@ Exactly one of `animView`, `svgContent`, or `svgFilePath` must be provided. Prov
 | `rows` | number | 24 | 20 | 60 | Canvas height in characters. |
 | `colorEnabled` | boolean | true | -- | -- | Whether to include ANSI color codes in output. |
 
-### Tool Parameters: `tlaplus_mcp_animation_frameCount`
+### Tool Parameters: `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_frameCount`
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -457,7 +457,7 @@ This example shows the complete workflow for rendering an animation in a Kitty t
 **Step 1: Detect terminal capabilities**
 
 ```
-tlaplus_mcp_animation_detect
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_detect
 ```
 
 Expected result:
@@ -482,7 +482,7 @@ The result shows Kitty protocol with high confidence (the `KITTY_WINDOW_ID` vari
 **Step 2: Render a live animation frame**
 
 ```
-tlaplus_mcp_animation_render
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
   protocol: "kitty"
   useCase: "live"
   frameIndex: 0
@@ -522,7 +522,7 @@ The `output` string, when written to the terminal, displays the image inline.
 **Step 3: Render next frame with updated state**
 
 ```
-tlaplus_mcp_animation_render
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
   protocol: "kitty"
   useCase: "live"
   frameIndex: 1
@@ -555,7 +555,7 @@ This example shows the workflow for iTerm2 on macOS, including detection through
 **Step 1: Detect terminal capabilities**
 
 ```
-tlaplus_mcp_animation_detect
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_detect
 ```
 
 Expected result (iTerm2 behind tmux with passthrough enabled):
@@ -582,7 +582,7 @@ The result shows iTerm2 protocol detected via `TERM_PROGRAM`. tmux is present bu
 **Step 2: Render a frame from a saved SVG file**
 
 ```
-tlaplus_mcp_animation_render
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
   protocol: "iterm2"
   useCase: "static"
   frameIndex: 0
@@ -602,7 +602,7 @@ Result:
 
 First discover the frames:
 ```
-tlaplus_mcp_animation_frameCount
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_frameCount
   traceDirectory: "/tmp/trace/"
   filePattern: "MySpec_anim_*.svg"
 ```
@@ -621,7 +621,7 @@ Result:
 
 Then render each frame:
 ```
-tlaplus_mcp_animation_render
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
   protocol: "iterm2"
   useCase: "trace"
   frameIndex: 0
@@ -630,7 +630,7 @@ tlaplus_mcp_animation_render
 
 To advance to the next frame:
 ```
-tlaplus_mcp_animation_render
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
   protocol: "iterm2"
   useCase: "trace"
   frameIndex: 1
@@ -644,7 +644,7 @@ This example shows the workflow when no graphics protocol is available, using th
 **Step 1: Detect terminal capabilities**
 
 ```
-tlaplus_mcp_animation_detect
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_detect
 ```
 
 Expected result (plain terminal without graphics):
@@ -670,7 +670,7 @@ The result shows no graphics protocol detected. The `fallbackAvailable` field co
 Since `protocol` is `"none"`, choose `"ascii"` as the render protocol:
 
 ```
-tlaplus_mcp_animation_render
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
   protocol: "ascii"
   useCase: "live"
   frameIndex: 0
@@ -722,7 +722,7 @@ The ASCII output uses Unicode box-drawing characters for rectangles and circle s
 If ANSI colors are not desired (e.g., writing output to a log file), disable them:
 
 ```
-tlaplus_mcp_animation_render
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
   protocol: "ascii"
   useCase: "live"
   frameIndex: 0
