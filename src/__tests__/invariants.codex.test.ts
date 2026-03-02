@@ -28,6 +28,7 @@ describe('INV-CODEX-002: No New Runtime Dependencies', () => {
       'adm-zip',
       'express',
       'fast-xml-parser',
+      'tsx',
       'zod',
     ]);
 
