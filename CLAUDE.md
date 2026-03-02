@@ -171,8 +171,8 @@ Skills run in the main conversation context where all MCP tools are registered, 
 
 ### Plugin Components (Markdown)
 
-- **Skills (educational)**: Must have YAML frontmatter with `name`, `description`, `version`
-- **Skills (operational)**: Must have YAML frontmatter with `name`, `description`, `version`, `allowed-tools`
+- **Skills (educational)**: Must have YAML frontmatter with `name`, `description`
+- **Skills (operational)**: Must have YAML frontmatter with `name`, `description`, `allowed-tools`
 - **Agents**: Must have YAML frontmatter with `description`, `model`, `color`, `tools`
 
 ### Testing

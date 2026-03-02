@@ -335,7 +335,7 @@ All TLA+ knowledge base articles registered as resources:
 - ✅ **Server lifecycle tests**: initialization, stdio mode, HTTP mode (25 tests)
 - ✅ **Integration tests**: end-to-end utility workflows, JAR module scanning
 - ✅ **Error recovery tests**: error codes, classifier, retry, context (30 tests)
-- ✅ **Operational skills lint tests**: validates all 11 skills for structure and MCP tool references
+- ✅ **Operational skills lint tests**: validates all 6 operational skills (from EXPECTED_SKILLS) for structure and MCP tool references
 - ✅ CI compatibility verified with test:ci script
 
 ### Structure Validation
