@@ -51,8 +51,15 @@ if (!fs.existsSync(path.join(rootDir, 'node_modules'))) {
       );
       process.exit(1);
     }
+    let detail = String(err);
+    if (err.stderr) {
+      detail += '\nnpm stderr:\n' + String(err.stderr);
+    }
+    if (err.stdout) {
+      detail += '\nnpm stdout:\n' + String(err.stdout);
+    }
     process.stderr.write(
-      'Error: Failed to install dependencies.\n' + String(err) + '\n'
+      'Error: Failed to install dependencies.\n' + detail + '\n'
     );
     process.exit(typeof err.status === 'number' ? err.status : 1);
   }
@@ -82,9 +89,16 @@ if (fs.existsSync(srcEntry)) {
           process.exit(1);
         }
         // If npm install or the second resolve fails, fall back to dist/ if available
+        let detail = String(installErr);
+        if (installErr.stderr) {
+          detail += '\nnpm stderr:\n' + String(installErr.stderr);
+        }
+        if (installErr.stdout) {
+          detail += '\nnpm stdout:\n' + String(installErr.stdout);
+        }
         process.stderr.write(
           'Warning: Failed to ensure "tsx" is installed via dependency installation.\n' +
-            String(installErr) +
+            detail +
             '\n'
         );
       }
