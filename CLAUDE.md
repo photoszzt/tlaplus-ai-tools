@@ -292,7 +292,7 @@ Generate configs using `/tla-symbols`.
 ### Adding a New Educational Skill
 
 1. Create `skills/skill-name/` directory
-2. Add `SKILL.md` with YAML frontmatter (`name`, `description`, `version`)
+2. Add `SKILL.md` with YAML frontmatter (`name`, `description`)
 3. Use progressive disclosure: start with overview, then details
 4. Add examples in `examples/` subdirectory if helpful
 5. Update skill description to include triggering phrases

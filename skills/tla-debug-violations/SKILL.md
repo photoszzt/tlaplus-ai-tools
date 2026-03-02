@@ -44,9 +44,9 @@ INVARIANT SafetyInvariant
 
 Run TLC with only invariants enabled:
 
-```bash
+```
 # Use MCP tool
-mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check '{"fileName": "Spec.tla", "cfgFile": "minimal.cfg"}'
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check --fileName Spec.tla --cfgFile minimal.cfg
 ```
 
 **If invariants fail**:
