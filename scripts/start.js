@@ -19,6 +19,30 @@ const npmCmd = isWin ? 'npm.cmd' : 'npm';
 const rootDir = path.resolve(__dirname, '..');
 process.chdir(rootDir);
 
+// Format an npm install error with stderr/stdout details.
+function formatInstallError(err) {
+  let detail = String(err);
+  if (err.stderr) {
+    detail += '\nnpm stderr:\n' + String(err.stderr);
+  }
+  if (err.stdout) {
+    detail += '\nnpm stdout:\n' + String(err.stdout);
+  }
+  return detail;
+}
+
+// Determine whether auto-install is allowed based on environment.
+// Auto-install is on by default in Claude plugin contexts (CLAUDE_PLUGIN_ROOT set)
+// and requires explicit opt-in (TLAPLUS_AUTO_INSTALL=1) outside of that.
+// TLAPLUS_NO_AUTO_INSTALL=1 always disables auto-install regardless of context.
+function isAutoInstallAllowed() {
+  if (process.env.TLAPLUS_NO_AUTO_INSTALL === '1') return false;
+  if (process.env.TLAPLUS_AUTO_INSTALL === '1') return true;
+  // In plugin-cache contexts, auto-install by default
+  if (process.env.CLAUDE_PLUGIN_ROOT) return true;
+  return false;
+}
+
 // Install dependencies, suppressing stdout to avoid corrupting MCP stdio transport.
 function npmInstall() {
   const hasLockfile = fs.existsSync(path.join(rootDir, 'package-lock.json'));
@@ -50,9 +74,10 @@ function runtimeDepsResolvable() {
 
 // Auto-install dependencies if key runtime deps are not resolvable
 if (!runtimeDepsResolvable()) {
-  if (process.env.TLAPLUS_NO_AUTO_INSTALL === '1') {
+  if (!isAutoInstallAllowed()) {
     process.stderr.write(
-      'Error: Required dependencies are not resolvable and auto-install is disabled (TLAPLUS_NO_AUTO_INSTALL=1).\nRun "npm ci" manually before starting the server.\n'
+      'Error: Required dependencies are not resolvable and auto-install is not enabled.\n' +
+        'Run "npm ci" manually, or set TLAPLUS_AUTO_INSTALL=1 to allow automatic installation.\n'
     );
     process.exit(1);
   }
@@ -65,15 +90,8 @@ if (!runtimeDepsResolvable()) {
       );
       process.exit(1);
     }
-    let detail = String(err);
-    if (err.stderr) {
-      detail += '\nnpm stderr:\n' + String(err.stderr);
-    }
-    if (err.stdout) {
-      detail += '\nnpm stdout:\n' + String(err.stdout);
-    }
     process.stderr.write(
-      'Error: Failed to install dependencies.\n' + detail + '\n'
+      'Error: Failed to install dependencies.\n' + formatInstallError(err) + '\n'
     );
     process.exit(typeof err.status === 'number' ? err.status : 1);
   }
@@ -90,7 +108,7 @@ if (fs.existsSync(srcEntry)) {
     hasTsx = true;
   } catch (_) {
     // tsx not resolvable — attempt to (re)install dependencies, then retry
-    if (process.env.TLAPLUS_NO_AUTO_INSTALL !== '1') {
+    if (isAutoInstallAllowed()) {
       try {
         npmInstall();
         require.resolve('tsx/cjs');
@@ -103,16 +121,9 @@ if (fs.existsSync(srcEntry)) {
           process.exit(1);
         }
         // If npm install or the second resolve fails, fall back to dist/ if available
-        let detail = String(installErr);
-        if (installErr.stderr) {
-          detail += '\nnpm stderr:\n' + String(installErr.stderr);
-        }
-        if (installErr.stdout) {
-          detail += '\nnpm stdout:\n' + String(installErr.stdout);
-        }
         process.stderr.write(
           'Warning: Failed to ensure "tsx" is installed via dependency installation.\n' +
-            detail +
+            formatInstallError(installErr) +
             '\n'
         );
       }
