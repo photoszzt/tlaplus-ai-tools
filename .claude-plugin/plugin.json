@@ -25,8 +25,8 @@
   ],
   "mcpServers": {
     "tlaplus": {
-      "command": "bash",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/start.sh"],
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/start.js"],
       "cwd": "${CLAUDE_PLUGIN_ROOT}"
     }
   }
