@@ -369,13 +369,13 @@ See `examples/` directory:
 - `tla-refinement.md` - Detailed refinement guide
 - `tla-different-configurations.md` - Multiple configuration patterns
 
-### Related Skills
+### Related Educational Skills
 
 - `tla-model-checking` - Run TLC checks
 - `tla-getting-started` - TLA+ basics
-- `tla-spec-review` - Review specifications
+- `tla-debug-violations` - Debug counterexamples
 
-### Related Commands
+### Related Operational Skills
 
 - `/tla-check` - Verify refinement
 - `/tla-review` - Review refinement structure

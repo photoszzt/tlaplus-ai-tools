@@ -1,14 +1,15 @@
 ---
 name: tla-review
 description: Comprehensive TLA+ specification review with checklist and automated validation
-argument-hint: "@spec.tla"
-allowed-tools: [Read, Bash, Grep, Task, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke]
-agent: build
+version: 1.0.0
+allowed-tools: [Read, Grep, Write, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke]
 ---
 
 # TLA+ Specification Review
 
 Run a comprehensive review of your TLA+ specification including parsing, symbol extraction, smoke testing, and best practices checklist.
+
+**IMPORTANT: Always use the MCP tools listed above. Never fall back to running Java or TLC commands via Bash.**
 
 ## Usage
 
@@ -18,11 +19,11 @@ Run a comprehensive review of your TLA+ specification including parsing, symbol 
 /tla-review test-specs/Counter.tla --no-smoke
 ```
 
-**Note:** If you typed `@path.tla` as the first argument, this command strips the leading `@` and validates the file exists.
+**Note:** If you typed `@path.tla` as the first argument, this skill strips the leading `@` and validates the file exists.
 
 ## What This Does
 
-1. Validates and normalizes the spec path from `$ARGUMENTS`
+1. Validates and normalizes the spec path from the argument
 2. Runs SANY parser to check syntax and semantics
 3. Extracts symbols to analyze spec structure
 4. Runs smoke test (unless `--no-smoke` flag present)
@@ -32,48 +33,28 @@ Run a comprehensive review of your TLA+ specification including parsing, symbol 
 
 **Step 1: Normalize Spec Path**
 
-```
-SPEC_PATH="$ARGUMENTS"
-if [[ "$SPEC_PATH" == @* ]]; then
-  SPEC_PATH="${SPEC_PATH#@}"
-fi
-```
+Take the spec file path provided as the argument to this skill. If it starts with `@`, strip the leading `@`.
 
-Print `Spec path: $SPEC_PATH`
+Print `Spec path: <spec_path>`
 
 **Step 2: Validate File**
 
 - Check path ends with `.tla`
-- Check file exists on disk
+- Use the Read tool to verify the file exists on disk
 - If validation fails, print error and exit
 
 **Step 3: Parse Flags**
 
-Extract flags from `$ARGUMENTS`:
+Extract flags from the argument:
 - `--no-smoke`: Skip smoke test (default: smoke enabled)
-
-Store in variable:
-```
-RUN_SMOKE=true
-if [[ "$ARGUMENTS" == *--no-smoke* ]]; then
-  RUN_SMOKE=false
-fi
-```
 
 **Step 4: Determine CFG Argument**
 
-```
-# Parse second token from $ARGUMENTS (split by space, take second)
-CFG_ARG=""
-read -r FIRST_ARG SECOND_ARG REST <<< "$ARGUMENTS"
-if [[ "$SECOND_ARG" == *.cfg ]]; then
-  CFG_ARG="$SECOND_ARG"
-fi
-```
+Parse the second token from the argument (split by space, take second). If it ends with `.cfg`, treat it as the CFG_ARG.
 
 **Step 5: Run SANY Parser**
 
-Call `tlaplus_mcp_sany_parse` with `fileName=$SPEC_PATH`
+Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse` with `fileName=<spec_path>`
 
 Store result:
 - `PARSE_SUCCESS=true/false`
@@ -81,8 +62,8 @@ Store result:
 
 **Step 6: Extract Symbols**
 
-Call `tlaplus_mcp_sany_symbol` with:
-- `fileName=$SPEC_PATH`
+Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol` with:
+- `fileName=<spec_path>`
 - `includeExtendedModules=false`
 
 Store result:
@@ -91,7 +72,7 @@ Store result:
 
 **Step 7: Run Smoke Test (if enabled)**
 
-If `RUN_SMOKE=true`:
+If smoke is enabled (no `--no-smoke` flag):
 
 Apply CFG selection algorithm (same as `/tla-smoke`):
 
@@ -99,27 +80,27 @@ Apply CFG selection algorithm (same as `/tla-smoke`):
 
 Extract spec name and directory:
 ```
-SPEC_DIR=$(dirname "$SPEC_PATH")
-SPEC_NAME=$(basename "$SPEC_PATH" .tla)
+SPEC_DIR = dirname(SPEC_PATH)
+SPEC_NAME = basename(SPEC_PATH, .tla)
 ```
 
 Check preconditions in order:
 
-1. If `$SPEC_DIR/$SPEC_NAME.cfg` exists:
+1. If `SPEC_DIR/SPEC_NAME.cfg` exists:
    - Print `Phase 1: Spec.cfg exists`
    - Precondition satisfied
 
-2. Else if `$SPEC_DIR/MC$SPEC_NAME.tla` AND `$SPEC_DIR/MC$SPEC_NAME.cfg` both exist:
+2. Else if `SPEC_DIR/MC<SPEC_NAME>.tla` AND `SPEC_DIR/MC<SPEC_NAME>.cfg` both exist:
    - Print `Phase 1: MC pair exists`
    - Precondition satisfied
 
 3. Else if `CFG_ARG` is non-empty and exists:
-   - Copy `$CFG_ARG` to `$SPEC_DIR/$SPEC_NAME.cfg` (non-clobbering)
-   - Print `Phase 1: Copied cfgArg to $SPEC_NAME.cfg`
+   - Copy `CFG_ARG` to `SPEC_DIR/SPEC_NAME.cfg` (non-clobbering)
+   - Print `Phase 1: Copied cfgArg to SPEC_NAME.cfg`
    - Precondition satisfied
 
-4. Else if `$SPEC_DIR/$SPEC_NAME.generated.cfg` exists:
-   - Copy it to `$SPEC_DIR/$SPEC_NAME.cfg` (non-clobbering)
+4. Else if `SPEC_DIR/SPEC_NAME.generated.cfg` exists:
+   - Copy it to `SPEC_DIR/SPEC_NAME.cfg` (non-clobbering)
    - Print `Phase 1: Copied generated cfg`
    - Precondition satisfied
 
@@ -142,9 +123,9 @@ If precondition satisfied:
 
 Store final cfg path in `FINAL_CFG`.
 
-Call `tlaplus_mcp_tlc_smoke` with:
-- `fileName=$SPEC_PATH`
-- `cfgFile=$FINAL_CFG`
+Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke` with:
+- `fileName=<SPEC_PATH>`
+- `cfgFile=<FINAL_CFG>`
 - `extraJavaOpts=["-Dtlc2.TLC.stopAfter=3"]`
 
 Store result:
@@ -160,16 +141,16 @@ Print comprehensive review summary:
 TLA+ SPECIFICATION REVIEW
 ═══════════════════════════════════════════════════════════
 
-Spec: $SPEC_PATH
+Spec: <SPEC_PATH>
 
 ─────────────────────────────────────────────────────────
 1. SYNTAX & SEMANTICS (SANY Parser)
 ─────────────────────────────────────────────────────────
 
 <if PARSE_SUCCESS>
-✓ Parsing successful. No syntax errors.
+Parsing successful. No syntax errors.
 <else>
-✗ Parsing failed. Errors found:
+Parsing failed. Errors found:
 <PARSE_ERRORS>
 <endif>
 
@@ -186,13 +167,13 @@ Invariants: <INVARIANTS or "None">
 Properties: <PROPERTIES or "None">
 
 <if no INIT or no NEXT or no SPEC>
-⚠ Warning: Missing behavior specification
+Warning: Missing behavior specification
   - Ensure Init, Next, and Spec are defined
   - Or define INIT/NEXT in .cfg file
 <endif>
 
 <if CONSTANTS non-empty>
-⚠ Warning: Constants require assignment
+Warning: Constants require assignment
   - Edit .cfg file to assign concrete values
   - Example: CONSTANT MaxValue = 10
 <endif>
@@ -202,14 +183,14 @@ Properties: <PROPERTIES or "None">
 ─────────────────────────────────────────────────────────
 
 <if SMOKE_SKIPPED>
-⊘ Skipped (no config file or --no-smoke flag)
+Skipped (no config file or --no-smoke flag)
 <else if SMOKE_SUCCESS>
-✓ Smoke test passed
-  CFG used: $FINAL_CFG
+Smoke test passed
+  CFG used: <FINAL_CFG>
   No violations found in random simulation
 <else>
-✗ Smoke test failed
-  CFG used: $FINAL_CFG
+Smoke test failed
+  CFG used: <FINAL_CFG>
   Violations detected:
 <SMOKE_VIOLATIONS>
 <endif>
@@ -220,31 +201,31 @@ Properties: <PROPERTIES or "None">
 
 <Check and report on:>
 
-□ Module documentation
+Module documentation
   - Does module have header comment explaining purpose?
   - Are complex operators documented?
 
-□ Type invariants
+Type invariants
   - Are type invariants defined for all variables?
   - Example: TypeInvariant == var \in ExpectedType
 
-□ Safety properties
+Safety properties
   - Are safety invariants defined?
   - Do they cover critical correctness conditions?
 
-□ Liveness properties
+Liveness properties
   - Are liveness properties defined if needed?
   - Example: <>[]Termination
 
-□ Constant bounds
+Constant bounds
   - Are constants bounded to reasonable values?
   - Large constants cause state explosion
 
-□ Symmetry
+Symmetry
   - Can symmetry sets reduce state space?
   - Example: SYMMETRY SymmetrySet
 
-□ State constraints
+State constraints
   - Are state constraints needed to limit exploration?
   - Example: CONSTRAINT StateConstraint
 
@@ -255,32 +236,32 @@ Properties: <PROPERTIES or "None">
 <Generate specific recommendations based on findings:>
 
 <if PARSE_ERRORS>
-→ Fix syntax errors before proceeding
+-> Fix syntax errors before proceeding
 <endif>
 
 <if no config file>
-→ Run: /tla-symbols $SPEC_PATH
+-> Run: /tla-symbols <SPEC_PATH>
 <endif>
 
 <if CONSTANTS non-empty and no config>
-→ Assign constant values in .cfg file
+-> Assign constant values in .cfg file
 <endif>
 
 <if SMOKE_VIOLATIONS>
-→ Fix violations found in smoke test
-→ Run: /tla-check for full counterexample
+-> Fix violations found in smoke test
+-> Run: /tla-check for full counterexample
 <endif>
 
 <if SMOKE_SUCCESS or SMOKE_SKIPPED>
-→ Run: /tla-check for exhaustive verification
+-> Run: /tla-check for exhaustive verification
 <endif>
 
 <if no INVARIANTS>
-→ Consider adding type and safety invariants
+-> Consider adding type and safety invariants
 <endif>
 
 <if no PROPERTIES>
-→ Consider adding liveness properties if applicable
+-> Consider adding liveness properties if applicable
 <endif>
 
 ═══════════════════════════════════════════════════════════
@@ -301,7 +282,7 @@ Spec: test-specs/Counter.tla
 1. SYNTAX & SEMANTICS (SANY Parser)
 ─────────────────────────────────────────────────────────
 
-✓ Parsing successful. No syntax errors.
+Parsing successful. No syntax errors.
 
 ─────────────────────────────────────────────────────────
 2. STRUCTURE ANALYSIS (Symbol Extraction)
@@ -315,7 +296,7 @@ Spec: Spec
 Invariants: TypeInvariant, BoundInvariant
 Properties: None
 
-⚠ Warning: Constants require assignment
+Warning: Constants require assignment
   - Edit .cfg file to assign concrete values
   - Example: CONSTANT MaxValue = 10
 
@@ -323,7 +304,7 @@ Properties: None
 3. SMOKE TEST (3-second simulation)
 ─────────────────────────────────────────────────────────
 
-✓ Smoke test passed
+Smoke test passed
   CFG used: test-specs/Counter.cfg
   No violations found in random simulation
 
@@ -331,20 +312,20 @@ Properties: None
 4. BEST PRACTICES CHECKLIST
 ─────────────────────────────────────────────────────────
 
-✓ Module documentation - Header comment present
-✓ Type invariants - TypeInvariant defined
-✓ Safety properties - BoundInvariant defined
-□ Liveness properties - None defined (may not be needed)
-✓ Constant bounds - MaxValue = 10 (reasonable)
-□ Symmetry - Not applicable for this spec
-□ State constraints - Not needed (small state space)
+Module documentation - Header comment present
+Type invariants - TypeInvariant defined
+Safety properties - BoundInvariant defined
+Liveness properties - None defined (may not be needed)
+Constant bounds - MaxValue = 10 (reasonable)
+Symmetry - Not applicable for this spec
+State constraints - Not needed (small state space)
 
 ─────────────────────────────────────────────────────────
 5. RECOMMENDATIONS
 ─────────────────────────────────────────────────────────
 
-→ Run: /tla-check for exhaustive verification
-→ Consider adding liveness properties if termination matters
+-> Run: /tla-check for exhaustive verification
+-> Consider adding liveness properties if termination matters
 
 ═══════════════════════════════════════════════════════════
 REVIEW COMPLETE

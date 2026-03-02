@@ -11,26 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Complete Claude Code and OpenCode plugin structure
 - MCP server for TLA+ tools (SANY, TLC, knowledge base)
-- Three foundational skills:
-  - `tla-spec-review` - Specification review workflow
+- Eleven AI skills (5 educational + 6 operational):
+  - `tla-getting-started` - Introduction to TLA+ with examples
+  - `tla-model-checking` - Complete TLC configuration guide
+  - `tla-refinement-proofs` - Specification refinement
   - `tla-debug-violations` - Debug invariant/property violations
   - `tla-create-animations` - Create TLA+ animations
-- Six slash commands:
-  - `/tla-parse` - Parse and validate TLA+ specifications
-  - `/tla-check` - Run model checking with TLC
-  - `/tla-smoke` - Quick smoke test
-  - `/tla-symbols` - Extract symbols for config generation
-  - `/tla-review` - Comprehensive specification review
-  - `/tla-setup` - Interactive setup and verification
-- Four AI agents:
-  - `spec-validator` - Automated specification validation
-  - `config-generator` - Generate TLC configuration files
+  - `tla-parse` - Parse and validate TLA+ specifications
+  - `tla-symbols` - Extract symbols for config generation
+  - `tla-smoke` - Quick smoke test
+  - `tla-check` - Run model checking with TLC
+  - `tla-review` - Comprehensive specification review
+  - `tla-setup` - Interactive setup and verification
+- Two AI agents:
   - `animation-creator` - Create visualization animations
   - `trace-analyzer` - Analyze counterexample traces
-- Three event hooks:
-  - SessionStart - Verify TLA+ tools on startup
-  - PreToolUse - Auto-parse TLA+ files before saving
-  - PostToolUse - Suggest config generation
 - Installation infrastructure:
   - Automatic TLA+ tools download via post-install
   - Verification script with auto-fix support

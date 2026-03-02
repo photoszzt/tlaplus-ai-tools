@@ -235,10 +235,10 @@ Reduces state space by treating equivalent states as identical.
 
 ```javascript
 // Parse first
-tlaplus_mcp_sany_parse({ fileName: "/path/to/Spec.tla" })
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse({ fileName: "/path/to/Spec.tla" })
 
 // Model check
-tlaplus_mcp_tlc_check({
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check({
   fileName: "/path/to/Spec.tla",
   cfgFile: "/path/to/Config.cfg",
   extraOpts: ["-workers", "4"],
@@ -246,7 +246,7 @@ tlaplus_mcp_tlc_check({
 })
 
 // Smoke test
-tlaplus_mcp_tlc_smoke({
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke({
   fileName: "/path/to/Spec.tla"
 })
 ```
@@ -394,39 +394,9 @@ View == <<count, status>>  \* Ignore timestamp
 
 ## Debugging Failed Checks
 
-### Use Systematic Approach
+For a systematic approach to debugging invariant and property violations, use `/tla-debug-violations`. It provides a step-by-step workflow for minimizing configurations, isolating failures, and analyzing counterexample traces.
 
-From `tla-debug-violations` skill:
-
-1. **Minimize configuration** - Smallest constants
-2. **Check invariants only** - Remove properties temporarily
-3. **Fix invariants first** - Easier than properties
-4. **Add properties back** - One at a time
-5. **Increase constants** - Once passing
-
-### Analyze Traces
-
-Use trace-analyzer agent:
-```
-After violation, ask:
-"Analyze this counterexample"
-```
-
-Agent explains:
-- What failed
-- Why it failed
-- How to fix
-
-### Add Intermediate Invariants
-
-Help narrow down bugs:
-```
-INVARIANT
-    Step1Complete => Step2Ready
-    ProcessingMsg => MsgInQueue
-```
-
-Catch issues earlier in trace.
+You can also use the trace-analyzer agent to get explanations of what failed, why, and how to fix it.
 
 ## Best Practices
 
@@ -520,10 +490,6 @@ For long checks:
 
 - `tla-getting-started` - TLA+ basics
 - `tla-debug-violations` - Debug counterexamples
-- `tla-spec-review` - Review before checking
-
-### Related Commands
-
 - `/tla-parse` - Syntax check
 - `/tla-symbols` - Generate config
 - `/tla-smoke` - Quick test
@@ -532,8 +498,6 @@ For long checks:
 
 ### Related Agents
 
-- `spec-validator` - Automated validation
-- `config-generator` - Generate configs
 - `trace-analyzer` - Analyze violations
 
 ## Quick Reference

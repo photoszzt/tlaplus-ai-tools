@@ -7,7 +7,7 @@
 
 ## Overview
 
-Successfully implemented a comprehensive Claude Code and OpenCode plugin that brings TLA+ formal specification and model checking to AI-assisted development workflows. The plugin combines a full-featured MCP server (migrated from vscode-tlaplus) with AI skills, slash commands, autonomous agents, and event hooks.
+Successfully implemented a comprehensive Claude Code and OpenCode plugin that brings TLA+ formal specification and model checking to AI-assisted development workflows. The plugin combines a full-featured MCP server (migrated from vscode-tlaplus) with AI skills (educational and operational) and autonomous agents.
 
 ## Implementation Phases Completed
 
@@ -79,10 +79,8 @@ Successfully implemented a comprehensive Claude Code and OpenCode plugin that br
 tlaplus-ai-tools/
 ├── .claude-plugin/
 │   └── plugin.json          # Plugin manifest
-├── skills/                  # AI skills (6 skills)
-├── commands/                # Slash commands (6 commands)
-├── agents/                  # Autonomous agents (4 agents)
-├── hooks/                   # Event hooks (1 file, 3 events)
+├── skills/                  # AI skills (11: 5 educational + 6 operational)
+├── agents/                  # Autonomous agents (2 agents)
 ├── src/                     # MCP server source code
 ├── dist/                    # Compiled MCP server
 ├── tools/                   # TLA+ tools (downloaded)
@@ -90,9 +88,9 @@ tlaplus-ai-tools/
 └── scripts/                 # Setup and verification scripts
 ```
 
-### ✅ Phase 3: AI Skills Implementation (6 Skills)
+### ✅ Phase 3: AI Skills Implementation (11 Skills)
 
-**Learning Skills:**
+**Educational Skills (5):**
 
 1. **tla-getting-started** (~2,000 words)
    - Complete TLA+ introduction for beginners
@@ -112,108 +110,65 @@ tlaplus-ai-tools/
    - TLAPS proof system overview
    - Triggers: "refinement", "prove implementation"
 
-**Development Skills:** 4. **tla-spec-review** (Enhanced)
-
-- Comprehensive review checklist
-- References: review-checklist.md (detailed)
-- Systematic validation workflow
-- Triggers: "review spec", "check specification"
-
-5. **tla-debug-violations** (Enhanced)
+4. **tla-debug-violations** (Enhanced)
    - Systematic debugging strategies
    - References: debugging-strategies.md (advanced)
    - Counterexample analysis workflow
    - Triggers: "debug violation", "counterexample"
 
-6. **tla-create-animations** (Enhanced)
+5. **tla-create-animations** (Enhanced)
    - Animation creation patterns
    - References: animation-patterns.md (complete)
    - SVG visualization techniques
    - Triggers: "create animation", "visualize"
 
-### ✅ Phase 4: Slash Commands Implementation (6 Commands)
+**Operational Skills (6):**
 
-**Validation Commands:**
-
-1. **/tla-parse** - Parse and validate TLA+ specifications
+6. **tla-parse** - Parse and validate TLA+ specifications
    - Reads file, calls SANY parse
    - Reports syntax/semantic errors
    - Provides file path context
 
-2. **/tla-symbols** - Extract symbols and generate config
+7. **tla-symbols** - Extract symbols and generate config
    - Extracts constants, variables, operators
    - Identifies Init/Next/Spec actions
    - Generates TLC config file (.cfg)
 
-**Testing Commands:** 3. **/tla-smoke** - Quick 3-second smoke test
+8. **tla-smoke** - Quick 3-second smoke test
+   - Fast random simulation
+   - Finds obvious bugs quickly
+   - Configurable duration
 
-- Fast random simulation
-- Finds obvious bugs quickly
-- Configurable duration
-
-4. **/tla-check** - Exhaustive model checking
+9. **tla-check** - Exhaustive model checking
    - Full TLC verification
    - Checks all invariants and properties
    - Reports violations with traces
 
-**Workflow Commands:** 5. **/tla-review** - Comprehensive spec review
+10. **tla-review** - Comprehensive spec review
+    - Runs review checklist
+    - Provides detailed review report
 
-- Loads tla-spec-review skill
-- Spawns spec-validator agent
-- Provides detailed review report
+11. **tla-setup** - Interactive setup and verification
+    - Checks Java installation
+    - Verifies TLA+ tools
+    - Tests MCP server
+    - Offers automated fixes
 
-6. **/tla-setup** - Interactive setup and verification
-   - Checks Java installation
-   - Verifies TLA+ tools
-   - Tests MCP server
-   - Offers automated fixes
+### ✅ Phase 4: Autonomous Agents Implementation (2 Agents)
 
-### ✅ Phase 5: Autonomous Agents Implementation (4 Agents)
-
-1. **spec-validator** (~2,000 words)
-   - Automated specification validation
-   - Syntax and semantic checking
-   - Smoke test execution
-   - Detailed validation report
-
-2. **config-generator** (~2,000 words)
-   - TLC configuration generation
-   - Symbol extraction and analysis
-   - Smart default selection
-   - Customization guidance
-
-3. **animation-creator** (~2,500 words)
+1. **animation-creator** (~2,500 words)
    - Animation specification creation
    - SVG visualization generation
    - State transition analysis
    - Example-driven approach
 
-4. **trace-analyzer** (~2,500 words)
+2. **trace-analyzer** (~2,500 words)
    - Counterexample trace analysis
    - Violation explanation
    - Fix suggestions
    - Root cause identification
 
-### ✅ Phase 6: Event Hooks Implementation (3 Events)
-
-**Hook Configuration:** `hooks/hooks.json`
-
-1. **SessionStart** - Tool verification on startup
-   - Silently checks TLA+ tools availability
-   - Shows notification only if tools missing
-   - Suggests running /tla-setup if issues
-
-2. **PreToolUse** - Auto-parse on .tla file edits
-   - Triggered on Write/Edit of .tla files
-   - Automatically validates syntax
-   - Shows warnings but never blocks writes
-
-3. **PostToolUse** - Suggest config for new files
-   - Triggered on Write of new .tla files
-   - Checks if .cfg file exists
-   - Suggests running /tla-symbols if missing
-
-### ✅ Phase 7: Infrastructure & Installation
+### ✅ Phase 5: Infrastructure & Installation
 
 **Package Configuration:**
 
@@ -236,7 +191,7 @@ tlaplus-ai-tools/
 - Jest test suite integration
 - Coverage reporting
 
-### ✅ Phase 8: Testing & Documentation
+### ✅ Phase 6: Testing & Documentation
 
 **Comprehensive Test Suite:**
 
@@ -344,36 +299,27 @@ All TLA+ knowledge base articles registered as resources:
 - tla-trace-explorer-expressions.md
 - tlc-config-files.md
 
-### AI Skills (6)
+### AI Skills (11)
 
+**Educational (5):**
 - tla-getting-started
 - tla-model-checking
 - tla-refinement-proofs
-- tla-spec-review
 - tla-debug-violations
 - tla-create-animations
 
-### Slash Commands (6)
+**Operational (6):**
+- tla-parse
+- tla-symbols
+- tla-smoke
+- tla-check
+- tla-review
+- tla-setup
 
-- /tla-parse
-- /tla-symbols
-- /tla-smoke
-- /tla-check
-- /tla-review
-- /tla-setup
+### Autonomous Agents (2)
 
-### Autonomous Agents (4)
-
-- spec-validator
-- config-generator
 - animation-creator
 - trace-analyzer
-
-### Event Hooks (3 Events)
-
-- SessionStart
-- PreToolUse (Write/Edit .tla files)
-- PostToolUse (Write .tla files)
 
 ## Test Results
 
@@ -389,14 +335,14 @@ All TLA+ knowledge base articles registered as resources:
 - ✅ **Server lifecycle tests**: initialization, stdio mode, HTTP mode (25 tests)
 - ✅ **Integration tests**: end-to-end utility workflows, JAR module scanning
 - ✅ **Error recovery tests**: error codes, classifier, retry, context (30 tests)
-- ✅ **OpenCode command lint tests**: validates all 6 commands for OpenCode compatibility
+- ✅ **Operational skills lint tests**: validates all 6 operational skills (from EXPECTED_SKILLS) for structure and MCP tool references
 - ✅ CI compatibility verified with test:ci script
 
 ### Structure Validation
 
 - ✅ **Directory structure**: All required directories present
-- ✅ **YAML frontmatter**: All skills, commands, agents validated
-- ✅ **JSON configs**: plugin.json, hooks.json valid
+- ✅ **YAML frontmatter**: All skills and agents validated
+- ✅ **JSON configs**: plugin.json valid
 - ✅ **Executable permissions**: All scripts executable
 - ✅ **Cross-references**: All file references accurate
 
@@ -454,14 +400,13 @@ All TLA+ knowledge base articles registered as resources:
 
 ### Architecture Decisions
 
-1. **Complete Plugin** - Full Claude Code plugin with MCP server, skills, commands, agents, hooks
+1. **Complete Plugin** - Full Claude Code plugin with MCP server, skills, and agents
 2. **Migrated MCP Server** - Reused and enhanced logic from VSCode extension
 3. **TypeScript** - Type safety and better developer experience
 4. **Async/Await** - Modern async patterns throughout
 5. **Stateless HTTP** - Simpler implementation, suitable for MCP clients
 6. **Progressive Disclosure** - Skills use lean SKILL.md + detailed references
 7. **Autonomous Agents** - Self-directed tasks for complex workflows
-8. **Event-Driven Hooks** - Non-intrusive automation
 
 ### Integration Points
 
@@ -474,7 +419,6 @@ All TLA+ knowledge base articles registered as resources:
 - Error recovery with retry and exponential backoff
 - Structured error codes and classification
 - Claude Code plugin component system
-- OpenCode plugin system
 
 ## Known Limitations
 
@@ -580,11 +524,9 @@ See [OPENCODE.md](OPENCODE.md) for detailed setup instructions.
 
 ### Added on Top of MCP Server:
 
-- ✅ **6 AI Skills** - Complete learning path and development guidance
-- ✅ **6 Slash Commands** - User-invocable actions for common tasks
-- ✅ **4 Autonomous Agents** - Self-directed automation for complex workflows
-- ✅ **3 Event Hooks** - Automatic tooling integration
-- ✅ **Plugin Infrastructure** - Complete Claude Code/OpenCode plugin structure
+- ✅ **11 AI Skills** - Complete learning path and operational tools
+- ✅ **2 Autonomous Agents** - Self-directed automation for complex workflows
+- ✅ **Plugin Infrastructure** - Complete Claude Code plugin structure
 - ✅ **Installation System** - Auto-download tools, verification, fixes
 - ✅ **Documentation** - Comprehensive guides for users and developers
 - ✅ **OpenCode Support** - Cross-platform compatibility
@@ -594,9 +536,8 @@ See [OPENCODE.md](OPENCODE.md) for detailed setup instructions.
 
 1. **Package Name**: Renamed from `@vscode-tlaplus/mcp-server` to `tlaplus-ai-tools`
 2. **Scope**: Expanded from standalone MCP server to complete plugin
-3. **Testing**: Added OpenCode command lint tests, more integration tests
+3. **Testing**: Added operational skills lint tests, more integration tests
 4. **Documentation**: Plugin-focused docs (README, INSTALLATION, TESTING, etc.)
-5. **Dependencies**: Added `@opencode-ai/plugin` for OpenCode support
 
 ### What's the Same:
 
@@ -615,12 +556,10 @@ See [OPENCODE.md](OPENCODE.md) for detailed setup instructions.
 The TLA+ AI Tools plugin is a **complete, production-ready Claude Code and OpenCode plugin** that successfully combines:
 
 1. **Full MCP Server** - All features from vscode-tlaplus/packages/mcp-server
-2. **AI Skills** - Progressive learning path for TLA+ users
-3. **Slash Commands** - Quick actions for common tasks
-4. **Autonomous Agents** - Intelligent automation for complex workflows
-5. **Event Hooks** - Seamless development integration
-6. **Comprehensive Testing** - 511 automated tests with 95%+ coverage
-7. **Complete Documentation** - User guides, developer docs, examples
+2. **AI Skills** - Educational learning path and operational tools for TLA+ users
+3. **Autonomous Agents** - Intelligent automation for complex workflows
+4. **Comprehensive Testing** - 511 automated tests with 95%+ coverage
+5. **Complete Documentation** - User guides, developer docs, examples
 
 The plugin is ready for:
 

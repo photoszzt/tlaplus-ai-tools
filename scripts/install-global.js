@@ -7,8 +7,7 @@
  * 1. Copies plugin file to ~/.config/opencode/plugins/tlaplus-ai-tools.js
  * 2. Patches global OpenCode config to enable MCP server
  * 3. Installs skills globally (symlink or copy)
- * 4. Installs commands globally (symlink or copy)
- * 5. Writes installation marker
+ * 4. Writes installation marker
  * 
  * Usage:
  *   npm run install-global
@@ -36,13 +35,12 @@ if (!fs.existsSync(distPath)) {
 }
 
 // Import utilities
-let paths, configPatcher, skillsInstaller, commandsInstaller, installState;
+let paths, configPatcher, skillsInstaller, installState;
 
 try {
   paths = require(path.join(distPath, 'paths.js'));
   configPatcher = require(path.join(distPath, 'config-patcher.js'));
   skillsInstaller = require(path.join(distPath, 'skills-installer.js'));
-  commandsInstaller = require(path.join(distPath, 'commands-installer.js'));
   installState = require(path.join(distPath, 'install-state.js'));
 } catch (error) {
   console.error('❌ Error: Failed to load installer utilities');
@@ -68,7 +66,7 @@ async function installGlobal() {
   console.log('');
 
   // Step 1: Check prerequisites
-  console.log('🔍 Step 1/5: Checking prerequisites...');
+  console.log('🔍 Step 1/4: Checking prerequisites...');
 
   const distIndexPath = path.join(pluginRoot, 'dist', 'index.js');
   const toolsDir = path.join(pluginRoot, 'tools');
@@ -91,7 +89,7 @@ async function installGlobal() {
   console.log('');
 
   // Step 2: Patch OpenCode config
-  console.log('🔧 Step 2/5: Patching OpenCode config...');
+  console.log('🔧 Step 2/4: Patching OpenCode config...');
 
   const configPath = path.join(globalDir, 'opencode.json');
 
@@ -124,7 +122,7 @@ async function installGlobal() {
   console.log('');
 
   // Step 3: Install skills
-  console.log('📚 Step 3/5: Installing skills...');
+  console.log('📚 Step 3/4: Installing skills...');
 
   try {
     const skillsResult = skillsInstaller.installSkills(pluginRoot);
@@ -159,44 +157,8 @@ async function installGlobal() {
   
   console.log('');
 
-  // Step 4: Install commands
-  console.log('⚡ Step 4/5: Installing commands...');
-
-  try {
-    const commandsResult = commandsInstaller.installCommands(pluginRoot);
-    
-    if (!commandsResult.success) {
-      console.error(`   ❌ Failed to install commands`);
-      for (const command of commandsResult.commands) {
-        if (command.error) {
-          console.error(`      - ${command.commandName}: ${command.error}`);
-        }
-      }
-      process.exit(1);
-    }
-    
-    if (commandsResult.installedCount > 0) {
-      console.log(`   ✅ Installed ${commandsResult.installedCount} command(s)`);
-      for (const command of commandsResult.commands) {
-        if (command.installed) {
-          const method = command.symlinked ? 'symlinked' : 'copied';
-          console.log(`      - ${command.commandName} (${method})`);
-        }
-      }
-    }
-    
-    if (commandsResult.alreadyInstalledCount > 0) {
-      console.log(`   ✅ ${commandsResult.alreadyInstalledCount} command(s) already installed`);
-    }
-  } catch (error) {
-    console.error(`   ❌ Error installing commands: ${error.message}`);
-    process.exit(1);
-  }
-  
-  console.log('');
-
-  // Step 5: Write installation marker
-  console.log('📝 Step 5/5: Writing installation marker...');
+  // Step 4: Write installation marker
+  console.log('📝 Step 4/4: Writing installation marker...');
 
   try {
     const markerPath = installState.getMarkerPath(globalDir);
@@ -215,24 +177,24 @@ async function installGlobal() {
   console.log('📋 What was installed:');
   console.log(`   • MCP server config: ${configPath}`);
   console.log(`   • Skills: ${path.join(globalDir, 'skills')}`);
-  console.log(`   • Commands: ${path.join(globalDir, 'commands')}`);
   console.log('');
   console.log('🚀 Next steps:');
   console.log('   1. Start OpenCode: opencode');
   console.log('   2. Verify MCP connection: opencode mcp list');
-  console.log('   3. Try a command: /tla-parse <spec.tla>');
+  console.log('   3. Try a skill: /tla-parse <spec.tla>');
   console.log('');
-  console.log('📚 Available skills:');
+  console.log('📚 Available skills (11):');
+  console.log('');
+  console.log('   Educational:');
   console.log('   • tla-getting-started');
   console.log('   • tla-model-checking');
   console.log('   • tla-refinement-proofs');
-  console.log('   • tla-spec-review');
   console.log('   • tla-debug-violations');
   console.log('   • tla-create-animations');
   console.log('');
-  console.log('⚡ Available commands:');
-  console.log('   • /tla-parse, /tla-symbols, /tla-smoke');
-  console.log('   • /tla-check, /tla-review, /tla-setup');
+  console.log('   Operational:');
+  console.log('   • tla-parse, tla-symbols, tla-smoke');
+  console.log('   • tla-check, tla-review, tla-setup');
   console.log('');
   console.log('💡 To uninstall:');
   console.log(`   • Remove: ${globalDir}`);
