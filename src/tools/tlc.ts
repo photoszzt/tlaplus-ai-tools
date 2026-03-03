@@ -1,34 +1,12 @@
 import { z } from 'zod';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ServerConfig } from '../types';
 import { resolveAndValidatePath } from '../utils/paths';
 import { getSpecFiles, runTlcAndWait } from '../utils/tlc-helpers';
-import { EnhancedError, enhanceError, ErrorCode } from '../utils/errors';
-
-/**
- * Format an error response with error code and suggested actions
- */
-function formatErrorResponse(error: Error): string {
-  const enhanced = error instanceof EnhancedError ? error : enhanceError(error);
-
-  const parts = [
-    `Error [${enhanced.code}]: ${error.message}`,
-    '',
-    'Suggested Actions:',
-    ...getSuggestedActions(enhanced.code)
-  ];
-
-  if (enhanced.metadata.retriesExhausted) {
-    parts.push('', `Failed after ${enhanced.metadata.retryAttempt} retry attempts.`);
-  }
-
-  if (process.env.VERBOSE || process.env.DEBUG) {
-    parts.push('', 'Stack Trace:', enhanced.metadata.stack || 'N/A');
-  }
-
-  return parts.join('\n');
-}
+import { formatErrorResponse } from './shared/error-formatting';
+import { registerTool } from './shared/tool-registration';
 
 const DEFAULT_SMOKE_TIMEOUT_MS = 120000;
 const DEFAULT_EXPLORE_TIMEOUT_MS = 600000;
@@ -106,53 +84,19 @@ function resolveTimeoutMs(value: unknown, envKey: string, fallback: number): num
 }
 
 /**
- * Get suggested actions based on error code
- */
-function getSuggestedActions(code: ErrorCode): string[] {
-  const suggestions: Partial<Record<ErrorCode, string[]>> = {
-    [ErrorCode.JAVA_NOT_FOUND]: [
-      '- Install Java 17 or later',
-      '- Set JAVA_HOME environment variable',
-      '- Use --java-home to specify Java location'
-    ],
-    [ErrorCode.CONFIG_TOOLS_NOT_FOUND]: [
-      '- Use --tools-dir to specify TLA+ tools location',
-      '- Ensure tla2tools.jar exists in tools directory'
-    ],
-    [ErrorCode.FILE_NOT_FOUND]: [
-      '- Verify the file path is correct',
-      '- Check file permissions'
-    ],
-    [ErrorCode.JAR_LOCKED]: [
-      '- Close other programs using the JAR file',
-      '- Check for antivirus software locking files'
-    ],
-    [ErrorCode.JAR_ENTRY_NOT_FOUND]: [
-      '- Verify the jarfile URI is correct',
-      '- Check that the JAR file contains the expected module'
-    ],
-    [ErrorCode.JAR_EXTRACTION_FAILED]: [
-      '- Check available disk space',
-      '- Verify write permissions to temp directory'
-    ]
-  };
-
-  return suggestions[code] || ['- Check error message for details'];
-}
-
-/**
  * Register all TLC tools with the MCP server
  * - check: Exhaustive model checking
  * - smoke: Quick smoke test (random simulation)
  * - explore: Generate and print behavior traces
  * - trace: Load and replay TLC trace files
  */
+// @implements REQ-REVIEW-002, SCN-REVIEW-002-01
 export async function registerTlcTools(
-  server: any,
+  server: McpServer,
   config: ServerConfig
 ): Promise<void> {
   // Tool 1: Model check
-  server.tool(
+  registerTool(server,
     'tlaplus_mcp_tlc_check',
     'Perform an exhaustive model check of the TLA+ module provided as an input file using TLC. Model checking is a formal verification method that systematically explores all reachable states of a system to verify its correctness. This includes checking both safety and liveness properties, and identifying any counterexamples that violate the specified properties. Please note that TLC requires the fully qualified file path to the TLA+ module. Be aware that, due to the potential for state-space explosion, exhaustive model checking may be computationally intensive and time-consuming. In some cases, it may be infeasible to check very large models exhaustively. For guidance on TLC configuration files, see the tlc-config-files.md knowledgebase article.',
     {
@@ -254,7 +198,7 @@ export async function registerTlcTools(
   );
 
   // Tool 2: Smoke test
-  server.tool(
+  registerTool(server,
     'tlaplus_mcp_tlc_smoke',
     'Smoke test the TLA+ module using TLC with the provided input file. Smoke testing is a lightweight verification technique that runs TLC in simulation mode to randomly explore as many behaviors as possible within a specified time limit. This method does not attempt to exhaustively explore the entire state space. If no counterexample is found, it does not imply that the module is correct—only that no violations were observed within the constraints of the test. If a counterexample is found, it demonstrates that the module violates at least one of its specified properties. Note that any counterexample produced may not be minimal due to the non-exhaustive nature of the search. TLC expects the fully qualified file path to the input module.',
     {
@@ -366,7 +310,7 @@ export async function registerTlcTools(
   );
 
   // Tool 3: Explore behaviors
-  server.tool(
+  registerTool(server,
     'tlaplus_mcp_tlc_explore',
     'Explore the given TLA+ module by using TLC to randomly generate and print a behavior—a sequence of states, where each state represents an assignment of values to the module\'s variables. Choose a meaningful value for the behavior length N that is neither too small nor too large, based on your estimate of what constitutes an interesting behavior for this particular module.',
     {
@@ -486,7 +430,7 @@ export async function registerTlcTools(
   );
 
   // Tool 4: Trace replay
-  server.tool(
+  registerTool(server,
     'tlaplus_mcp_tlc_trace',
     'Load and replay a previously generated TLC trace file. This tool is particularly useful after tlaplus_mcp_tlc_check finds a counterexample and automatically generates a trace file. Trace files are .tlc files stored in the .vscode/tlc/ directory with the naming pattern: {specName}_trace_T{timestamp}_F{fp}_W{workers}_M{mode}.tlc. By rerunning TLC with -loadtrace, you can add or modify ALIAS expressions in the configuration file to derive compound values, rename variables, filter out variables, or create custom animations of the trace for better analysis. The ALIAS feature allows you to evaluate expressions on pairs of states (s -> t) in the error trace and display custom formatted output instead of raw state dumps. For comprehensive guidance on ALIAS expressions, see resource tlaplus://knowledge/tlc-alias-expressions.md.',
     {

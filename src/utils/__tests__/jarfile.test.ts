@@ -124,26 +124,26 @@ describe('jarfile utilities', () => {
       clearJarCache();
     });
 
-    it('extracts a single file to cache and returns path', () => {
-      const extractedPath = extractJarEntry(testJarPath, 'StandardModules/Naturals.tla');
+    it('extracts a single file to cache and returns path', async () => {
+      const extractedPath = await extractJarEntry(testJarPath, 'StandardModules/Naturals.tla');
       expect(fs.existsSync(extractedPath)).toBe(true);
       expect(extractedPath.endsWith('Naturals.tla')).toBe(true);
       const content = fs.readFileSync(extractedPath, 'utf-8');
       expect(content).toContain('MODULE Naturals');
     });
 
-    it('returns same path on repeated calls (caching)', () => {
-      const path1 = extractJarEntry(testJarPath, 'StandardModules/Naturals.tla');
-      const path2 = extractJarEntry(testJarPath, 'StandardModules/Naturals.tla');
+    it('returns same path on repeated calls (caching)', async () => {
+      const path1 = await extractJarEntry(testJarPath, 'StandardModules/Naturals.tla');
+      const path2 = await extractJarEntry(testJarPath, 'StandardModules/Naturals.tla');
       expect(path1).toBe(path2);
     });
 
-    it('throws for non-existent entry', () => {
-      expect(() => extractJarEntry(testJarPath, 'nonexistent.tla')).toThrow('not found in JAR');
+    it('throws for non-existent entry', async () => {
+      await expect(extractJarEntry(testJarPath, 'nonexistent.tla')).rejects.toThrow('not found in JAR');
     });
 
-    it('rejects path traversal attempts', () => {
-      expect(() => extractJarEntry(testJarPath, '../etc/passwd')).toThrow('path traversal');
+    it('rejects path traversal attempts', async () => {
+      await expect(extractJarEntry(testJarPath, '../etc/passwd')).rejects.toThrow('path traversal');
     });
   });
 
@@ -152,16 +152,16 @@ describe('jarfile utilities', () => {
       clearJarCache();
     });
 
-    it('extracts entire directory and returns cache path', () => {
-      const extractedDir = extractJarDirectory(testJarPath, 'StandardModules');
+    it('extracts entire directory and returns cache path', async () => {
+      const extractedDir = await extractJarDirectory(testJarPath, 'StandardModules');
       expect(fs.existsSync(extractedDir)).toBe(true);
       expect(fs.existsSync(path.join(extractedDir, 'Naturals.tla'))).toBe(true);
       expect(fs.existsSync(path.join(extractedDir, 'Sequences.tla'))).toBe(true);
     });
 
-    it('returns same path on repeated calls (caching)', () => {
-      const dir1 = extractJarDirectory(testJarPath, 'StandardModules');
-      const dir2 = extractJarDirectory(testJarPath, 'StandardModules');
+    it('returns same path on repeated calls (caching)', async () => {
+      const dir1 = await extractJarDirectory(testJarPath, 'StandardModules');
+      const dir2 = await extractJarDirectory(testJarPath, 'StandardModules');
       expect(dir1).toBe(dir2);
     });
   });
@@ -171,9 +171,9 @@ describe('jarfile utilities', () => {
       clearJarCache();
     });
 
-    it('extracts module and its directory, returns filesystem path', () => {
+    it('extracts module and its directory, returns filesystem path', async () => {
       const uri = `jarfile:${testJarPath}!/StandardModules/Naturals.tla`;
-      const fsPath = resolveJarfilePath(uri);
+      const fsPath = await resolveJarfilePath(uri);
 
       expect(fs.existsSync(fsPath)).toBe(true);
       expect(fsPath.endsWith('Naturals.tla')).toBe(true);
@@ -182,9 +182,9 @@ describe('jarfile utilities', () => {
       expect(fs.existsSync(path.join(dir, 'Sequences.tla'))).toBe(true);
     });
 
-    it('handles root-level modules', () => {
+    it('handles root-level modules', async () => {
       const uri = `jarfile:${testJarPath}!/RootModule.tla`;
-      const fsPath = resolveJarfilePath(uri);
+      const fsPath = await resolveJarfilePath(uri);
 
       expect(fs.existsSync(fsPath)).toBe(true);
       expect(path.basename(fsPath)).toBe('RootModule.tla');

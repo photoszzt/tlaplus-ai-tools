@@ -16,7 +16,8 @@ jest.mock('fs', () => ({
 }));
 
 jest.mock('child_process', () => ({
-  execSync: (...args: unknown[]) => mockExecSync(...args)
+  execSync: (...args: unknown[]) => mockExecSync(...args),
+  execFileSync: (...args: unknown[]) => mockExecSync(...args)
 }));
 
 import {

@@ -9,6 +9,7 @@
  */
 
 import { z } from 'zod';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { ServerConfig } from '../types';
 import { DetectionService } from './animation/DetectionService';
 import { RenderService } from './animation/RenderService';
@@ -17,6 +18,7 @@ import {
   isAnimationError
 } from './animation/types';
 import { createAnimationError } from './animation/errors';
+import { registerTool } from './shared/tool-registration';
 
 /**
  * Zod schema for AnimView validation
@@ -92,9 +94,9 @@ const FrameCountRequestSchema = z.object({
  * @param data - Data to format
  * @param isError - Whether this is an error response
  */
-function formatResponse(data: unknown, isError: boolean = false): { content: { type: string; text: string }[]; isError?: boolean } {
+function formatResponse(data: unknown, isError: boolean = false): { content: { type: 'text'; text: string }[]; isError?: boolean } {
   return {
-    content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+    content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }],
     ...(isError && { isError: true })
   };
 }
@@ -106,7 +108,7 @@ function formatResponse(data: unknown, isError: boolean = false): { content: { t
  * @param params - Detection parameters (optional timeout)
  * @returns DetectionResult or AnimationError
  */
-export async function handleDetect(params: unknown): Promise<{ content: { type: string; text: string }[]; isError?: boolean }> {
+export async function handleDetect(params: unknown): Promise<{ content: { type: 'text'; text: string }[]; isError?: boolean }> {
   try {
     const validated = DetectRequestSchema.parse(params ?? {});
     const service = new DetectionService();
@@ -140,7 +142,7 @@ export async function handleDetect(params: unknown): Promise<{ content: { type: 
  * @param params - Render parameters
  * @returns RenderResult or AnimationError
  */
-export async function handleRender(params: unknown): Promise<{ content: { type: string; text: string }[]; isError?: boolean }> {
+export async function handleRender(params: unknown): Promise<{ content: { type: 'text'; text: string }[]; isError?: boolean }> {
   try {
     const validated = RenderRequestSchema.parse(params);
     const service = new RenderService();
@@ -197,7 +199,7 @@ export async function handleRender(params: unknown): Promise<{ content: { type: 
  * @param params - FrameCount parameters (traceDirectory, filePattern)
  * @returns FrameCountResult or AnimationError
  */
-export async function handleFrameCount(params: unknown): Promise<{ content: { type: string; text: string }[]; isError?: boolean }> {
+export async function handleFrameCount(params: unknown): Promise<{ content: { type: 'text'; text: string }[]; isError?: boolean }> {
   try {
     const validated = FrameCountRequestSchema.parse(params);
     const service = new FrameCountService();
@@ -228,12 +230,13 @@ export async function handleFrameCount(params: unknown): Promise<{ content: { ty
  * @param server - MCP server instance
  * @param _config - Server configuration (unused, reserved for future use)
  */
+// @implements REQ-REVIEW-002, SCN-REVIEW-002-01
 export async function registerAnimationTools(
-  server: any,
+  server: McpServer,
   _config: ServerConfig
 ): Promise<void> {
   // Tool 1: Detect terminal graphics capabilities
-  server.tool(
+  registerTool(server,
     'tlaplus_mcp_animation_detect',
     'Detect terminal graphics capabilities. Returns information about supported graphics protocols (Kitty, iTerm2), terminal multiplexer status (tmux/screen), and passthrough configuration. Use this to determine the best rendering protocol before calling render.',
     {
@@ -245,7 +248,7 @@ export async function registerAnimationTools(
   );
 
   // Tool 2: Render animation frame
-  server.tool(
+  registerTool(server,
     'tlaplus_mcp_animation_render',
     'Render a single animation frame to the specified protocol format (Kitty, iTerm2, ASCII art, or browser fallback). Accepts animation data as AnimView record, SVG content string, or SVG file path. Exactly one source must be provided. For trace visualization, call frameCount first to get the file list, then render each frame with explicit svgFilePath.',
     {
@@ -277,7 +280,7 @@ export async function registerAnimationTools(
   );
 
   // Tool 3: Get frame count for trace navigation
-  server.tool(
+  registerTool(server,
     'tlaplus_mcp_animation_frameCount',
     'Get the number of animation frames in a trace directory for navigation. Returns count and sorted list of file paths. Call this before rendering trace frames to discover available files, then use render with explicit svgFilePath for each frame.',
     {

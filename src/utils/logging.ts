@@ -35,6 +35,19 @@ export class Logger {
   }
 
   /**
+   * Log a warning message (always to stderr)
+   *
+   * @implements REQ-REVIEW-005, REQ-REVIEW-006
+   */
+  warn(message: string, error?: unknown): void {
+    const formatted = this.formatMessage('WARN', message);
+    console.error(formatted);
+    if (error && error instanceof Error && error.stack) {
+      console.error(error.stack);
+    }
+  }
+
+  /**
    * Log an error message (always to stderr)
    */
   error(message: string, error?: Error): void {
