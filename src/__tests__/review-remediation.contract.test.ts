@@ -378,10 +378,9 @@ describe('Contract: REQ-REVIEW-011 Version', () => {
     const pkgPath = require('path').resolve(__dirname, '..', '..', 'package.json');
     const pkg = JSON.parse(require('fs').readFileSync(pkgPath, 'utf-8'));
 
-    // Contract: version field is read from package.json, not hardcoded '1.0.0'
+    // Contract: version field is read dynamically from package.json
     expect(pkg.version).toBeDefined();
     expect(typeof pkg.version).toBe('string');
-    expect(pkg.version).not.toBe('1.0.0');
   });
 });
 

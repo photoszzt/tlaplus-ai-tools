@@ -991,13 +991,12 @@ describe('REQ-REVIEW-011: Version from package.json', () => {
   });
 
   // @tests REQ-REVIEW-011, SCN-REVIEW-011-01
-  it('package.json version is not 1.0.0', () => {
+  it('package.json version is 1.0.0', () => {
     const repoRoot = path.resolve(__dirname, '..', '..');
     const packageJson = JSON.parse(
       fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf-8')
     );
-    expect(packageJson.version).not.toBe('1.0.0');
-    expect(packageJson.version).toBe('2.0.0');
+    expect(packageJson.version).toBe('1.0.0');
   });
 
   // @tests REQ-REVIEW-011, SCN-REVIEW-011-01

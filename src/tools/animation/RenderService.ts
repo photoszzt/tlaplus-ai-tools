@@ -455,9 +455,15 @@ async function rasterizeSvgToPng(
   } catch {
     // If SVG loading fails, parse and render elements manually
     const animView = svgToAnimView(svgContent);
+    // Scale elements to match canvas dimensions when SVG intrinsic size differs
+    const scaleX = width / animView.width;
+    const scaleY = height / animView.height;
+    ctx.save();
+    ctx.scale(scaleX, scaleY);
     for (const element of animView.elements) {
       await drawElementToCanvas(ctx, element);
     }
+    ctx.restore();
   }
 
   // Export canvas to PNG buffer per design.md Section 3.8

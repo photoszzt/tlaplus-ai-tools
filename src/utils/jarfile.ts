@@ -170,6 +170,11 @@ export class LRUCache<K, V> {
   }
 
   clear(): void {
+    if (this.onEvict) {
+      for (const [key, value] of this.map) {
+        this.onEvict(key, value);
+      }
+    }
     this.map.clear();
   }
 
