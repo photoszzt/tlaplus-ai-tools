@@ -131,18 +131,22 @@ export class LRUCache<K, V> {
   private readonly onEvict?: (key: K, value: V) => void;
 
   constructor(maxSize: number, onEvict?: (key: K, value: V) => void) {
+    if (maxSize < 1) {
+      throw new RangeError(`LRUCache maxSize must be at least 1, got ${maxSize}`);
+    }
     this.maxSize = maxSize;
     this.onEvict = onEvict;
   }
 
   get(key: K): V | undefined {
-    const value = this.map.get(key);
-    if (value !== undefined) {
-      // Move to end (most recently used)
-      this.map.delete(key);
-      this.map.set(key, value);
+    if (!this.map.has(key)) {
+      return undefined;
     }
-    return value;
+    const value = this.map.get(key);
+    // Move to end (most recently used)
+    this.map.delete(key);
+    this.map.set(key, value as V);
+    return value as V;
   }
 
   set(key: K, value: V): void {

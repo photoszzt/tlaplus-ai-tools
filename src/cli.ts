@@ -3,11 +3,41 @@ import * as path from 'path';
 import { ServerConfig } from './types';
 
 /**
- * Check whether the next argv token is missing or looks like another flag.
+ * All flags recognised by the CLI.  Used by requireValue() to distinguish
+ * "the next token is another flag" from "the next token is a legitimate
+ * value that happens to start with '-'" (e.g. negative numbers, paths).
+ */
+const KNOWN_FLAGS: string[] = [
+  '--http',
+  '--port',
+  '--working-dir',
+  '--tools-dir',
+  '--kb-dir',
+  '--java-home',
+  '--verbose',
+  '--help',
+  '-h',
+  '--version',
+  '-v',
+];
+
+/**
+ * Check whether the next argv token is missing or is another recognised flag.
  * Throws a consistent "Missing value for <flag>" error in either case.
+ *
+ * Only rejects when the next token is a KNOWN flag or the end-of-options
+ * marker `--`, so legitimate values like negative numbers or paths starting
+ * with `-` are accepted.
  */
 function requireValue(argv: string[], index: number, flag: string): void {
-  if (index + 1 >= argv.length || argv[index + 1].startsWith('-')) {
+  const nextIndex = index + 1;
+  const next = argv[nextIndex];
+
+  if (
+    nextIndex >= argv.length ||          // no next token
+    next === '--' ||                     // end of options marker
+    KNOWN_FLAGS.includes(next)           // another recognized flag
+  ) {
     throw new Error(`Missing value for ${flag}`);
   }
 }

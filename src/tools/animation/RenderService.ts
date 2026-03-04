@@ -463,15 +463,18 @@ async function rasterizeSvgToPng(
       animView.width > 0 &&
       animView.height > 0;
     ctx.save();
-    if (hasValidIntrinsicSize) {
-      const scaleX = width / animView.width;
-      const scaleY = height / animView.height;
-      ctx.scale(scaleX, scaleY);
+    try {
+      if (hasValidIntrinsicSize) {
+        const scaleX = width / animView.width;
+        const scaleY = height / animView.height;
+        ctx.scale(scaleX, scaleY);
+      }
+      for (const element of animView.elements) {
+        await drawElementToCanvas(ctx, element);
+      }
+    } finally {
+      ctx.restore();
     }
-    for (const element of animView.elements) {
-      await drawElementToCanvas(ctx, element);
-    }
-    ctx.restore();
   }
 
   // Export canvas to PNG buffer per design.md Section 3.8
