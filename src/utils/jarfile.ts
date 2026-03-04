@@ -150,8 +150,11 @@ export class LRUCache<K, V> {
       this.map.delete(key);
     } else if (this.map.size >= this.maxSize) {
       // Evict least recently used (first key)
-      const firstKey = this.map.keys().next().value;
-      if (firstKey !== undefined) {
+      // Use iterator done flag instead of checking value !== undefined,
+      // because Map can legitimately contain undefined as a key.
+      const firstEntry = this.map.keys().next();
+      if (!firstEntry.done) {
+        const firstKey = firstEntry.value;
         const evictedValue = this.map.get(firstKey)!;
         this.map.delete(firstKey);
         // @implements SCN-REVIEW-004-05
@@ -200,10 +203,16 @@ export function getMaxCacheSize(): number {
 }
 
 // @implements REQ-REVIEW-004, SCN-REVIEW-004-05
-const extractionCache = new LRUCache<string, string>(getMaxCacheSize(), (_key, filePath) => {
-  // Fire-and-forget: delete evicted entry's on-disk file/directory
-  fs.promises.rm(filePath, { recursive: true, force: true }).catch(() => {
-    // Silently ignore deletion failures (file may already be gone)
+const extractionCache = new LRUCache<string, string>(getMaxCacheSize(), (_key, cachedPath) => {
+  // Determine the correct directory to remove.
+  // extractJarEntry stores a file path (e.g., <cacheDir>/<hash>/Module.tla),
+  // while extractJarDirectory stores a directory path (e.g., <cacheDir>/<hash>).
+  // For file paths we must delete the parent directory to avoid orphaned dirs.
+  fs.promises.stat(cachedPath).then((stats) => {
+    const dirToRemove = stats.isFile() ? path.dirname(cachedPath) : cachedPath;
+    return fs.promises.rm(dirToRemove, { recursive: true, force: true });
+  }).catch(() => {
+    // Silently ignore deletion failures (path may already be gone)
   });
 });
 

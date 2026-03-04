@@ -364,6 +364,31 @@ describe('Contract: REQ-REVIEW-008 CLI Guards', () => {
     expect(config.port).toBe(8080);
     expect(config.http).toBe(true);
   });
+
+  // @tests-contract REQ-REVIEW-008 (Finding 3: flag-as-value detection)
+  it('parseArgs throws "Missing value" when next token is another flag', () => {
+    const { parseArgs } = require('../cli');
+
+    const flagPairs: [string, string][] = [
+      ['--port', '--http'],
+      ['--port', '--verbose'],
+      ['--working-dir', '--http'],
+      ['--tools-dir', '--verbose'],
+      ['--kb-dir', '--port'],
+      ['--java-home', '-h'],
+    ];
+
+    for (const [flag, nextFlag] of flagPairs) {
+      let error: Error | undefined;
+      try {
+        parseArgs([flag, nextFlag]);
+      } catch (e) {
+        error = e as Error;
+      }
+      expect(error).toBeDefined();
+      expect(error!.message).toBe(`Missing value for ${flag}`);
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------

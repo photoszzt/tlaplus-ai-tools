@@ -232,6 +232,28 @@ describe('TLAPlusMCPServer', () => {
       expect(mockHttpServer.on).toHaveBeenCalledWith('error', expect.any(Function));
     });
 
+    // Finding 2: Error handlers must be defined before app.listen() to avoid TDZ
+    it('listen callback can reference error handlers via removeListener and on', async () => {
+      // Verify that after the listen callback fires, both startupErrorHandler
+      // (removed) and operationalErrorHandler (added) are properly referenced.
+      // Before the TDZ fix, these were const-declared AFTER the app.listen() call,
+      // meaning any early/unexpected callback timing could throw ReferenceError.
+      const server = new TLAPlusMCPServer(HTTP_CONFIG);
+      await server.start();
+
+      // The listen callback should have called removeListener('error', startupErrorHandler)
+      // and then on('error', operationalErrorHandler). If handlers were in TDZ,
+      // this would have thrown before reaching these calls.
+      expect(mockHttpServer.removeListener).toHaveBeenCalledWith('error', expect.any(Function));
+
+      // Verify operational handler was attached (second 'error' listener)
+      const errorCalls = (mockHttpServer.on as jest.Mock).mock.calls.filter(
+        (call: any[]) => call[0] === 'error'
+      );
+      // Should have at least 2 error listeners: startup (before listen) + operational (in callback)
+      expect(errorCalls.length).toBeGreaterThanOrEqual(2);
+    });
+
     describe('POST /mcp endpoint', () => {
       let postHandler: (req: any, res: any) => Promise<void>;
 

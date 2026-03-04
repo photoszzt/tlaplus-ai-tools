@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import AdmZip from 'adm-zip';
-import { parseJarfileUri, listJarEntries, listTlaModulesInJar, extractJarEntry, extractJarDirectory, clearJarCache, resolveJarfilePath } from '../jarfile';
+import { parseJarfileUri, listJarEntries, listTlaModulesInJar, extractJarEntry, extractJarDirectory, clearJarCache, resolveJarfilePath, LRUCache } from '../jarfile';
 
 let tempDir: string;
 let testJarPath: string;
@@ -188,6 +188,71 @@ describe('jarfile utilities', () => {
 
       expect(fs.existsSync(fsPath)).toBe(true);
       expect(path.basename(fsPath)).toBe('RootModule.tla');
+    });
+  });
+
+  describe('LRUCache', () => {
+    // Finding 1: LRUCache.set() must evict even when the key is undefined
+    it('evicts entries with undefined keys without growing beyond maxSize', () => {
+      const evicted: Array<[unknown, string]> = [];
+      const cache = new LRUCache<string | undefined, string>(2, (key, value) => {
+        evicted.push([key, value]);
+      });
+
+      cache.set(undefined, 'val-undef');
+      cache.set('a', 'val-a');
+      // Cache is full (size 2). Next set must evict the LRU (undefined key).
+      cache.set('b', 'val-b');
+
+      expect(cache.size).toBeLessThanOrEqual(2);
+      expect(evicted.length).toBe(1);
+      expect(evicted[0][0]).toBeUndefined();
+      expect(evicted[0][1]).toBe('val-undef');
+    });
+
+    it('does not skip eviction when first key is a falsy value', () => {
+      const evicted: Array<[unknown, string]> = [];
+      const cache = new LRUCache<number, string>(1, (key, value) => {
+        evicted.push([key, value]);
+      });
+
+      cache.set(0, 'zero');
+      // Cache is full (size 1). Next set must evict key 0 (falsy but valid).
+      cache.set(1, 'one');
+
+      expect(cache.size).toBe(1);
+      expect(evicted.length).toBe(1);
+      expect(evicted[0][0]).toBe(0);
+    });
+  });
+
+  describe('cache eviction cleanup', () => {
+    // Finding 4: Cache eviction must remove the parent directory for file entries
+    beforeEach(() => {
+      clearJarCache();
+    });
+
+    it('eviction of extractJarEntry removes the cache subdirectory, not just the file', async () => {
+      // Create a small LRU cache (size 1) to force eviction on the second insert.
+      // We test via the real extractJarEntry + clearJarCache to exercise the
+      // eviction callback. Since we cannot easily control the module-level cache
+      // size, we test the behavior by extracting an entry, noting its path, then
+      // clearing the cache (which invokes onEvict per entry).
+      const extractedPath = await extractJarEntry(testJarPath, 'StandardModules/Naturals.tla');
+      const extractedDir = path.dirname(extractedPath);
+
+      // Both file and directory exist before clear
+      expect(fs.existsSync(extractedPath)).toBe(true);
+      expect(fs.existsSync(extractedDir)).toBe(true);
+
+      // Clear triggers onEvict which should remove the parent directory
+      clearJarCache();
+
+      // Give the async fire-and-forget rm a moment to complete
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      // The parent cache subdirectory should be removed, not just the file
+      expect(fs.existsSync(extractedDir)).toBe(false);
     });
   });
 });

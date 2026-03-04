@@ -3,6 +3,16 @@ import * as path from 'path';
 import { ServerConfig } from './types';
 
 /**
+ * Check whether the next argv token is missing or looks like another flag.
+ * Throws a consistent "Missing value for <flag>" error in either case.
+ */
+function requireValue(argv: string[], index: number, flag: string): void {
+  if (index + 1 >= argv.length || argv[index + 1].startsWith('-')) {
+    throw new Error(`Missing value for ${flag}`);
+  }
+}
+
+/**
  * Parse command line arguments into ServerConfig
  */
 export function parseArgs(argv: string[]): ServerConfig {
@@ -26,9 +36,7 @@ export function parseArgs(argv: string[]): ServerConfig {
 
       // @implements REQ-REVIEW-008, SCN-REVIEW-008-01, SCN-REVIEW-008-02
       case '--port': {
-        if (i + 1 >= argv.length) {
-          throw new Error('Missing value for --port');
-        }
+        requireValue(argv, i, '--port');
         const port = parseInt(argv[++i], 10);
         if (isNaN(port) || port < 0 || port > 65535) {
           throw new Error(`Invalid port number: ${argv[i]}. Must be between 0 and 65535.`);
@@ -38,33 +46,25 @@ export function parseArgs(argv: string[]): ServerConfig {
       }
 
       case '--working-dir': {
-        if (i + 1 >= argv.length) {
-          throw new Error('Missing value for --working-dir');
-        }
+        requireValue(argv, i, '--working-dir');
         config.workingDir = path.resolve(argv[++i]);
         break;
       }
 
       case '--tools-dir': {
-        if (i + 1 >= argv.length) {
-          throw new Error('Missing value for --tools-dir');
-        }
+        requireValue(argv, i, '--tools-dir');
         config.toolsDir = path.resolve(argv[++i]);
         break;
       }
 
       case '--kb-dir': {
-        if (i + 1 >= argv.length) {
-          throw new Error('Missing value for --kb-dir');
-        }
+        requireValue(argv, i, '--kb-dir');
         config.kbDir = path.resolve(argv[++i]);
         break;
       }
 
       case '--java-home': {
-        if (i + 1 >= argv.length) {
-          throw new Error('Missing value for --java-home');
-        }
+        requireValue(argv, i, '--java-home');
         config.javaHome = path.resolve(argv[++i]);
         break;
       }

@@ -178,18 +178,8 @@ export class TLAPlusMCPServer {
     // @implements REQ-REVIEW-006, SCN-REVIEW-006-01, SCN-REVIEW-006-02
     // Two-phase error handling: startup errors reject the promise,
     // operational errors discriminate between fatal and non-fatal.
+    // Handlers are declared before app.listen() to avoid temporal dead zone.
     const server = await new Promise<http.Server>((resolve, reject) => {
-      const httpServer = app.listen(this.config.port, () => {
-        const actualPort = (httpServer.address() as { port: number })?.port || this.config.port;
-        this.logger.info(`TLA+ MCP server listening at http://localhost:${actualPort}/mcp`);
-        this.logger.debug(`Configuration: ${JSON.stringify(this.config, null, 2)}`);
-
-        // Remove startup handler; attach operational handler
-        httpServer.removeListener('error', startupErrorHandler);
-        httpServer.on('error', operationalErrorHandler);
-        resolve(httpServer);
-      });
-
       // Startup phase: reject the promise so caller can handle the failure
       const startupErrorHandler = (err: NodeJS.ErrnoException) => {
         this.logger.error('Failed to start HTTP server:', err);
@@ -206,6 +196,17 @@ export class TLAPlusMCPServer {
           this.logger.warn(`Non-fatal HTTP server error [${code}]:`, err);
         }
       };
+
+      const httpServer = app.listen(this.config.port, () => {
+        const actualPort = (httpServer.address() as { port: number })?.port || this.config.port;
+        this.logger.info(`TLA+ MCP server listening at http://localhost:${actualPort}/mcp`);
+        this.logger.debug(`Configuration: ${JSON.stringify(this.config, null, 2)}`);
+
+        // Remove startup handler; attach operational handler
+        httpServer.removeListener('error', startupErrorHandler);
+        httpServer.on('error', operationalErrorHandler);
+        resolve(httpServer);
+      });
 
       httpServer.on('error', startupErrorHandler);
     });
