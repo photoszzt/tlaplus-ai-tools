@@ -61,39 +61,3 @@ export async function withRetry<T>(
   throw lastError!;
 }
 
-/**
- * Synchronous retry wrapper for operations that cannot be async
- */
-export function withRetrySync<T>(
-  operation: () => T,
-  config: Partial<RetryConfig> = {}
-): T {
-  const mergedConfig: RetryConfig = { ...DEFAULT_RETRY_CONFIG, ...config };
-  let lastError: Error;
-
-  for (let attempt = 1; attempt <= mergedConfig.maxAttempts; attempt++) {
-    try {
-      return operation();
-    } catch (error) {
-      lastError = error as Error;
-
-      const shouldRetry = mergedConfig.shouldRetry?.(lastError, attempt) ?? false;
-
-      if (!shouldRetry || attempt >= mergedConfig.maxAttempts) {
-        throw enhanceError(lastError, {
-          retryAttempt: attempt,
-          retriesExhausted: attempt >= mergedConfig.maxAttempts
-        });
-      }
-
-      // Synchronous sleep (blocking) - only use for very short delays
-      const delay = calculateDelay(attempt, mergedConfig);
-      const start = Date.now();
-      while (Date.now() - start < delay) {
-        // Busy wait (not ideal but necessary for sync retry)
-      }
-    }
-  }
-
-  throw lastError!;
-}

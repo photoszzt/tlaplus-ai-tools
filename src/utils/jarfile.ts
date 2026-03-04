@@ -3,7 +3,8 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as crypto from 'crypto';
-import { withRetrySync, ErrorCode, enhanceError, classifyError } from './errors';
+// @implements REQ-REVIEW-003, SCN-REVIEW-003-01, SCN-REVIEW-003-02
+import { withRetry, ErrorCode, enhanceError, classifyError } from './errors';
 
 /**
  * Utilities for reading TLA+ modules from JAR files.
@@ -116,7 +117,95 @@ export function listTlaModulesInJar(
   });
 }
 
-const extractionCache = new Map<string, string>();
+/**
+ * Simple LRU cache using Map insertion order.
+ * Map.keys() returns keys in insertion order; deleting and re-inserting
+ * moves a key to the end (most recently used).
+ *
+ * @implements REQ-REVIEW-004, SCN-REVIEW-004-01, SCN-REVIEW-004-03
+ * @invariant INV-REVIEW-001 (cache size bounded)
+ */
+export class LRUCache<K, V> {
+  private map = new Map<K, V>();
+  private readonly maxSize: number;
+  private readonly onEvict?: (key: K, value: V) => void;
+
+  constructor(maxSize: number, onEvict?: (key: K, value: V) => void) {
+    this.maxSize = maxSize;
+    this.onEvict = onEvict;
+  }
+
+  get(key: K): V | undefined {
+    const value = this.map.get(key);
+    if (value !== undefined) {
+      // Move to end (most recently used)
+      this.map.delete(key);
+      this.map.set(key, value);
+    }
+    return value;
+  }
+
+  set(key: K, value: V): void {
+    if (this.map.has(key)) {
+      this.map.delete(key);
+    } else if (this.map.size >= this.maxSize) {
+      // Evict least recently used (first key)
+      const firstKey = this.map.keys().next().value;
+      if (firstKey !== undefined) {
+        const evictedValue = this.map.get(firstKey)!;
+        this.map.delete(firstKey);
+        // @implements SCN-REVIEW-004-05
+        this.onEvict?.(firstKey, evictedValue);
+        // @implements SCN-REVIEW-004-04
+        if (process.env.DEBUG || process.env.VERBOSE) {
+          console.error(`JAR cache eviction: removing entry ${String(firstKey)} (size: ${this.map.size}/${this.maxSize})`);
+        }
+      }
+    }
+    this.map.set(key, value);
+  }
+
+  has(key: K): boolean {
+    return this.map.has(key);
+  }
+
+  clear(): void {
+    if (this.onEvict) {
+      for (const [key, value] of this.map) {
+        this.onEvict(key, value);
+      }
+    }
+    this.map.clear();
+  }
+
+  get size(): number {
+    return this.map.size;
+  }
+}
+
+/**
+ * Get maximum cache size from environment variable or default.
+ *
+ * @implements REQ-REVIEW-004, SCN-REVIEW-004-02
+ */
+export function getMaxCacheSize(): number {
+  const envValue = process.env.TLA_JAR_CACHE_SIZE;
+  if (envValue) {
+    const parsed = parseInt(envValue, 10);
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+  return 256;
+}
+
+// @implements REQ-REVIEW-004, SCN-REVIEW-004-05
+const extractionCache = new LRUCache<string, string>(getMaxCacheSize(), (_key, filePath) => {
+  // Fire-and-forget: delete evicted entry's on-disk file/directory
+  fs.promises.rm(filePath, { recursive: true, force: true }).catch(() => {
+    // Silently ignore deletion failures (file may already be gone)
+  });
+});
 
 function getCacheDir(): string {
   const cacheBase = path.join(os.tmpdir(), 'tlaplus-mcp', 'jar-cache');
@@ -136,7 +225,8 @@ export function clearJarCache(): void {
   extractionCache.clear();
 }
 
-export function extractJarEntry(jarPath: string, innerPath: string): string {
+// @implements REQ-REVIEW-003, SCN-REVIEW-003-01
+export async function extractJarEntry(jarPath: string, innerPath: string): Promise<string> {
   // Validation stays outside retry
   if (innerPath.includes('..') || path.isAbsolute(innerPath)) {
     throw new Error(`Invalid inner path (path traversal rejected): ${innerPath}`);
@@ -149,9 +239,9 @@ export function extractJarEntry(jarPath: string, innerPath: string): string {
     return cached;
   }
 
-  // Wrap extraction in retry
-  return withRetrySync(
-    () => {
+  // Wrap extraction in retry (async, no busy-wait)
+  return withRetry(
+    async () => {
       const zip = new AdmZip(jarPath);
       const entry = zip.getEntry(innerPath) || zip.getEntry(innerPath.replace(/\//g, '\\'));
 
@@ -165,11 +255,9 @@ export function extractJarEntry(jarPath: string, innerPath: string): string {
       const cacheDir = getCacheDir();
       const extractDir = path.join(cacheDir, cacheKey);
 
-      // Add error handling for directory creation
+      // Use async fs operations to avoid blocking the event loop in HTTP mode
       try {
-        if (!fs.existsSync(extractDir)) {
-          fs.mkdirSync(extractDir, { recursive: true });
-        }
+        await fs.promises.mkdir(extractDir, { recursive: true });
       } catch (err) {
         throw enhanceError(err as Error, {
           code: ErrorCode.JAR_EXTRACTION_FAILED,
@@ -179,9 +267,8 @@ export function extractJarEntry(jarPath: string, innerPath: string): string {
 
       const targetPath = path.join(extractDir, path.basename(innerPath));
 
-      // Add error handling for file write
       try {
-        fs.writeFileSync(targetPath, entry.getData());
+        await fs.promises.writeFile(targetPath, entry.getData());
       } catch (err) {
         throw enhanceError(err as Error, {
           code: ErrorCode.JAR_EXTRACTION_FAILED,
@@ -205,7 +292,8 @@ export function extractJarEntry(jarPath: string, innerPath: string): string {
   );
 }
 
-export function extractJarDirectory(jarPath: string, innerDir: string): string {
+// @implements REQ-REVIEW-003, SCN-REVIEW-003-02
+export async function extractJarDirectory(jarPath: string, innerDir: string): Promise<string> {
   // Validation stays outside retry
   if (innerDir.includes('..') || (innerDir && path.isAbsolute(innerDir))) {
     throw new Error(`Invalid inner path (path traversal rejected): ${innerDir}`);
@@ -218,9 +306,9 @@ export function extractJarDirectory(jarPath: string, innerDir: string): string {
     return cached;
   }
 
-  // Wrap extraction in retry
-  return withRetrySync(
-    () => {
+  // Wrap extraction in retry (async, no busy-wait)
+  return withRetry(
+    async () => {
       const zip = new AdmZip(jarPath);
       const entries = zip.getEntries();
 
@@ -233,11 +321,9 @@ export function extractJarDirectory(jarPath: string, innerDir: string): string {
       const cacheDir = getCacheDir();
       const extractDir = path.join(cacheDir, cacheKey);
 
-      // Add error handling for directory creation
+      // Use async fs operations to avoid blocking the event loop in HTTP mode
       try {
-        if (!fs.existsSync(extractDir)) {
-          fs.mkdirSync(extractDir, { recursive: true });
-        }
+        await fs.promises.mkdir(extractDir, { recursive: true });
       } catch (err) {
         throw enhanceError(err as Error, {
           code: ErrorCode.JAR_EXTRACTION_FAILED,
@@ -258,11 +344,9 @@ export function extractJarDirectory(jarPath: string, innerDir: string): string {
         const targetPath = path.join(extractDir, relativePath);
         const targetDir = path.dirname(targetPath);
 
-        // Add error handling for subdirectory creation
+        // Use async fs operations for subdirectory creation
         try {
-          if (!fs.existsSync(targetDir)) {
-            fs.mkdirSync(targetDir, { recursive: true });
-          }
+          await fs.promises.mkdir(targetDir, { recursive: true });
         } catch (err) {
           throw enhanceError(err as Error, {
             code: ErrorCode.JAR_EXTRACTION_FAILED,
@@ -270,9 +354,9 @@ export function extractJarDirectory(jarPath: string, innerDir: string): string {
           });
         }
 
-        // Add error handling for file write
+        // Use async fs operations for file write
         try {
-          fs.writeFileSync(targetPath, entry.getData());
+          await fs.promises.writeFile(targetPath, entry.getData());
         } catch (err) {
           throw enhanceError(err as Error, {
             code: ErrorCode.JAR_EXTRACTION_FAILED,
@@ -297,7 +381,8 @@ export function extractJarDirectory(jarPath: string, innerDir: string): string {
   );
 }
 
-export function resolveJarfilePath(uri: string): string {
+// @implements REQ-REVIEW-003, SCN-REVIEW-003-03
+export async function resolveJarfilePath(uri: string): Promise<string> {
   const { jarPath, innerPath } = parseJarfileUri(uri);
 
   if (!innerPath) {
@@ -308,7 +393,7 @@ export function resolveJarfilePath(uri: string): string {
   const fileName = path.basename(innerPath);
 
   const normalizedDir = innerDir === '.' ? '' : innerDir;
-  const extractedDir = extractJarDirectory(jarPath, normalizedDir);
+  const extractedDir = await extractJarDirectory(jarPath, normalizedDir);
 
   return path.join(extractedDir, fileName);
 }

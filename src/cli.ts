@@ -24,29 +24,50 @@ export function parseArgs(argv: string[]): ServerConfig {
         config.http = true;
         break;
 
-      case '--port':
+      // @implements REQ-REVIEW-008, SCN-REVIEW-008-01, SCN-REVIEW-008-02
+      case '--port': {
+        if (i + 1 >= argv.length) {
+          throw new Error('Missing value for --port');
+        }
         const port = parseInt(argv[++i], 10);
         if (isNaN(port) || port < 0 || port > 65535) {
           throw new Error(`Invalid port number: ${argv[i]}. Must be between 0 and 65535.`);
         }
         config.port = port;
         break;
+      }
 
-      case '--working-dir':
+      case '--working-dir': {
+        if (i + 1 >= argv.length) {
+          throw new Error('Missing value for --working-dir');
+        }
         config.workingDir = path.resolve(argv[++i]);
         break;
+      }
 
-      case '--tools-dir':
+      case '--tools-dir': {
+        if (i + 1 >= argv.length) {
+          throw new Error('Missing value for --tools-dir');
+        }
         config.toolsDir = path.resolve(argv[++i]);
         break;
+      }
 
-      case '--kb-dir':
+      case '--kb-dir': {
+        if (i + 1 >= argv.length) {
+          throw new Error('Missing value for --kb-dir');
+        }
         config.kbDir = path.resolve(argv[++i]);
         break;
+      }
 
-      case '--java-home':
+      case '--java-home': {
+        if (i + 1 >= argv.length) {
+          throw new Error('Missing value for --java-home');
+        }
         config.javaHome = path.resolve(argv[++i]);
         break;
+      }
 
       case '--verbose':
         config.verbose = true;

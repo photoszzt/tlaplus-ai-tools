@@ -1,4 +1,5 @@
-import { execSync } from 'child_process';
+// @implements REQ-REVIEW-009, SCN-REVIEW-009-02
+import { execFileSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -71,13 +72,14 @@ export async function autoDetectToolsDir(): Promise<string | null> {
   ];
 
   // Add npm global fallback
+  // @implements REQ-REVIEW-009, SCN-REVIEW-009-01, SCN-REVIEW-009-02
   try {
-    const npmRoot = execSync('npm root -g', { encoding: 'utf8' }).trim();
+    const npmRoot = execFileSync('npm', ['root', '-g'], { encoding: 'utf8', timeout: 5000 }).trim();
     candidates.push(
       path.join(npmRoot, 'tlaplus-ai-tools', 'tools')
     );
   } catch {
-    // npm not available, skip
+    // npm not available or timed out, skip
   }
 
   for (const candidate of candidates) {
@@ -120,13 +122,14 @@ export async function autoDetectKbDir(): Promise<string | null> {
   ];
 
   // Add npm global fallback
+  // @implements REQ-REVIEW-009, SCN-REVIEW-009-01, SCN-REVIEW-009-02
   try {
-    const npmRoot = execSync('npm root -g', { encoding: 'utf8' }).trim();
+    const npmRoot = execFileSync('npm', ['root', '-g'], { encoding: 'utf8', timeout: 5000 }).trim();
     candidates.push(
       path.join(npmRoot, 'tlaplus-ai-tools', 'resources', 'knowledgebase')
     );
   } catch {
-    // npm not available, skip
+    // npm not available or timed out, skip
   }
 
   for (const candidate of candidates) {

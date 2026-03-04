@@ -43,7 +43,7 @@ describe('install-state', () => {
     it('should return parsed marker if file exists and valid', () => {
       const marker: InstallStateMarker = {
         state: 'installed',
-        version: '2.0.0',
+        version: '1.0.0',
         timestamp: '2026-02-02T19:30:00.000Z',
       };
 
@@ -84,7 +84,7 @@ describe('install-state', () => {
       mockFs.readFileSync.mockReturnValue(
         JSON.stringify({
           state: 'invalid-state',
-          version: '2.0.0',
+          version: '1.0.0',
           timestamp: '2026-02-02T19:30:00.000Z',
         })
       );
@@ -130,7 +130,7 @@ describe('install-state', () => {
       const parsed = JSON.parse(content);
 
       expect(parsed.state).toBe('error');
-      expect(parsed.version).toBe('2.0.0');
+      expect(parsed.version).toBe('1.0.0');
       expect(parsed.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     });
   });
@@ -149,7 +149,7 @@ describe('install-state', () => {
       mockFs.readFileSync.mockReturnValue(
         JSON.stringify({
           state: 'installed',
-          version: '2.0.0',
+          version: '1.0.0',
           timestamp: '2026-02-02T19:30:00.000Z',
         })
       );
@@ -164,7 +164,7 @@ describe('install-state', () => {
       mockFs.readFileSync.mockReturnValue(
         JSON.stringify({
           state: 'declined',
-          version: '2.0.0',
+          version: '1.0.0',
           timestamp: '2026-02-02T19:30:00.000Z',
         })
       );
@@ -179,7 +179,7 @@ describe('install-state', () => {
       mockFs.readFileSync.mockReturnValue(
         JSON.stringify({
           state: 'error',
-          version: '2.0.0',
+          version: '1.0.0',
           timestamp: '2026-02-02T19:30:00.000Z',
         })
       );

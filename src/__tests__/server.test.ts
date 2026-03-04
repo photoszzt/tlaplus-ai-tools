@@ -60,6 +60,7 @@ describe('TLAPlusMCPServer', () => {
         return mockHttpServer;
       }),
       on: jest.fn(),
+      removeListener: jest.fn(),
       address: jest.fn(() => ({ port: 3000 }))
     };
 
@@ -108,7 +109,8 @@ describe('TLAPlusMCPServer', () => {
       expect(McpServer).toHaveBeenCalledWith(
         {
           name: 'TLA+ MCP Tools',
-          version: '1.0.0'
+          // @implements REQ-REVIEW-011: version read from package.json
+          version: expect.any(String)
         },
         {
           capabilities: {

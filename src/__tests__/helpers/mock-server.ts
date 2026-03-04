@@ -2,6 +2,8 @@
  * Mock MCP server for testing tool registration
  */
 
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+
 export interface MockTool {
   name: string;
   description: string;
@@ -16,7 +18,9 @@ export interface MockResource {
   handler: () => Promise<any>;
 }
 
-export function createMockMcpServer() {
+export type MockMcpServer = ReturnType<typeof createMockMcpServerInternal>;
+
+function createMockMcpServerInternal() {
   const tools = new Map<string, MockTool>();
   const resources = new Map<string, MockResource>();
 
@@ -32,6 +36,11 @@ export function createMockMcpServer() {
     connect: jest.fn().mockResolvedValue(undefined),
     close: jest.fn().mockResolvedValue(undefined)
   };
+}
+
+// @implements REQ-REVIEW-002 (typed server parameter compatibility for tests)
+export function createMockMcpServer(): MockMcpServer & McpServer {
+  return createMockMcpServerInternal() as MockMcpServer & McpServer;
 }
 
 export async function callRegisteredTool(
