@@ -24,7 +24,7 @@ export interface KnowledgeBaseEntry {
  * @param kbDir Path to knowledge base directory
  */
 export async function registerKnowledgeBaseResources(
-  server: any,
+  server: McpServer,
   kbDir: string
 ): Promise<void> {
   try {

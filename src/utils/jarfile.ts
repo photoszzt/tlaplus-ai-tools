@@ -220,16 +220,14 @@ const extractionCache = new LRUCache<string, string>(getMaxCacheSize(), (_key, c
   });
 });
 
-function getCacheDir(): string {
+async function getCacheDir(): Promise<string> {
   const cacheBase = path.join(os.tmpdir(), 'tlaplus-mcp', 'jar-cache');
-  if (!fs.existsSync(cacheBase)) {
-    fs.mkdirSync(cacheBase, { recursive: true });
-  }
+  await fs.promises.mkdir(cacheBase, { recursive: true });
   return cacheBase;
 }
 
-function getCacheKey(jarPath: string, innerPath: string): string {
-  const stats = fs.statSync(jarPath);
+async function getCacheKey(jarPath: string, innerPath: string): Promise<string> {
+  const stats = await fs.promises.stat(jarPath);
   const data = `${jarPath}:${stats.mtimeMs}:${innerPath}`;
   return crypto.createHash('sha256').update(data).digest('hex').slice(0, 16);
 }
@@ -245,11 +243,16 @@ export async function extractJarEntry(jarPath: string, innerPath: string): Promi
     throw new Error(`Invalid inner path (path traversal rejected): ${innerPath}`);
   }
 
-  const cacheKey = getCacheKey(jarPath, innerPath);
+  const cacheKey = await getCacheKey(jarPath, innerPath);
 
   const cached = extractionCache.get(cacheKey);
-  if (cached && fs.existsSync(cached)) {
-    return cached;
+  if (cached) {
+    try {
+      await fs.promises.access(cached);
+      return cached;
+    } catch {
+      // Cache entry stale, continue to extraction
+    }
   }
 
   // Wrap extraction in retry (async, no busy-wait)
@@ -265,7 +268,7 @@ export async function extractJarEntry(jarPath: string, innerPath: string): Promi
         );
       }
 
-      const cacheDir = getCacheDir();
+      const cacheDir = await getCacheDir();
       const extractDir = path.join(cacheDir, cacheKey);
 
       // Use async fs operations to avoid blocking the event loop in HTTP mode
@@ -312,11 +315,16 @@ export async function extractJarDirectory(jarPath: string, innerDir: string): Pr
     throw new Error(`Invalid inner path (path traversal rejected): ${innerDir}`);
   }
 
-  const cacheKey = getCacheKey(jarPath, `dir:${innerDir}`);
+  const cacheKey = await getCacheKey(jarPath, `dir:${innerDir}`);
 
   const cached = extractionCache.get(cacheKey);
-  if (cached && fs.existsSync(cached)) {
-    return cached;
+  if (cached) {
+    try {
+      await fs.promises.access(cached);
+      return cached;
+    } catch {
+      // Cache entry stale, continue to extraction
+    }
   }
 
   // Wrap extraction in retry (async, no busy-wait)
@@ -331,7 +339,7 @@ export async function extractJarDirectory(jarPath: string, innerDir: string): Pr
       }
       const prefix = normalizedDir ? normalizedDir + '/' : '';
 
-      const cacheDir = getCacheDir();
+      const cacheDir = await getCacheDir();
       const extractDir = path.join(cacheDir, cacheKey);
 
       // Use async fs operations to avoid blocking the event loop in HTTP mode
