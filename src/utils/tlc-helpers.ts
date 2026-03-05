@@ -44,10 +44,11 @@ export interface SpecFiles {
  * @param javaHome - Optional Java home path
  * @param timeoutMs - Optional timeout in milliseconds
  * @param signal - Optional abort signal
- * @param onProgress - Called with progress updates AFTER the TLC process completes,
- *   not in real-time. Progress events are collected during execution and replayed
- *   post-completion. Real-time streaming would require architectural changes to
- *   the process execution pipeline.
+ * @param onProgress - Called with progress updates only after the TLC process
+ *   has completed, while post-processing the captured TLC output, not in
+ *   real-time. Progress information is derived from the recorded output stream;
+ *   real-time streaming would require architectural changes to the process
+ *   execution pipeline.
  */
 // @implements QG-REVIEW-006
 export async function runTlcAndWait(

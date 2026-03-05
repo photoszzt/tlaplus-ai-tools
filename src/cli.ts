@@ -40,6 +40,9 @@ function requireValue(argv: string[], index: number, flag: string): void {
   ) {
     throw new Error(`Missing value for ${flag}`);
   }
+  if (next.startsWith('--')) {
+    throw new Error(`Expected value for ${flag}, but got flag-like argument: ${next}`);
+  }
 }
 
 /**

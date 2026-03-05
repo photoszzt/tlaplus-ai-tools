@@ -179,7 +179,7 @@ export class TLAPlusMCPServer {
     // Two-phase error handling: startup errors reject the promise,
     // operational errors discriminate between fatal and non-fatal.
     // Handlers are declared before app.listen() to avoid temporal dead zone.
-    const server = await new Promise<http.Server>((resolve, reject) => {
+    const _server = await new Promise<http.Server>((resolve, reject) => {
       // Startup phase: reject the promise so caller can handle the failure
       const startupErrorHandler = (err: NodeJS.ErrnoException) => {
         this.logger.error('Failed to start HTTP server:', err);
