@@ -42,8 +42,30 @@ export class Logger {
   warn(message: string, error?: unknown): void {
     const formatted = this.formatMessage('WARN', message);
     console.error(formatted);
-    if (error && error instanceof Error && error.stack) {
-      console.error(error.stack);
+
+    if (!error) {
+      return;
+    }
+
+    if (error instanceof Error) {
+      if (error.stack) {
+        console.error(error.stack);
+      } else if (error.message) {
+        console.error(error.message);
+      } else {
+        console.error(String(error));
+      }
+      return;
+    }
+
+    if (typeof error === 'object') {
+      try {
+        console.error(JSON.stringify(error));
+      } catch {
+        console.error(String(error));
+      }
+    } else {
+      console.error(String(error));
     }
   }
 

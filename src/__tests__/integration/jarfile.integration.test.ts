@@ -17,8 +17,8 @@ const TLA2TOOLS_JAR = path.join(TOOLS_DIR, 'tla2tools.jar');
 const describeIfJarExists = fs.existsSync(TLA2TOOLS_JAR) ? describe : describe.skip;
 
 describeIfJarExists('JAR module scanning integration', () => {
-  beforeEach(() => {
-    clearJarCache();
+  beforeEach(async () => {
+    await clearJarCache();
   });
 
   it('getModuleSearchPaths returns jarfile: URIs', () => {

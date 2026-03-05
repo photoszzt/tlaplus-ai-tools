@@ -110,5 +110,5 @@ export async function registerKnowledgeBaseFromCache(
       }
     );
   }
-  console.error(`[INFO] Registered ${entries.length} knowledge base articles (from cache)`);
+  console.debug(`[DEBUG] Registered ${entries.length} knowledge base articles (from cache)`);
 }

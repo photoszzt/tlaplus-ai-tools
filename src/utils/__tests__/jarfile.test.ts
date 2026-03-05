@@ -120,8 +120,8 @@ describe('jarfile utilities', () => {
   });
 
   describe('extractJarEntry', () => {
-    beforeEach(() => {
-      clearJarCache();
+    beforeEach(async () => {
+      await clearJarCache();
     });
 
     it('extracts a single file to cache and returns path', async () => {
@@ -148,8 +148,8 @@ describe('jarfile utilities', () => {
   });
 
   describe('extractJarDirectory', () => {
-    beforeEach(() => {
-      clearJarCache();
+    beforeEach(async () => {
+      await clearJarCache();
     });
 
     it('extracts entire directory and returns cache path', async () => {
@@ -167,8 +167,8 @@ describe('jarfile utilities', () => {
   });
 
   describe('resolveJarfilePath', () => {
-    beforeEach(() => {
-      clearJarCache();
+    beforeEach(async () => {
+      await clearJarCache();
     });
 
     it('extracts module and its directory, returns filesystem path', async () => {
@@ -228,8 +228,8 @@ describe('jarfile utilities', () => {
 
   describe('cache eviction cleanup', () => {
     // Finding 4: Cache eviction must remove the parent directory for file entries
-    beforeEach(() => {
-      clearJarCache();
+    beforeEach(async () => {
+      await clearJarCache();
     });
 
     it('eviction of extractJarEntry removes the cache subdirectory, not just the file', async () => {
@@ -245,11 +245,9 @@ describe('jarfile utilities', () => {
       expect(fs.existsSync(extractedPath)).toBe(true);
       expect(fs.existsSync(extractedDir)).toBe(true);
 
-      // Clear triggers onEvict which should remove the parent directory
-      clearJarCache();
-
-      // Give the async fire-and-forget rm a moment to complete
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Clear triggers onEvict which should remove the parent directory.
+      // clearJarCache() now awaits all pending evictions, so no setTimeout needed.
+      await clearJarCache();
 
       // The parent cache subdirectory should be removed, not just the file
       expect(fs.existsSync(extractedDir)).toBe(false);

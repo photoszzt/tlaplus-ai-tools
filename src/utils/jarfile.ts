@@ -128,9 +128,10 @@ export function listTlaModulesInJar(
 export class LRUCache<K, V> {
   private map = new Map<K, V>();
   private readonly maxSize: number;
-  private readonly onEvict?: (key: K, value: V) => void;
+  private readonly onEvict?: (key: K, value: V) => Promise<void> | void;
+  private pendingEvictions: Promise<void>[] = [];
 
-  constructor(maxSize: number, onEvict?: (key: K, value: V) => void) {
+  constructor(maxSize: number, onEvict?: (key: K, value: V) => Promise<void> | void) {
     if (maxSize < 1) {
       throw new RangeError(`LRUCache maxSize must be at least 1, got ${maxSize}`);
     }
@@ -162,7 +163,10 @@ export class LRUCache<K, V> {
         const evictedValue = this.map.get(firstKey)!;
         this.map.delete(firstKey);
         // @implements SCN-REVIEW-004-05
-        this.onEvict?.(firstKey, evictedValue);
+        const result = this.onEvict?.(firstKey, evictedValue);
+        if (result && typeof (result as Promise<void>).then === 'function') {
+          this.pendingEvictions.push(result as Promise<void>);
+        }
         // @implements SCN-REVIEW-004-04
         if (process.env.DEBUG || process.env.VERBOSE) {
           console.error(`JAR cache eviction: removing entry ${String(firstKey)} (size: ${this.map.size}/${this.maxSize})`);
@@ -179,10 +183,18 @@ export class LRUCache<K, V> {
   clear(): void {
     if (this.onEvict) {
       for (const [key, value] of this.map) {
-        this.onEvict(key, value);
+        const result = this.onEvict(key, value);
+        if (result && typeof (result as Promise<void>).then === 'function') {
+          this.pendingEvictions.push(result as Promise<void>);
+        }
       }
     }
     this.map.clear();
+  }
+
+  async flush(): Promise<void> {
+    await Promise.all(this.pendingEvictions);
+    this.pendingEvictions = [];
   }
 
   get size(): number {
@@ -207,17 +219,20 @@ export function getMaxCacheSize(): number {
 }
 
 // @implements REQ-REVIEW-004, SCN-REVIEW-004-05
-const extractionCache = new LRUCache<string, string>(getMaxCacheSize(), (_key, cachedPath) => {
+const extractionCache = new LRUCache<string, string>(getMaxCacheSize(), async (_key, cachedPath) => {
   // Determine the correct directory to remove.
   // extractJarEntry stores a file path (e.g., <cacheDir>/<hash>/Module.tla),
   // while extractJarDirectory stores a directory path (e.g., <cacheDir>/<hash>).
   // For file paths we must delete the parent directory to avoid orphaned dirs.
-  fs.promises.stat(cachedPath).then((stats) => {
+  try {
+    const stats = await fs.promises.stat(cachedPath);
     const dirToRemove = stats.isFile() ? path.dirname(cachedPath) : cachedPath;
-    return fs.promises.rm(dirToRemove, { recursive: true, force: true });
-  }).catch(() => {
-    // Silently ignore deletion failures (path may already be gone)
-  });
+    await fs.promises.rm(dirToRemove, { recursive: true, force: true });
+  } catch (err) {
+    if (process.env.DEBUG || process.env.VERBOSE) {
+      console.debug('Failed to remove cached extraction path:', cachedPath, err);
+    }
+  }
 });
 
 async function getCacheDir(): Promise<string> {
@@ -232,8 +247,9 @@ async function getCacheKey(jarPath: string, innerPath: string): Promise<string> 
   return crypto.createHash('sha256').update(data).digest('hex').slice(0, 16);
 }
 
-export function clearJarCache(): void {
+export async function clearJarCache(): Promise<void> {
   extractionCache.clear();
+  await extractionCache.flush();
 }
 
 // @implements REQ-REVIEW-003, SCN-REVIEW-003-01
