@@ -26,8 +26,8 @@ const KNOWN_FLAGS: string[] = [
  * Throws a consistent "Missing value for <flag>" error in either case.
  *
  * Only rejects when the next token is a KNOWN flag or the end-of-options
- * marker `--`, so legitimate values like negative numbers or paths starting
- * with `-` are accepted.
+ * marker `--`, so legitimate values — including negative numbers, paths
+ * starting with `-`, and unrecognised `--`-prefixed strings — are accepted.
  */
 function requireValue(argv: string[], index: number, flag: string): void {
   const nextIndex = index + 1;
@@ -39,9 +39,6 @@ function requireValue(argv: string[], index: number, flag: string): void {
     KNOWN_FLAGS.includes(next)           // another recognized flag
   ) {
     throw new Error(`Missing value for ${flag}`);
-  }
-  if (next.startsWith('--')) {
-    throw new Error(`Expected value for ${flag}, but got flag-like argument: ${next}`);
   }
 }
 

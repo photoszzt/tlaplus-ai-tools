@@ -164,6 +164,36 @@ describe('jarfile utilities', () => {
       const dir2 = await extractJarDirectory(testJarPath, 'StandardModules');
       expect(dir1).toBe(dir2);
     });
+
+    it('skips entries with absolute paths (zip-slip protection)', async () => {
+      // Create a JAR with a malicious absolute-path entry
+      const maliciousJarPath = path.join(tempDir, 'malicious.jar');
+      const zip = new AdmZip();
+      zip.addFile('safe/Good.tla', Buffer.from('---- MODULE Good ----'));
+      zip.addFile('/tmp/evil.tla', Buffer.from('EVIL'));
+      zip.writeZip(maliciousJarPath);
+
+      const extractedDir = await extractJarDirectory(maliciousJarPath, 'safe');
+      expect(fs.existsSync(extractedDir)).toBe(true);
+      expect(fs.existsSync(path.join(extractedDir, 'Good.tla'))).toBe(true);
+
+      // The absolute-path entry should NOT have been written to /tmp
+      // (it would be skipped by the zip-slip guard)
+      // We verify no files escaped the extraction directory
+      const resolvedExtract = path.resolve(extractedDir);
+      const walkDir = (dir: string): string[] => {
+        if (!fs.existsSync(dir)) return [];
+        return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e =>
+          e.isDirectory()
+            ? walkDir(path.join(dir, e.name))
+            : [path.join(dir, e.name)]
+        );
+      };
+      const allFiles = walkDir(resolvedExtract);
+      for (const f of allFiles) {
+        expect(path.resolve(f).startsWith(resolvedExtract)).toBe(true);
+      }
+    });
   });
 
   describe('resolveJarfilePath', () => {

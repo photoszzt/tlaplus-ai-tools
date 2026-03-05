@@ -381,6 +381,13 @@ export async function extractJarDirectory(jarPath: string, innerDir: string): Pr
         if (relativePath.includes('..')) continue;
 
         const targetPath = path.join(extractDir, relativePath);
+
+        // Zip-slip protection: ensure resolved path stays within extractDir
+        const resolvedTarget = path.resolve(targetPath);
+        if (!resolvedTarget.startsWith(path.resolve(extractDir) + path.sep) &&
+            resolvedTarget !== path.resolve(extractDir)) {
+          continue;
+        }
         const targetDir = path.dirname(targetPath);
 
         // Use async fs operations for subdirectory creation

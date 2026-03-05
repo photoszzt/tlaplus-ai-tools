@@ -5,7 +5,6 @@ import express from 'express';
 import * as fs from 'fs';
 import * as http from 'http';
 import * as path from 'path';
-import { z } from 'zod';
 import { ServerConfig } from './types';
 import { Logger } from './utils/logging';
 import { parseMarkdownFrontmatter } from './utils/markdown';
