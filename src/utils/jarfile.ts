@@ -129,7 +129,7 @@ export class LRUCache<K, V> {
   private map = new Map<K, V>();
   private readonly maxSize: number;
   private readonly onEvict?: (key: K, value: V) => Promise<void> | void;
-  private pendingEvictions: Promise<void>[] = [];
+  private pendingEvictions = new Set<Promise<void>>();
 
   constructor(maxSize: number, onEvict?: (key: K, value: V) => Promise<void> | void) {
     if (maxSize < 1) {
@@ -137,6 +137,14 @@ export class LRUCache<K, V> {
     }
     this.maxSize = maxSize;
     this.onEvict = onEvict;
+  }
+
+  private trackEviction(result: Promise<void> | void): void {
+    if (result && typeof (result as Promise<void>).then === 'function') {
+      const promise = result as Promise<void>;
+      this.pendingEvictions.add(promise);
+      promise.finally(() => this.pendingEvictions.delete(promise));
+    }
   }
 
   get(key: K): V | undefined {
@@ -163,10 +171,7 @@ export class LRUCache<K, V> {
         const evictedValue = this.map.get(firstKey)!;
         this.map.delete(firstKey);
         // @implements SCN-REVIEW-004-05
-        const result = this.onEvict?.(firstKey, evictedValue);
-        if (result && typeof (result as Promise<void>).then === 'function') {
-          this.pendingEvictions.push(result as Promise<void>);
-        }
+        this.trackEviction(this.onEvict?.(firstKey, evictedValue));
         // @implements SCN-REVIEW-004-04
         if (process.env.DEBUG || process.env.VERBOSE) {
           console.error(`JAR cache eviction: removing entry ${String(firstKey)} (size: ${this.map.size}/${this.maxSize})`);
@@ -183,18 +188,15 @@ export class LRUCache<K, V> {
   clear(): void {
     if (this.onEvict) {
       for (const [key, value] of this.map) {
-        const result = this.onEvict(key, value);
-        if (result && typeof (result as Promise<void>).then === 'function') {
-          this.pendingEvictions.push(result as Promise<void>);
-        }
+        this.trackEviction(this.onEvict(key, value));
       }
     }
     this.map.clear();
   }
 
   async flush(): Promise<void> {
-    await Promise.all(this.pendingEvictions);
-    this.pendingEvictions = [];
+    await Promise.all([...this.pendingEvictions]);
+    this.pendingEvictions.clear();
   }
 
   get size(): number {
@@ -230,7 +232,7 @@ const extractionCache = new LRUCache<string, string>(getMaxCacheSize(), async (_
     await fs.promises.rm(dirToRemove, { recursive: true, force: true });
   } catch (err) {
     if (process.env.DEBUG || process.env.VERBOSE) {
-      console.debug('Failed to remove cached extraction path:', cachedPath, err);
+      console.error('Failed to remove cached extraction path:', cachedPath, err);
     }
   }
 });
