@@ -1,6 +1,20 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { parseMarkdownFrontmatter, removeMarkdownFrontmatter } from '../utils/markdown';
+
+/**
+ * Cached knowledge base entry for HTTP mode pre-loading.
+ *
+ * @implements REQ-REVIEW-005, SCN-REVIEW-005-01
+ */
+export interface KnowledgeBaseEntry {
+  fileName: string;
+  resourceUri: string;
+  title: string;
+  description: string;
+  content: string;
+}
 
 /**
  * Register all knowledge base articles as MCP resources
@@ -10,7 +24,7 @@ import { parseMarkdownFrontmatter, removeMarkdownFrontmatter } from '../utils/ma
  * @param kbDir Path to knowledge base directory
  */
 export async function registerKnowledgeBaseResources(
-  server: any,
+  server: McpServer,
   kbDir: string
 ): Promise<void> {
   try {
@@ -60,4 +74,41 @@ export async function registerKnowledgeBaseResources(
   } catch (error) {
     console.error(`[ERROR] Failed to register knowledge base resources: ${error instanceof Error ? error.message : String(error)}`);
   }
+}
+
+/**
+ * Register knowledge base resources from pre-loaded cached content (no disk I/O).
+ * Used in HTTP mode where KB is pre-loaded at startup.
+ *
+ * @implements REQ-REVIEW-005, SCN-REVIEW-005-01, SCN-REVIEW-005-02
+ * @param server MCP server instance
+ * @param entries Pre-loaded knowledge base entries
+ */
+export async function registerKnowledgeBaseFromCache(
+  server: McpServer,
+  entries: KnowledgeBaseEntry[]
+): Promise<void> {
+  for (const entry of entries) {
+    server.resource(
+      entry.resourceUri,
+      entry.fileName,
+      {
+        title: entry.title,
+        description: entry.description,
+        mimeType: 'text/markdown'
+      },
+      async () => {
+        // Use cached content -- no disk I/O
+        const contentWithoutFrontmatter = removeMarkdownFrontmatter(entry.content);
+        return {
+          contents: [{
+            uri: entry.resourceUri,
+            mimeType: 'text/markdown',
+            text: contentWithoutFrontmatter
+          }]
+        };
+      }
+    );
+  }
+  console.debug(`[DEBUG] Registered ${entries.length} knowledge base articles (from cache)`);
 }

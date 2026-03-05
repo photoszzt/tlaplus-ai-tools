@@ -17,8 +17,8 @@ const TLA2TOOLS_JAR = path.join(TOOLS_DIR, 'tla2tools.jar');
 const describeIfJarExists = fs.existsSync(TLA2TOOLS_JAR) ? describe : describe.skip;
 
 describeIfJarExists('JAR module scanning integration', () => {
-  beforeEach(() => {
-    clearJarCache();
+  beforeEach(async () => {
+    await clearJarCache();
   });
 
   it('getModuleSearchPaths returns jarfile: URIs', () => {
@@ -44,18 +44,18 @@ describeIfJarExists('JAR module scanning integration', () => {
     expect(underscoreModules).toHaveLength(0);
   });
 
-  it('resolves jarfile: URI to extractable filesystem path', () => {
+  it('resolves jarfile: URI to extractable filesystem path', async () => {
     const uri = `jarfile:${TLA2TOOLS_JAR}!/tla2sany/StandardModules/Naturals.tla`;
-    const fsPath = resolveJarfilePath(uri);
+    const fsPath = await resolveJarfilePath(uri);
 
     expect(fs.existsSync(fsPath)).toBe(true);
     const content = fs.readFileSync(fsPath, 'utf-8');
     expect(content).toContain('MODULE Naturals');
   });
 
-  it('extracted directory contains sibling modules for EXTENDS', () => {
+  it('extracted directory contains sibling modules for EXTENDS', async () => {
     const uri = `jarfile:${TLA2TOOLS_JAR}!/tla2sany/StandardModules/Integers.tla`;
-    const fsPath = resolveJarfilePath(uri);
+    const fsPath = await resolveJarfilePath(uri);
     const dir = path.dirname(fsPath);
 
     expect(fs.existsSync(path.join(dir, 'Naturals.tla'))).toBe(true);

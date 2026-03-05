@@ -127,11 +127,19 @@ let canvasModule: typeof import('@napi-rs/canvas') | null = null;
  * Get canvas module with lazy loading
  * Per design.md Section 11.3, lazy-load to avoid startup impact
  * Uses @napi-rs/canvas which is a pure Rust implementation without system dependencies
+ *
+ * @implements REQ-REVIEW-013, SCN-REVIEW-013-02
  * @returns Canvas module
  */
 async function getCanvas(): Promise<typeof import('@napi-rs/canvas')> {
   if (!canvasModule) {
-    canvasModule = await import('@napi-rs/canvas');
+    try {
+      canvasModule = await import('@napi-rs/canvas');
+    } catch {
+      throw new Error(
+        'Animation rendering requires @napi-rs/canvas. Install it with: npm install @napi-rs/canvas'
+      );
+    }
   }
   return canvasModule;
 }
@@ -446,9 +454,26 @@ async function rasterizeSvgToPng(
     ctx.drawImage(img, 0, 0, width, height);
   } catch {
     // If SVG loading fails, parse and render elements manually
-    const animView = svgToAnimView(svgContent, width, height);
-    for (const element of animView.elements) {
-      await drawElementToCanvas(ctx, element);
+    const animView = svgToAnimView(svgContent);
+    // Scale elements to match canvas dimensions when SVG intrinsic size differs
+    // Guard against zero/negative intrinsic dimensions to avoid Infinity/NaN in ctx.scale()
+    const hasValidIntrinsicSize =
+      typeof animView.width === 'number' &&
+      typeof animView.height === 'number' &&
+      animView.width > 0 &&
+      animView.height > 0;
+    ctx.save();
+    try {
+      if (hasValidIntrinsicSize) {
+        const scaleX = width / animView.width;
+        const scaleY = height / animView.height;
+        ctx.scale(scaleX, scaleY);
+      }
+      for (const element of animView.elements) {
+        await drawElementToCanvas(ctx, element);
+      }
+    } finally {
+      ctx.restore();
     }
   }
 
@@ -457,64 +482,12 @@ async function rasterizeSvgToPng(
 }
 
 /**
- * Parse SVG content to AnimView structure for manual rendering
- * Used as fallback when direct SVG loading fails
+ * Parse SVG element attributes from string.
+ * Uses hyphenated regex and full numeric attribute list.
+ *
+ * @implements REQ-REVIEW-007, SCN-REVIEW-007-01
  */
-function svgToAnimView(svgContent: string, width: number, height: number): AnimView {
-  const elements: SvgElement[] = [];
-
-  // Parse rect elements
-  const rectRegex = /<rect([^>]*)\/?>|<rect([^>]*)>[^<]*<\/rect>/g;
-  let match;
-  while ((match = rectRegex.exec(svgContent)) !== null) {
-    const attrs = match[1] || match[2];
-    elements.push(parseElementAttrsInternal('rect', attrs));
-  }
-
-  // Parse circle elements
-  const circleRegex = /<circle([^>]*)\/?>|<circle([^>]*)>[^<]*<\/circle>/g;
-  while ((match = circleRegex.exec(svgContent)) !== null) {
-    const attrs = match[1] || match[2];
-    elements.push(parseElementAttrsInternal('circle', attrs));
-  }
-
-  // Parse text elements
-  const textRegex = /<text([^>]*)>([^<]*)<\/text>/g;
-  while ((match = textRegex.exec(svgContent)) !== null) {
-    const attrs = match[1];
-    const text = match[2];
-    const element = parseElementAttrsInternal('text', attrs);
-    element.text = text;
-    elements.push(element);
-  }
-
-  // Parse line elements
-  const lineRegex = /<line([^>]*)\/?>|<line([^>]*)>[^<]*<\/line>/g;
-  while ((match = lineRegex.exec(svgContent)) !== null) {
-    const attrs = match[1] || match[2];
-    elements.push(parseElementAttrsInternal('line', attrs));
-  }
-
-  // Parse path elements
-  const pathRegex = /<path([^>]*)\/?>|<path([^>]*)>[^<]*<\/path>/g;
-  while ((match = pathRegex.exec(svgContent)) !== null) {
-    const attrs = match[1] || match[2];
-    elements.push(parseElementAttrsInternal('path', attrs));
-  }
-
-  return {
-    frame: '0',
-    title: 'SVG Frame',
-    width,
-    height,
-    elements
-  };
-}
-
-/**
- * Parse SVG element attributes from string (internal helper)
- */
-function parseElementAttrsInternal(shape: string, attrsStr: string): SvgElement {
+function parseElementAttrs(shape: string, attrsStr: string): SvgElement {
   const element: SvgElement = { shape: shape as SvgElement['shape'] };
   const attrRegex = /([a-zA-Z][a-zA-Z0-9-]*)=["']([^"']*)["']/g;
   let match;
@@ -528,6 +501,71 @@ function parseElementAttrsInternal(shape: string, attrsStr: string): SvgElement 
     }
   }
   return element;
+}
+
+/**
+ * Parse SVG content to AnimView structure.
+ * Consolidated from standalone svgToAnimView() and class method svgContentToAnimView().
+ * Extracts dimensions and title from SVG content; handles all 5 element types
+ * (rect, circle, text, line, path).
+ *
+ * @implements REQ-REVIEW-007, SCN-REVIEW-007-02, SCN-REVIEW-007-03, SCN-REVIEW-007-04
+ */
+function svgToAnimView(svgContent: string): AnimView {
+  const dimensions = extractSvgDimensions(svgContent);
+
+  // Extract title if present; default to 'Frame' per SCN-REVIEW-007-04
+  const titleMatch = svgContent.match(/<title>([^<]*)<\/title>/);
+  const title = titleMatch ? titleMatch[1] : 'Frame';
+
+  const elements: SvgElement[] = [];
+
+  // Parse rect elements
+  const rectRegex = /<rect([^>]*)\/?>|<rect([^>]*)>[^<]*<\/rect>/g;
+  let match;
+  while ((match = rectRegex.exec(svgContent)) !== null) {
+    const attrs = match[1] || match[2];
+    elements.push(parseElementAttrs('rect', attrs));
+  }
+
+  // Parse circle elements
+  const circleRegex = /<circle([^>]*)\/?>|<circle([^>]*)>[^<]*<\/circle>/g;
+  while ((match = circleRegex.exec(svgContent)) !== null) {
+    const attrs = match[1] || match[2];
+    elements.push(parseElementAttrs('circle', attrs));
+  }
+
+  // Parse text elements
+  const textRegex = /<text([^>]*)>([^<]*)<\/text>/g;
+  while ((match = textRegex.exec(svgContent)) !== null) {
+    const attrs = match[1];
+    const text = match[2];
+    const element = parseElementAttrs('text', attrs);
+    element.text = text;
+    elements.push(element);
+  }
+
+  // Parse line elements
+  const lineRegex = /<line([^>]*)\/?>|<line([^>]*)>[^<]*<\/line>/g;
+  while ((match = lineRegex.exec(svgContent)) !== null) {
+    const attrs = match[1] || match[2];
+    elements.push(parseElementAttrs('line', attrs));
+  }
+
+  // Parse path elements
+  const pathRegex = /<path([^>]*)\/?>|<path([^>]*)>[^<]*<\/path>/g;
+  while ((match = pathRegex.exec(svgContent)) !== null) {
+    const attrs = match[1] || match[2];
+    elements.push(parseElementAttrs('path', attrs));
+  }
+
+  return {
+    frame: '0',
+    title,
+    width: dimensions.width,
+    height: dimensions.height,
+    elements
+  };
 }
 
 /**
@@ -1137,58 +1175,13 @@ ${svgContent}
   }
 
   /**
-   * Convert SVG content to AnimView structure
-   * This is a simplified conversion for ASCII rendering
+   * Convert SVG content to AnimView structure.
+   * Delegates to consolidated module-level svgToAnimView().
+   *
+   * @implements REQ-REVIEW-007, SCN-REVIEW-007-02
    */
   private svgContentToAnimView(svgContent: string): AnimView {
-    const dimensions = extractSvgDimensions(svgContent);
-
-    // Extract title if present
-    const titleMatch = svgContent.match(/<title>([^<]*)<\/title>/);
-    const title = titleMatch ? titleMatch[1] : 'Frame';
-
-    // Parse basic SVG elements
-    const elements: SvgElement[] = [];
-
-    // Parse rect elements
-    const rectRegex = /<rect([^>]*)\/?>|<rect([^>]*)>[^<]*<\/rect>/g;
-    let match;
-    while ((match = rectRegex.exec(svgContent)) !== null) {
-      const attrs = match[1] || match[2];
-      elements.push(parseElementAttrs('rect', attrs));
-    }
-
-    // Parse circle elements
-    const circleRegex = /<circle([^>]*)\/?>|<circle([^>]*)>[^<]*<\/circle>/g;
-    while ((match = circleRegex.exec(svgContent)) !== null) {
-      const attrs = match[1] || match[2];
-      elements.push(parseElementAttrs('circle', attrs));
-    }
-
-    // Parse text elements
-    const textRegex = /<text([^>]*)>([^<]*)<\/text>/g;
-    while ((match = textRegex.exec(svgContent)) !== null) {
-      const attrs = match[1];
-      const text = match[2];
-      const element = parseElementAttrs('text', attrs);
-      element.text = text;
-      elements.push(element);
-    }
-
-    // Parse line elements
-    const lineRegex = /<line([^>]*)\/?>|<line([^>]*)>[^<]*<\/line>/g;
-    while ((match = lineRegex.exec(svgContent)) !== null) {
-      const attrs = match[1] || match[2];
-      elements.push(parseElementAttrs('line', attrs));
-    }
-
-    return {
-      frame: '0',
-      title,
-      width: dimensions.width,
-      height: dimensions.height,
-      elements
-    };
+    return svgToAnimView(svgContent);
   }
 
   /**
@@ -1230,25 +1223,6 @@ ${svgContent}
       return this.errors.renderFailed(`Failed to enumerate files: ${message}`);
     }
   }
-}
-
-/**
- * Parse SVG element attributes from string
- */
-function parseElementAttrs(shape: string, attrsStr: string): SvgElement {
-  const element: SvgElement = { shape: shape as SvgElement['shape'] };
-  const attrRegex = /(\w+)=["']([^"']*)["']/g;
-  let match;
-  while ((match = attrRegex.exec(attrsStr)) !== null) {
-    const [, name, value] = match;
-    // Convert numeric attributes
-    if (['x', 'y', 'width', 'height', 'cx', 'cy', 'r', 'x1', 'y1', 'x2', 'y2'].includes(name)) {
-      element[name] = parseFloat(value);
-    } else {
-      element[name] = value;
-    }
-  }
-  return element;
 }
 
 /**

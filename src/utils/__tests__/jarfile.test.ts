@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import AdmZip from 'adm-zip';
-import { parseJarfileUri, listJarEntries, listTlaModulesInJar, extractJarEntry, extractJarDirectory, clearJarCache, resolveJarfilePath } from '../jarfile';
+import { parseJarfileUri, listJarEntries, listTlaModulesInJar, extractJarEntry, extractJarDirectory, clearJarCache, resolveJarfilePath, LRUCache } from '../jarfile';
 
 let tempDir: string;
 let testJarPath: string;
@@ -120,60 +120,90 @@ describe('jarfile utilities', () => {
   });
 
   describe('extractJarEntry', () => {
-    beforeEach(() => {
-      clearJarCache();
+    beforeEach(async () => {
+      await clearJarCache();
     });
 
-    it('extracts a single file to cache and returns path', () => {
-      const extractedPath = extractJarEntry(testJarPath, 'StandardModules/Naturals.tla');
+    it('extracts a single file to cache and returns path', async () => {
+      const extractedPath = await extractJarEntry(testJarPath, 'StandardModules/Naturals.tla');
       expect(fs.existsSync(extractedPath)).toBe(true);
       expect(extractedPath.endsWith('Naturals.tla')).toBe(true);
       const content = fs.readFileSync(extractedPath, 'utf-8');
       expect(content).toContain('MODULE Naturals');
     });
 
-    it('returns same path on repeated calls (caching)', () => {
-      const path1 = extractJarEntry(testJarPath, 'StandardModules/Naturals.tla');
-      const path2 = extractJarEntry(testJarPath, 'StandardModules/Naturals.tla');
+    it('returns same path on repeated calls (caching)', async () => {
+      const path1 = await extractJarEntry(testJarPath, 'StandardModules/Naturals.tla');
+      const path2 = await extractJarEntry(testJarPath, 'StandardModules/Naturals.tla');
       expect(path1).toBe(path2);
     });
 
-    it('throws for non-existent entry', () => {
-      expect(() => extractJarEntry(testJarPath, 'nonexistent.tla')).toThrow('not found in JAR');
+    it('throws for non-existent entry', async () => {
+      await expect(extractJarEntry(testJarPath, 'nonexistent.tla')).rejects.toThrow('not found in JAR');
     });
 
-    it('rejects path traversal attempts', () => {
-      expect(() => extractJarEntry(testJarPath, '../etc/passwd')).toThrow('path traversal');
+    it('rejects path traversal attempts', async () => {
+      await expect(extractJarEntry(testJarPath, '../etc/passwd')).rejects.toThrow('path traversal');
     });
   });
 
   describe('extractJarDirectory', () => {
-    beforeEach(() => {
-      clearJarCache();
+    beforeEach(async () => {
+      await clearJarCache();
     });
 
-    it('extracts entire directory and returns cache path', () => {
-      const extractedDir = extractJarDirectory(testJarPath, 'StandardModules');
+    it('extracts entire directory and returns cache path', async () => {
+      const extractedDir = await extractJarDirectory(testJarPath, 'StandardModules');
       expect(fs.existsSync(extractedDir)).toBe(true);
       expect(fs.existsSync(path.join(extractedDir, 'Naturals.tla'))).toBe(true);
       expect(fs.existsSync(path.join(extractedDir, 'Sequences.tla'))).toBe(true);
     });
 
-    it('returns same path on repeated calls (caching)', () => {
-      const dir1 = extractJarDirectory(testJarPath, 'StandardModules');
-      const dir2 = extractJarDirectory(testJarPath, 'StandardModules');
+    it('returns same path on repeated calls (caching)', async () => {
+      const dir1 = await extractJarDirectory(testJarPath, 'StandardModules');
+      const dir2 = await extractJarDirectory(testJarPath, 'StandardModules');
       expect(dir1).toBe(dir2);
+    });
+
+    it('skips entries with absolute paths (zip-slip protection)', async () => {
+      // Create a JAR with a malicious absolute-path entry
+      const maliciousJarPath = path.join(tempDir, 'malicious.jar');
+      const zip = new AdmZip();
+      zip.addFile('safe/Good.tla', Buffer.from('---- MODULE Good ----'));
+      zip.addFile('/tmp/evil.tla', Buffer.from('EVIL'));
+      zip.writeZip(maliciousJarPath);
+
+      const extractedDir = await extractJarDirectory(maliciousJarPath, 'safe');
+      expect(fs.existsSync(extractedDir)).toBe(true);
+      expect(fs.existsSync(path.join(extractedDir, 'Good.tla'))).toBe(true);
+
+      // The absolute-path entry should NOT have been written to /tmp
+      // (it would be skipped by the zip-slip guard)
+      // We verify no files escaped the extraction directory
+      const resolvedExtract = path.resolve(extractedDir);
+      const walkDir = (dir: string): string[] => {
+        if (!fs.existsSync(dir)) return [];
+        return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e =>
+          e.isDirectory()
+            ? walkDir(path.join(dir, e.name))
+            : [path.join(dir, e.name)]
+        );
+      };
+      const allFiles = walkDir(resolvedExtract);
+      for (const f of allFiles) {
+        expect(path.resolve(f).startsWith(resolvedExtract)).toBe(true);
+      }
     });
   });
 
   describe('resolveJarfilePath', () => {
-    beforeEach(() => {
-      clearJarCache();
+    beforeEach(async () => {
+      await clearJarCache();
     });
 
-    it('extracts module and its directory, returns filesystem path', () => {
+    it('extracts module and its directory, returns filesystem path', async () => {
       const uri = `jarfile:${testJarPath}!/StandardModules/Naturals.tla`;
-      const fsPath = resolveJarfilePath(uri);
+      const fsPath = await resolveJarfilePath(uri);
 
       expect(fs.existsSync(fsPath)).toBe(true);
       expect(fsPath.endsWith('Naturals.tla')).toBe(true);
@@ -182,12 +212,75 @@ describe('jarfile utilities', () => {
       expect(fs.existsSync(path.join(dir, 'Sequences.tla'))).toBe(true);
     });
 
-    it('handles root-level modules', () => {
+    it('handles root-level modules', async () => {
       const uri = `jarfile:${testJarPath}!/RootModule.tla`;
-      const fsPath = resolveJarfilePath(uri);
+      const fsPath = await resolveJarfilePath(uri);
 
       expect(fs.existsSync(fsPath)).toBe(true);
       expect(path.basename(fsPath)).toBe('RootModule.tla');
+    });
+  });
+
+  describe('LRUCache', () => {
+    // Finding 1: LRUCache.set() must evict even when the key is undefined
+    it('evicts entries with undefined keys without growing beyond maxSize', () => {
+      const evicted: Array<[unknown, string]> = [];
+      const cache = new LRUCache<string | undefined, string>(2, (key, value) => {
+        evicted.push([key, value]);
+      });
+
+      cache.set(undefined, 'val-undef');
+      cache.set('a', 'val-a');
+      // Cache is full (size 2). Next set must evict the LRU (undefined key).
+      cache.set('b', 'val-b');
+
+      expect(cache.size).toBeLessThanOrEqual(2);
+      expect(evicted.length).toBe(1);
+      expect(evicted[0][0]).toBeUndefined();
+      expect(evicted[0][1]).toBe('val-undef');
+    });
+
+    it('does not skip eviction when first key is a falsy value', () => {
+      const evicted: Array<[unknown, string]> = [];
+      const cache = new LRUCache<number, string>(1, (key, value) => {
+        evicted.push([key, value]);
+      });
+
+      cache.set(0, 'zero');
+      // Cache is full (size 1). Next set must evict key 0 (falsy but valid).
+      cache.set(1, 'one');
+
+      expect(cache.size).toBe(1);
+      expect(evicted.length).toBe(1);
+      expect(evicted[0][0]).toBe(0);
+    });
+  });
+
+  describe('cache eviction cleanup', () => {
+    // Finding 4: Cache eviction must remove the parent directory for file entries
+    beforeEach(async () => {
+      await clearJarCache();
+    });
+
+    it('eviction of extractJarEntry removes the cache subdirectory, not just the file', async () => {
+      // Create a small LRU cache (size 1) to force eviction on the second insert.
+      // We test via the real extractJarEntry + clearJarCache to exercise the
+      // eviction callback. Since we cannot easily control the module-level cache
+      // size, we test the behavior by extracting an entry, noting its path, then
+      // clearing the cache (which invokes onEvict per entry).
+      const extractedPath = await extractJarEntry(testJarPath, 'StandardModules/Naturals.tla');
+      const extractedDir = path.dirname(extractedPath);
+
+      // Both file and directory exist before clear
+      expect(fs.existsSync(extractedPath)).toBe(true);
+      expect(fs.existsSync(extractedDir)).toBe(true);
+
+      // Clear triggers onEvict which should remove the parent directory.
+      // clearJarCache() now awaits all pending evictions, so no setTimeout needed.
+      await clearJarCache();
+
+      // The parent cache subdirectory should be removed, not just the file
+      expect(fs.existsSync(extractedDir)).toBe(false);
     });
   });
 });

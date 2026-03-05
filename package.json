@@ -1,6 +1,6 @@
 {
   "name": "tlaplus-ai-tools",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "TLA+ formal specification and model checking tools with AI assistance for Claude Code and OpenCode",
   "main": "dist/index.js",
   "bin": {
@@ -58,13 +58,18 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.2",
-    "@napi-rs/canvas": "^0.1.65",
     "@opencode-ai/plugin": "1.1.36",
     "adm-zip": "^0.5.16",
     "express": "^5.1.0",
     "fast-xml-parser": "^5.3.3",
     "tsx": "^4.21.0",
     "zod": "^3.24.4"
+  },
+  "optionalDependencies": {
+    "@napi-rs/canvas": "^0.1.65"
+  },
+  "_optionalDependencyNotes": {
+    "@napi-rs/canvas": "~50MB native binary used only for animation rendering. Safe to omit if animation features are not needed."
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",

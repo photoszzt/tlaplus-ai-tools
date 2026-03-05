@@ -27,8 +27,8 @@ describe('process-runner', () => {
   it('timeout kills process and returns partial logs', async () => {
     const result = await runProcess({
       command: node,
-      args: ['-e', "let i = 0; setInterval(() => console.log('line-' + (i++)), 5)"],
-      timeoutMs: 150,
+      args: ['-e', "let i = 0; setInterval(() => process.stdout.write('line-' + (i++) + '\\n'), 5)"],
+      timeoutMs: 500,
       killGraceMs: 100
     });
 

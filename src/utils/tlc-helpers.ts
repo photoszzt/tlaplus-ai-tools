@@ -33,6 +33,24 @@ export interface SpecFiles {
   cfgFilePath: string;
 }
 
+/**
+ * Run TLC model checker and wait for completion.
+ *
+ * @param tlaFilePath - Path to the TLA+ spec file
+ * @param cfgFileName - Name of the config file
+ * @param tlcOptions - TLC command-line options
+ * @param javaOpts - Java command-line options
+ * @param toolsDir - Path to tools directory
+ * @param javaHome - Optional Java home path
+ * @param timeoutMs - Optional timeout in milliseconds
+ * @param signal - Optional abort signal
+ * @param onProgress - Called with progress updates only after the TLC process
+ *   has completed, while post-processing the captured TLC output, not in
+ *   real-time. Progress information is derived from the recorded output stream;
+ *   real-time streaming would require architectural changes to the process
+ *   execution pipeline.
+ */
+// @implements QG-REVIEW-006
 export async function runTlcAndWait(
   tlaFilePath: string,
   cfgFileName: string,

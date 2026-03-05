@@ -22,9 +22,9 @@ describe('INV-CODEX-002: No New Runtime Dependencies', () => {
     // The actual package.json also has @napi-rs/canvas and @opencode-ai/plugin
     // which pre-date the codex fix, and tsx which was added as a runtime dep
     // for running TypeScript source directly. The invariant says "no NEW" deps added.
+    // @napi-rs/canvas was moved to optionalDependencies per REQ-REVIEW-013
     const allowedDependencies = new Set([
       '@modelcontextprotocol/sdk',
-      '@napi-rs/canvas',
       '@opencode-ai/plugin',
       'adm-zip',
       'express',
@@ -33,7 +33,12 @@ describe('INV-CODEX-002: No New Runtime Dependencies', () => {
       'zod',
     ]);
 
+    const allowedOptionalDependencies = new Set([
+      '@napi-rs/canvas',
+    ]);
+
     const actualDependencies = Object.keys(packageJson.dependencies || {});
+    const actualOptionalDependencies = Object.keys(packageJson.optionalDependencies || {});
 
     // Verify no NEW dependencies have been added beyond the allowed set
     const unexpectedDeps = actualDependencies.filter(
@@ -45,6 +50,11 @@ describe('INV-CODEX-002: No New Runtime Dependencies', () => {
     // Also verify the expected deps are still present (sanity check)
     for (const expected of allowedDependencies) {
       expect(actualDependencies).toContain(expected);
+    }
+
+    // Verify optionalDependencies contains expected packages
+    for (const expected of allowedOptionalDependencies) {
+      expect(actualOptionalDependencies).toContain(expected);
     }
   });
 

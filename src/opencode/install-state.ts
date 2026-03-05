@@ -13,7 +13,7 @@ import * as path from 'path';
  * MARKER FILE SCHEMA:
  * {
  *   "state": "installed" | "declined" | "error",
- *   "version": "2.0.0",
+ *   "version": "1.0.0",
  *   "timestamp": "2026-02-02T19:30:00.000Z"
  * }
  */
@@ -40,7 +40,7 @@ const MARKER_FILENAME = '.tlaplus-install-state.json';
 /**
  * Current plugin version (should match package.json)
  */
-const PLUGIN_VERSION = '2.0.0';
+const PLUGIN_VERSION = '1.0.0';
 
 /**
  * Get the path to the marker file.

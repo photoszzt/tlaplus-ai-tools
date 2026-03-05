@@ -3,6 +3,46 @@ import * as path from 'path';
 import { ServerConfig } from './types';
 
 /**
+ * All flags recognised by the CLI.  Used by requireValue() to distinguish
+ * "the next token is another flag" from "the next token is a legitimate
+ * value that happens to start with '-'" (e.g. negative numbers, paths).
+ */
+const KNOWN_FLAGS: string[] = [
+  '--http',
+  '--port',
+  '--working-dir',
+  '--tools-dir',
+  '--kb-dir',
+  '--java-home',
+  '--verbose',
+  '--help',
+  '-h',
+  '--version',
+  '-v',
+];
+
+/**
+ * Check whether the next argv token is missing or is another recognised flag.
+ * Throws a consistent "Missing value for <flag>" error in either case.
+ *
+ * Only rejects when the next token is a KNOWN flag or the end-of-options
+ * marker `--`, so legitimate values — including negative numbers, paths
+ * starting with `-`, and unrecognised `--`-prefixed strings — are accepted.
+ */
+function requireValue(argv: string[], index: number, flag: string): void {
+  const nextIndex = index + 1;
+  const next = argv[nextIndex];
+
+  if (
+    nextIndex >= argv.length ||          // no next token
+    next === '--' ||                     // end of options marker
+    KNOWN_FLAGS.includes(next)           // another recognized flag
+  ) {
+    throw new Error(`Missing value for ${flag}`);
+  }
+}
+
+/**
  * Parse command line arguments into ServerConfig
  */
 export function parseArgs(argv: string[]): ServerConfig {
@@ -24,29 +64,40 @@ export function parseArgs(argv: string[]): ServerConfig {
         config.http = true;
         break;
 
-      case '--port':
+      // @implements REQ-REVIEW-008, SCN-REVIEW-008-01, SCN-REVIEW-008-02
+      case '--port': {
+        requireValue(argv, i, '--port');
         const port = parseInt(argv[++i], 10);
         if (isNaN(port) || port < 0 || port > 65535) {
           throw new Error(`Invalid port number: ${argv[i]}. Must be between 0 and 65535.`);
         }
         config.port = port;
         break;
+      }
 
-      case '--working-dir':
+      case '--working-dir': {
+        requireValue(argv, i, '--working-dir');
         config.workingDir = path.resolve(argv[++i]);
         break;
+      }
 
-      case '--tools-dir':
+      case '--tools-dir': {
+        requireValue(argv, i, '--tools-dir');
         config.toolsDir = path.resolve(argv[++i]);
         break;
+      }
 
-      case '--kb-dir':
+      case '--kb-dir': {
+        requireValue(argv, i, '--kb-dir');
         config.kbDir = path.resolve(argv[++i]);
         break;
+      }
 
-      case '--java-home':
+      case '--java-home': {
+        requireValue(argv, i, '--java-home');
         config.javaHome = path.resolve(argv[++i]);
         break;
+      }
 
       case '--verbose':
         config.verbose = true;
