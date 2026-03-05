@@ -65,13 +65,6 @@ The E2E script runs all 6 operational skills and checks for deterministic marker
 - Ensures usage examples and `@` handling notes present for operational skills
 - Run via: `npm test -- skills-lint`
 
-The E2E script runs all 6 operational skills and checks for deterministic markers:
-
-- `Spec path:` (all operational skills)
-- `CFG used:` (TLC skills)
-- `CFG written:` (`tla-symbols`)
-- `Review Summary` (`tla-review`)
-
 ## Level 2: MCP Server Testing
 
 Test the MCP server independently.
