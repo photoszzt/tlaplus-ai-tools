@@ -1,6 +1,6 @@
 # Installation Guide - TLA+ AI Tools
 
-Complete installation guide for Claude Code and OpenCode.
+Complete installation guide for Claude Code.
 
 ## Quick Start
 
@@ -64,27 +64,12 @@ npm run build
 npm run setup
 npm link
 
-# For OpenCode: Run global installer
-npm run install-global
-
-# Start Claude Code or OpenCode
+# Start Claude Code
 claude
-# or
-opencode
 
 # Verify plugin loaded
 /plugin list
 ```
-
-**Global Install for OpenCode**:
-
-The `npm run install-global` command installs the plugin globally for OpenCode:
-
-- Patches `~/.config/opencode/opencode.json` to enable MCP server
-- Installs skills to `~/.config/opencode/skills/` (symlink or copy)
-- Writes installation marker to prevent repeated prompts
-
-**Idempotent**: Running `npm run install-global` multiple times is safe and won't duplicate or fail.
 
 ### Method 3: Local Plugin Directory
 
@@ -222,28 +207,6 @@ hooks:
 # TLA+ Plugin Settings
 
 Custom configuration for this project.
-```
-
-### OpenCode Configuration
-
-After running `npm run install-global`, the plugin is configured globally:
-
-**What gets installed**:
-
-- MCP server config: `~/.config/opencode/opencode.json`
-- Skills: `~/.config/opencode/skills/tla-*`
-- Installation marker: `~/.config/opencode/.tlaplus-install-state.json`
-
-**Verification**:
-
-```bash
-# Check MCP server connection
-opencode mcp list
-# Expected: ✓ tlaplus [connected]
-
-# Check skills
-opencode debug skill | grep tla-
-# Expected: All 11 TLA+ skills listed
 ```
 
 ## Verification
@@ -408,9 +371,6 @@ git pull origin main
 npm install
 npm run build
 npm run setup  # If tools updated
-
-# For OpenCode global install: Re-run installer
-npm run install-global
 ```
 
 ### Update TLA+ Tools Only
@@ -430,52 +390,6 @@ This downloads the latest TLA+ tools.
 npm uninstall -g tlaplus-ai-tools
 # Or if linked
 npm unlink
-```
-
-### Remove OpenCode Global Integration
-
-To completely remove the global OpenCode integration:
-
-```bash
-# macOS/Linux
-rm -rf ~/.config/opencode/skills/tla-*
-rm ~/.config/opencode/.tlaplus-install-state.json
-
-# Windows (PowerShell)
-Remove-Item -Recurse -Force "$HOME\.config\opencode\skills\tla-*"
-Remove-Item -Force "$HOME\.config\opencode\.tlaplus-install-state.json"
-```
-
-**Note**: You may also need to manually remove the `tlaplus` MCP server entry from `~/.config/opencode/opencode.json`.
-
-### Migrating from v1.x (Per-Project Installation)
-
-If you previously used v1.x with per-project installation, remove the `.opencode/` directory:
-
-```bash
-# macOS/Linux
-rm -rf .opencode/
-
-# Windows (PowerShell)
-Remove-Item -Recurse -Force ".opencode\"
-```
-
-Then install globally using `npm run install-global`.
-
-**Note**: The `.opencode/` directory is no longer used in v2.0+.
-
-### Reset Installation State
-
-If you need to reinstall or reset the installation:
-
-```bash
-# macOS/Linux
-rm ~/.config/opencode/.tlaplus-install-state.json
-npm run install-global
-
-# Windows (PowerShell)
-Remove-Item -Force "$HOME\.config\opencode\.tlaplus-install-state.json"
-npm run install-global
 ```
 
 ### Remove Configuration

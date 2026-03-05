@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Complete Claude Code and OpenCode plugin structure
+- Complete Claude Code plugin structure
 - MCP server for TLA+ tools (SANY, TLC, knowledge base)
 - Eleven AI skills (5 educational + 6 operational):
   - `tla-getting-started` - Introduction to TLA+ with examples
@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Verification script with auto-fix support
   - Cross-platform support (macOS, Linux, Windows)
 - Comprehensive documentation and knowledge base
-- Support for both Claude Code and OpenCode
+- Claude Code plugin with MCP server
 
 ### Changed
 

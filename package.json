@@ -1,7 +1,7 @@
 {
   "name": "tlaplus-ai-tools",
   "version": "1.0.0",
-  "description": "TLA+ formal specification and model checking tools with AI assistance for Claude Code and OpenCode",
+  "description": "TLA+ formal specification and model checking tools with AI assistance for Claude Code",
   "main": "dist/index.js",
   "bin": {
     "tlaplus-ai-tools": "dist/index.js"
@@ -14,7 +14,6 @@
     "postinstall": "node scripts/postinstall.js",
     "setup": "node scripts/setup.js",
     "verify": "bash scripts/verify.sh",
-    "install-global": "node scripts/install-global.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -44,7 +43,6 @@
     "formal-methods",
     "formal-verification",
     "claude-code",
-    "opencode",
     "ai-assistant"
   ],
   "author": {
@@ -58,7 +56,6 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.2",
-    "@opencode-ai/plugin": "1.1.36",
     "adm-zip": "^0.5.16",
     "express": "^5.1.0",
     "fast-xml-parser": "^5.3.3",
