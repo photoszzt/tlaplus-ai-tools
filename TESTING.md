@@ -63,14 +63,7 @@ The E2E script runs all 6 operational skills and checks for deterministic marker
 - Checks YAML frontmatter (name, description, version, allowed-tools for operational skills)
 - Verifies fully-qualified MCP tool references
 - Ensures usage examples and `@` handling notes present for operational skills
-- Run via: `npm test -- opencode-commands-lint`
-
-The E2E script runs all 6 operational skills and checks for deterministic markers:
-
-- `Spec path:` (all operational skills)
-- `CFG used:` (TLC skills)
-- `CFG written:` (`tla-symbols`)
-- `Review Summary` (`tla-review`)
+- Run via: `npm test -- skills-lint`
 
 ## Level 2: MCP Server Testing
 
@@ -443,7 +436,7 @@ Expected: Memory error, suggestions provided
 
 ### Current Limitations
 
-1. **MCP Server Testing**: Requires actual Claude Code/OpenCode environment
+1. **MCP Server Testing**: Requires actual Claude Code environment
 2. **Agent Testing**: Needs full Claude Code to spawn agents
 3. **Hook Testing**: Requires interactive session to trigger
 4. **Skill Triggering**: Depends on Claude's matching logic

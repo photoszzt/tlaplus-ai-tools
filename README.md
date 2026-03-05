@@ -1,6 +1,6 @@
 # TLA+ AI Tools
 
-> Complete TLA+ formal specification and model checking toolkit for Claude Code and OpenCode
+> Complete TLA+ formal specification and model checking toolkit for Claude Code
 
 **AI-powered assistance for writing, verifying, and debugging TLA+ specifications.**
 
@@ -100,31 +100,13 @@ claude plugin marketplace add https://github.com/photoszzt/tlaplus-ai-tools.git
 
 **Note:** The plugin now includes automatic setup during installation. The MCP server is built and TLA+ tools are downloaded automatically when you install the plugin.
 
-### OpenCode
-
-```bash
-# Install globally for OpenCode
-npm install
-npm run build
-npm run setup
-npm run install-global
-
-# Start OpenCode
-opencode
-
-# Verify MCP connection
-opencode mcp list
-```
-
-See [OPENCODE.md](OPENCODE.md) for detailed OpenCode setup and platform differences.
-
 See [INSTALLATION.md](INSTALLATION.md) for detailed instructions.
 
 ## Requirements
 
 - **Node.js** 18.0.0 or higher
 - **Java** 11 or higher (for TLA+ tools)
-- **Claude Code** or **OpenCode**
+- **Claude Code**
 
 ## Quick Start Guide
 
@@ -213,6 +195,7 @@ Follow the guidance to create a simple counter specification.
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines (coming soon)
 
+
 ## Configuration
 
 ### Custom Settings (Optional)
@@ -288,7 +271,6 @@ tlaplus-ai-tools/
 - ✅ **Linux** (Ubuntu, Debian, Fedora)
 - ✅ **Windows** 10/11 (via WSL for scripts)
 - ✅ **Claude Code**
-- ✅ **OpenCode**
 
 ## Troubleshooting
 
