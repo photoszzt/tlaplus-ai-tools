@@ -93,7 +93,8 @@ export class TLAPlusMCPServer {
       } catch (error) {
         // @implements SCN-REVIEW-005-03
         this.logger.warn('Failed to pre-load knowledge base:', error);
-        // Continue without knowledge base -- it is optional
+        // Disable knowledge base usage for this HTTP server lifecycle
+        this.config.kbDir = undefined;
       }
     }
 
