@@ -90,7 +90,8 @@ claude
 
 ```bash
 # Add to marketplace
-claude plugin marketplace add https://github.com/photoszzt/tlaplus-ai-tools.git
+claude plugin marketplace add https://gitlab-master.nvidia.com/zhitingz/tlaplus-ai-tools.git
+claude plugin install tlaplus-ai-tools
 
 # Install from marketplace - builds automatically!
 # The plugin will:
@@ -194,7 +195,6 @@ Follow the guidance to create a simple counter specification.
 - **[TESTING.md](TESTING.md)** - Testing and verification guide
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines (coming soon)
-
 
 ## Configuration
 
