@@ -58,32 +58,6 @@ Full integration with TLA+ toolchain:
 
 ## Installation
 
-### Quick Start (Recommended)
-
-```bash
-# Clone repository
-git clone https://github.com/photoszzt/tlaplus-ai-tools.git
-cd tlaplus-ai-tools
-
-# Install and setup
-npm install
-npm run build
-npm run setup    # Downloads TLA+ tools
-
-# Verify installation
-npm run verify
-
-# Use with Claude Code
-claude --plugin-dir $(pwd)
-```
-
-### From npm (Coming Soon)
-
-```bash
-npm install -g tlaplus-ai-tools
-claude
-```
-
 ### Claude Code Plugin Installation
 
 **Via Plugin Marketplace (Automatic):**
@@ -91,7 +65,7 @@ claude
 ```bash
 # Add to marketplace
 claude plugin marketplace add https://gitlab-master.nvidia.com/zhitingz/tlaplus-ai-tools.git
-claude plugin install tlaplus-ai-tools
+claude plugin install tlaplus
 
 # Install from marketplace - builds automatically!
 # The plugin will:
