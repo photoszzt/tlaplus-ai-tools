@@ -1,14 +1,13 @@
-import { spawn, ChildProcess, execSync } from 'child_process';
-import * as fs from 'fs';
-import * as path from 'path';
-import { PassThrough } from 'stream';
-import { JavaOptions } from '../types';
-import { withRetry, ErrorCode, classifyError, enhanceError } from './errors';
+import { spawn, ChildProcess, execSync } from "child_process";
+import * as fs from "fs";
+import * as path from "path";
+import { PassThrough } from "stream";
+import { withRetry, ErrorCode, classifyError, enhanceError } from "./errors";
 
 function getJavaCommand(): string {
-  return 'java' + (process.platform === 'win32' ? '.exe' : '');
+  return "java" + (process.platform === "win32" ? ".exe" : "");
 }
-const DEFAULT_GC_OPTION = '-XX:+UseParallelGC';
+const DEFAULT_GC_OPTION = "-XX:+UseParallelGC";
 
 /**
  * Information about a spawned Java process
@@ -36,7 +35,7 @@ export function findJavaExecutable(javaHome?: string): string {
     if (!javaExec) {
       throw new Error(
         `Java executable not found in "${javaHome}".\n\n` +
-        `Please ensure Java is installed in this directory, or use --java-home to specify a different location.`
+          `Please ensure Java is installed in this directory, or use --java-home to specify a different location.`,
       );
     }
     return javaExec;
@@ -74,7 +73,7 @@ export async function runJavaCommand(
   javaOpts: string[] = [],
   javaHome?: string,
   workingDir?: string,
-  timeoutMs?: number
+  timeoutMs?: number,
 ): Promise<ProcessInfo> {
   const javaPath = findJavaExecutable(javaHome);
 
@@ -86,97 +85,100 @@ export async function runJavaCommand(
 
   // Wrap spawn in retry logic for transient failures
   return await withRetry(
-    async () => new Promise<ProcessInfo>((resolve, reject) => {
-    const spawnOptions: any = { cwd: workingDir || process.cwd() };
+    async () =>
+      new Promise<ProcessInfo>((resolve, reject) => {
+        const spawnOptions: any = { cwd: workingDir || process.cwd() };
 
-    // Enable proper termination on Windows
-    if (process.platform === 'win32') {
-      spawnOptions.shell = true;
-      spawnOptions.windowsHide = true;
-    }
-
-    const proc = spawn(javaPath, fullArgs, spawnOptions);
-
-    // Cross-platform kill helper
-    const killProcess = () => {
-      if (process.platform === 'win32') {
-        try {
-          execSync(`taskkill /pid ${proc.pid} /T /F`, { stdio: 'ignore' });
-        } catch {
-          proc.kill('SIGKILL');
+        // Enable proper termination on Windows
+        if (process.platform === "win32") {
+          spawnOptions.shell = true;
+          spawnOptions.windowsHide = true;
         }
-      } else {
-        proc.kill('SIGTERM');
-      }
-    };
 
-    // Set up timeout if specified
-    let timeoutId: NodeJS.Timeout | undefined;
-    if (timeoutMs && timeoutMs > 0) {
-      timeoutId = setTimeout(() => {
-        killProcess();
-        reject(new Error(`Process timed out after ${timeoutMs}ms`));
-      }, timeoutMs);
-    }
+        const proc = spawn(javaPath, fullArgs, spawnOptions);
 
-    // Create merged output stream (stdout + stderr)
-    const mergedOutput = new PassThrough();
-
-    if (proc.stdout) {
-      proc.stdout.pipe(mergedOutput, { end: false });
-    }
-    if (proc.stderr) {
-      proc.stderr.pipe(mergedOutput, { end: false });
-    }
-
-    // Close merged stream when process ends
-    const endMerged = () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-      mergedOutput.end();
-    };
-    proc.once('exit', endMerged);
-    proc.once('close', endMerged);
-
-    // If the process already exited, defer end() to next event loop
-    if (proc.exitCode !== null) {
-      setImmediate(endMerged);
-    }
-
-    const cleanup = () => {
-      proc.removeListener('error', onError);
-      proc.removeListener('spawn', onSpawn);
-    };
-
-    const onError = (err: Error) => {
-      cleanup();
-      reject(enhanceError(
-        new Error(`Failed to launch Java process using "${javaPath}": ${err.message}`),
-        {
-          context: {
-            javaPath,
-            mainClass,
-            args: args.slice(0, 3) // Truncate to avoid huge logs
+        // Cross-platform kill helper
+        const killProcess = () => {
+          if (process.platform === "win32") {
+            try {
+              execSync(`taskkill /pid ${proc.pid} /T /F`, { stdio: "ignore" });
+            } catch {
+              proc.kill("SIGKILL");
+            }
+          } else {
+            proc.kill("SIGTERM");
           }
+        };
+
+        // Set up timeout if specified
+        let timeoutId: NodeJS.Timeout | undefined;
+        if (timeoutMs && timeoutMs > 0) {
+          timeoutId = setTimeout(() => {
+            killProcess();
+            reject(new Error(`Process timed out after ${timeoutMs}ms`));
+          }, timeoutMs);
         }
-      ));
-    };
 
-    const onSpawn = () => {
-      cleanup();
-      resolve({
-        process: proc,
-        stdout: proc.stdout,
-        stderr: proc.stderr,
-        mergedOutput,
-        kill: killProcess
-      });
-    };
+        // Create merged output stream (stdout + stderr)
+        const mergedOutput = new PassThrough();
 
-    proc.once('error', onError);
-    proc.once('spawn', onSpawn);
-  }),
+        if (proc.stdout) {
+          proc.stdout.pipe(mergedOutput, { end: false });
+        }
+        if (proc.stderr) {
+          proc.stderr.pipe(mergedOutput, { end: false });
+        }
+
+        // Close merged stream when process ends
+        const endMerged = () => {
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+          }
+          mergedOutput.end();
+        };
+        proc.once("exit", endMerged);
+        proc.once("close", endMerged);
+
+        // If the process already exited, defer end() to next event loop
+        if (proc.exitCode !== null) {
+          setImmediate(endMerged);
+        }
+
+        const cleanup = () => {
+          proc.removeListener("error", onError);
+          proc.removeListener("spawn", onSpawn);
+        };
+
+        const onError = (err: Error) => {
+          cleanup();
+          reject(
+            enhanceError(
+              new Error(`Failed to launch Java process using "${javaPath}": ${err.message}`),
+              {
+                context: {
+                  javaPath,
+                  mainClass,
+                  args: args.slice(0, 3), // Truncate to avoid huge logs
+                },
+              },
+            ),
+          );
+        };
+
+        const onSpawn = () => {
+          cleanup();
+          resolve({
+            process: proc,
+            stdout: proc.stdout,
+            stderr: proc.stderr,
+            mergedOutput,
+            kill: killProcess,
+          });
+        };
+
+        proc.once("error", onError);
+        proc.once("spawn", onSpawn);
+      }),
     {
       maxAttempts: 3,
       initialDelayMs: 100,
@@ -185,8 +187,8 @@ export async function runJavaCommand(
       shouldRetry: (error) => {
         const code = classifyError(error);
         return code === ErrorCode.JAVA_SPAWN_FAILED;
-      }
-    }
+      },
+    },
   );
 }
 
@@ -212,7 +214,7 @@ export function buildJavaOptions(customOptions: string[], defaultClassPath: stri
  */
 function buildJavaPathFromHome(javaHome: string): string | undefined {
   const javaCmd = getJavaCommand();
-  const candidate = path.join(javaHome, 'bin', javaCmd);
+  const candidate = path.join(javaHome, "bin", javaCmd);
   return fs.existsSync(candidate) ? candidate : undefined;
 }
 
@@ -223,23 +225,23 @@ function buildJavaPathFromHome(javaHome: string): string | undefined {
  */
 function collectJavaHomesFromEnv(): string[] {
   let envVars = [
-    'JAVA_HOME',
-    'JDK_HOME',
+    "JAVA_HOME",
+    "JDK_HOME",
     // ARM64 variants
-    'JAVA_HOME_21_ARM64',
-    'JAVA_HOME_17_ARM64',
-    'JAVA_HOME_11_ARM64',
+    "JAVA_HOME_21_ARM64",
+    "JAVA_HOME_17_ARM64",
+    "JAVA_HOME_11_ARM64",
     // X64 variants
-    'JAVA_HOME_21_X64',
-    'JAVA_HOME_17_X64',
-    'JAVA_HOME_11_X64',
-    'JAVA_HOME_8_X64'
+    "JAVA_HOME_21_X64",
+    "JAVA_HOME_17_X64",
+    "JAVA_HOME_11_X64",
+    "JAVA_HOME_8_X64",
   ];
 
   // Prioritize ARM64 on Apple Silicon
-  if (process.platform === 'darwin' && process.arch === 'arm64') {
-    const armVars = envVars.filter(v => v.includes('ARM64'));
-    const otherVars = envVars.filter(v => !v.includes('ARM64'));
+  if (process.platform === "darwin" && process.arch === "arm64") {
+    const armVars = envVars.filter((v) => v.includes("ARM64"));
+    const otherVars = envVars.filter((v) => !v.includes("ARM64"));
     envVars = [...armVars, ...otherVars];
   }
 
@@ -264,7 +266,7 @@ function collectJavaHomesFromEnv(): string[] {
  * @param defaultGC Default GC option
  */
 function mergeGCOption(options: string[], defaultGC: string): void {
-  const gcOption = options.find(opt => opt.startsWith('-XX:+Use') && opt.endsWith('GC'));
+  const gcOption = options.find((opt) => opt.startsWith("-XX:+Use") && opt.endsWith("GC"));
   if (!gcOption) {
     options.push(defaultGC);
   }
@@ -281,7 +283,7 @@ function mergeClassPathOption(options: string[], defaultClassPath: string): void
   let cpIdx = -1;
   for (let i = 0; i < options.length; i++) {
     const option = options[i];
-    if (option === '-cp' || option === '-classpath') {
+    if (option === "-cp" || option === "-classpath") {
       cpIdx = i + 1;
       break;
     }
@@ -289,7 +291,7 @@ function mergeClassPathOption(options: string[], defaultClassPath: string): void
 
   if (cpIdx < 0 || cpIdx >= options.length) {
     // No custom classpath provided, use the default one
-    options.push('-cp', defaultClassPath);
+    options.push("-cp", defaultClassPath);
     return;
   }
 
@@ -312,15 +314,17 @@ function mergeClassPathOption(options: string[], defaultClassPath: string): void
  * @returns True if tla2tools.jar is in the classpath
  */
 function containsTlaToolsLib(classPath: string): boolean {
-  const TLA_TOOLS_LIB_NAME = 'tla2tools.jar';
-  const TLA_TOOLS_LIB_NAME_END_UNIX = '/' + TLA_TOOLS_LIB_NAME;
-  const TLA_TOOLS_LIB_NAME_END_WIN = '\\' + TLA_TOOLS_LIB_NAME;
+  const TLA_TOOLS_LIB_NAME = "tla2tools.jar";
+  const TLA_TOOLS_LIB_NAME_END_UNIX = "/" + TLA_TOOLS_LIB_NAME;
+  const TLA_TOOLS_LIB_NAME_END_WIN = "\\" + TLA_TOOLS_LIB_NAME;
 
   const paths = classPath.split(path.delimiter);
   for (const p of paths) {
-    if (p === TLA_TOOLS_LIB_NAME ||
-        p.endsWith(TLA_TOOLS_LIB_NAME_END_UNIX) ||
-        p.endsWith(TLA_TOOLS_LIB_NAME_END_WIN)) {
+    if (
+      p === TLA_TOOLS_LIB_NAME ||
+      p.endsWith(TLA_TOOLS_LIB_NAME_END_UNIX) ||
+      p.endsWith(TLA_TOOLS_LIB_NAME_END_WIN)
+    ) {
       return true;
     }
   }
