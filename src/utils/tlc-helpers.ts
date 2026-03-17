@@ -1,12 +1,12 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { buildJavaOptions, findJavaExecutable } from './java';
-import { withRetry } from './errors';
-import { runProcess } from './process-runner';
-import { getClassPath, getModuleSearchPaths } from './tla-tools';
-import { mapTlcOutputLine } from './tlc';
+import * as fs from "fs";
+import * as path from "path";
+import { buildJavaOptions, findJavaExecutable } from "./java";
+import { withRetry } from "./errors";
+import { runProcess } from "./process-runner";
+import { getClassPath, getModuleSearchPaths } from "./tla-tools";
+import { mapTlcOutputLine } from "./tlc";
 
-const TLC_MAIN_CLASS = 'tlc2.TLC';
+const TLC_MAIN_CLASS = "tlc2.TLC";
 
 /**
  * Result of running TLC
@@ -60,14 +60,12 @@ export async function runTlcAndWait(
   javaHome?: string,
   timeoutMs?: number,
   signal?: AbortSignal,
-  onProgress?: TlcProgressCallback
+  onProgress?: TlcProgressCallback,
 ): Promise<TlcResult> {
   const classPath = getClassPath(toolsDir);
   const moduleSearchPaths = getModuleSearchPaths(toolsDir);
 
-  const libPaths = moduleSearchPaths
-    .filter(p => !p.startsWith('jarfile:'))
-    .join(path.delimiter);
+  const libPaths = moduleSearchPaths.filter((p) => !p.startsWith("jarfile:")).join(path.delimiter);
 
   const javaOptions = javaOpts.slice();
   if (libPaths) {
@@ -75,16 +73,14 @@ export async function runTlcAndWait(
   }
 
   const tlaFileName = path.basename(tlaFilePath);
-  const args = [tlaFileName, '-tool', '-modelcheck'];
+  const args = [tlaFileName, "-tool", "-modelcheck"];
   if (cfgFileName) {
-    args.push('-config', cfgFileName);
+    args.push("-config", cfgFileName);
   }
   args.push(...tlcOptions);
 
   const javaPath = findJavaExecutable(javaHome);
-  const fullArgs = buildJavaOptions(javaOptions, classPath)
-    .concat([TLC_MAIN_CLASS])
-    .concat(args);
+  const fullArgs = buildJavaOptions(javaOptions, classPath).concat([TLC_MAIN_CLASS]).concat(args);
 
   const result = await withRetry(async () => {
     const attemptResult = await runProcess({
@@ -92,11 +88,11 @@ export async function runTlcAndWait(
       args: fullArgs,
       cwd: path.dirname(tlaFilePath),
       timeoutMs,
-      signal
+      signal,
     });
 
     if (!attemptResult.timedOut && !attemptResult.aborted && attemptResult.exitCode === null) {
-      const errorDetails = attemptResult.stderr || attemptResult.combined || 'Unknown error.';
+      const errorDetails = attemptResult.stderr || attemptResult.combined || "Unknown error.";
       throw new Error(`Failed to launch Java process using "${javaPath}": ${errorDetails}`);
     }
 
@@ -122,7 +118,7 @@ export async function runTlcAndWait(
           onProgress({
             progress: i + 1,
             total: lines.length,
-            message: `Processing TLC output: ${i + 1}/${lines.length} lines`
+            message: `Processing TLC output: ${i + 1}/${lines.length} lines`,
           });
           lastProgressTime = now;
         }
@@ -134,7 +130,7 @@ export async function runTlcAndWait(
     output.push(`TLC process timed out after ${timeoutMs ?? 0}ms.`);
   }
   if (result.aborted) {
-    output.push('TLC process was aborted.');
+    output.push("TLC process was aborted.");
   }
 
   const exitCode = result.exitCode ?? (result.timedOut ? 124 : result.aborted ? 130 : 0);
@@ -151,14 +147,14 @@ export async function runTlcAndWait(
  */
 export async function getSpecFiles(tlaFilePath: string): Promise<SpecFiles | null> {
   const dir = path.dirname(tlaFilePath);
-  const baseName = path.basename(tlaFilePath, '.tla');
+  const baseName = path.basename(tlaFilePath, ".tla");
 
   // First, try the simple case: MySpec.tla -> MySpec.cfg
   const simpleCfg = path.join(dir, `${baseName}.cfg`);
   if (fs.existsSync(simpleCfg)) {
     return {
       tlaFilePath,
-      cfgFilePath: simpleCfg
+      cfgFilePath: simpleCfg,
     };
   }
 
@@ -170,7 +166,7 @@ export async function getSpecFiles(tlaFilePath: string): Promise<SpecFiles | nul
   if (fs.existsSync(mcTlaPath) && fs.existsSync(mcCfgPath)) {
     return {
       tlaFilePath: mcTlaPath,
-      cfgFilePath: mcCfgPath
+      cfgFilePath: mcCfgPath,
     };
   }
 

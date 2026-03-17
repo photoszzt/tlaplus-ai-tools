@@ -7,9 +7,9 @@
  * @module animation/RenderService
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import * as os from 'os';
+import * as fs from "fs/promises";
+import * as path from "path";
+import * as os from "os";
 
 import {
   RenderInput,
@@ -25,9 +25,9 @@ import {
   RasterizerService,
   FileSystemService,
   SvgElement,
-  isAnimationError
-} from './types';
-import { createAnimationError, ErrorService, errorService } from './errors';
+  isAnimationError,
+} from "./types";
+import { createAnimationError, ErrorService, errorService } from "./errors";
 
 /**
  * Frame size limit in bytes (1MB)
@@ -39,7 +39,7 @@ const FRAME_SIZE_LIMIT = 1024 * 1024;
 /**
  * Default file pattern for trace files
  */
-const DEFAULT_FILE_PATTERN = '*_anim_*.svg';
+const DEFAULT_FILE_PATTERN = "*_anim_*.svg";
 
 /**
  * ASCII box-drawing characters
@@ -47,17 +47,17 @@ const DEFAULT_FILE_PATTERN = '*_anim_*.svg';
  * NORMATIVE: SC-ANIM-009
  */
 const BOX_CHARS = {
-  TOP_LEFT: '\u250C',     // ┌
-  TOP_RIGHT: '\u2510',    // ┐
-  BOTTOM_LEFT: '\u2514',  // └
-  BOTTOM_RIGHT: '\u2518', // ┘
-  HORIZONTAL: '\u2500',   // ─
-  VERTICAL: '\u2502',     // │
-  FILLED_CIRCLE: '\u25CF', // ●
-  OUTLINE_CIRCLE: '\u25CB', // ○
-  SMALL_CIRCLE: 'O',
-  MEDIUM_CIRCLE_LEFT: '(',
-  MEDIUM_CIRCLE_RIGHT: ')'
+  TOP_LEFT: "\u250C", // ┌
+  TOP_RIGHT: "\u2510", // ┐
+  BOTTOM_LEFT: "\u2514", // └
+  BOTTOM_RIGHT: "\u2518", // ┘
+  HORIZONTAL: "\u2500", // ─
+  VERTICAL: "\u2502", // │
+  FILLED_CIRCLE: "\u25CF", // ●
+  OUTLINE_CIRCLE: "\u25CB", // ○
+  SMALL_CIRCLE: "O",
+  MEDIUM_CIRCLE_LEFT: "(",
+  MEDIUM_CIRCLE_RIGHT: ")",
 };
 
 /**
@@ -71,7 +71,7 @@ const ASCII_CONSTRAINTS = {
   DEFAULT_COLUMNS: 80,
   MIN_ROWS: 20,
   MAX_ROWS: 60,
-  DEFAULT_ROWS: 24
+  DEFAULT_ROWS: 24,
 };
 
 /**
@@ -98,11 +98,11 @@ function createDefaultFileSystem(): FileSystemService {
       const files = await fs.readdir(cwd);
       const regex = globToRegex(pattern);
       const matched = files
-        .filter(f => regex.test(f))
-        .map(f => path.join(cwd, f))
+        .filter((f) => regex.test(f))
+        .map((f) => path.join(cwd, f))
         .sort();
       return matched;
-    }
+    },
   };
 }
 
@@ -111,9 +111,9 @@ function createDefaultFileSystem(): FileSystemService {
  */
 function globToRegex(pattern: string): RegExp {
   const escaped = pattern
-    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
-    .replace(/\*/g, '.*')
-    .replace(/\?/g, '.');
+    .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+    .replace(/\*/g, ".*")
+    .replace(/\?/g, ".");
   return new RegExp(`^${escaped}$`);
 }
 
@@ -121,7 +121,7 @@ function globToRegex(pattern: string): RegExp {
  * Canvas module reference for lazy loading
  * @implements design.md Section 11.3 (lazy loading)
  */
-let canvasModule: typeof import('@napi-rs/canvas') | null = null;
+let canvasModule: typeof import("@napi-rs/canvas") | null = null;
 
 /**
  * Get canvas module with lazy loading
@@ -131,13 +131,13 @@ let canvasModule: typeof import('@napi-rs/canvas') | null = null;
  * @implements REQ-REVIEW-013, SCN-REVIEW-013-02
  * @returns Canvas module
  */
-async function getCanvas(): Promise<typeof import('@napi-rs/canvas')> {
+async function getCanvas(): Promise<typeof import("@napi-rs/canvas")> {
   if (!canvasModule) {
     try {
-      canvasModule = await import('@napi-rs/canvas');
+      canvasModule = await import("@napi-rs/canvas");
     } catch {
       throw new Error(
-        'Animation rendering requires @napi-rs/canvas. Install it with: npm install @napi-rs/canvas'
+        "Animation rendering requires @napi-rs/canvas. Install it with: npm install @napi-rs/canvas",
       );
     }
   }
@@ -161,7 +161,7 @@ function createDefaultRasterizer(): RasterizerService {
       // Per design.md Section 3.8: SVG parsed and rendered to canvas
       const dimensions = extractSvgDimensions(svgContent);
       return rasterizeSvgToPng(svgContent, dimensions.width, dimensions.height);
-    }
+    },
   };
 }
 
@@ -171,7 +171,7 @@ function createDefaultRasterizer(): RasterizerService {
  * @returns SVG content string
  */
 function animViewToSvg(animView: AnimView): string {
-  const elements = animView.elements.map(el => svgElementToString(el)).join('\n  ');
+  const elements = animView.elements.map((el) => svgElementToString(el)).join("\n  ");
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${animView.width}" height="${animView.height}">
   <title>${escapeXml(animView.title)}</title>
   ${elements}
@@ -186,17 +186,17 @@ function svgElementToString(element: SvgElement): string {
   const attrStrings = Object.entries(attrs)
     .filter(([_, v]) => v !== undefined)
     .map(([k, v]) => `${k}="${escapeXml(String(v))}"`)
-    .join(' ');
+    .join(" ");
 
-  if (shape === 'g') {
+  if (shape === "g") {
     return `<g ${attrStrings}></g>`;
   }
-  if (shape === 'text') {
-    const text = (attrs.text as string) || '';
+  if (shape === "text") {
+    const text = (attrs.text as string) || "";
     const filteredAttrs = Object.entries(attrs)
-      .filter(([k, v]) => k !== 'text' && v !== undefined)
+      .filter(([k, v]) => k !== "text" && v !== undefined)
       .map(([k, v]) => `${k}="${escapeXml(String(v))}"`)
-      .join(' ');
+      .join(" ");
     return `<text ${filteredAttrs}>${escapeXml(text)}</text>`;
   }
   return `<${shape} ${attrStrings}/>`;
@@ -207,11 +207,11 @@ function svgElementToString(element: SvgElement): string {
  */
 function escapeXml(str: string): string {
   return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 }
 
 /**
@@ -222,7 +222,7 @@ function extractSvgDimensions(svgContent: string): { width: number; height: numb
   const heightMatch = svgContent.match(/height=["'](\d+)["']/);
   return {
     width: widthMatch ? parseInt(widthMatch[1], 10) : 200,
-    height: heightMatch ? parseInt(heightMatch[1], 10) : 100
+    height: heightMatch ? parseInt(heightMatch[1], 10) : 100,
   };
 }
 
@@ -237,10 +237,10 @@ function extractSvgDimensions(svgContent: string): { width: number; height: numb
 async function rasterizeAnimViewToPng(animView: AnimView): Promise<Buffer> {
   const canvas = await getCanvas();
   const cvs = canvas.createCanvas(animView.width, animView.height);
-  const ctx = cvs.getContext('2d');
+  const ctx = cvs.getContext("2d");
 
   // Set default background (white)
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, animView.width, animView.height);
 
   // Draw each element directly to canvas
@@ -249,7 +249,7 @@ async function rasterizeAnimViewToPng(animView: AnimView): Promise<Buffer> {
   }
 
   // Export canvas to PNG buffer per design.md Section 3.8
-  return cvs.toBuffer('image/png');
+  return cvs.toBuffer("image/png");
 }
 
 /**
@@ -260,42 +260,42 @@ async function rasterizeAnimViewToPng(animView: AnimView): Promise<Buffer> {
  * @param element - SVG element to draw
  */
 async function drawElementToCanvas(
-  ctx: import('@napi-rs/canvas').SKRSContext2D,
-  element: SvgElement
+  ctx: import("@napi-rs/canvas").SKRSContext2D,
+  element: SvgElement,
 ): Promise<void> {
   const { shape } = element;
 
   // Get fill and stroke from element
   const fill = element.fill as string | undefined;
   const stroke = element.stroke as string | undefined;
-  const strokeWidth = (element['stroke-width'] as number) || 1;
+  const strokeWidth = (element["stroke-width"] as number) || 1;
 
   // Set styles
-  if (fill && fill !== 'none') {
+  if (fill && fill !== "none") {
     ctx.fillStyle = fill;
   }
-  if (stroke && stroke !== 'none') {
+  if (stroke && stroke !== "none") {
     ctx.strokeStyle = stroke;
     ctx.lineWidth = strokeWidth;
   }
 
   switch (shape) {
-    case 'rect':
+    case "rect":
       drawRectToCanvas(ctx, element, fill, stroke);
       break;
-    case 'circle':
+    case "circle":
       drawCircleToCanvas(ctx, element, fill, stroke);
       break;
-    case 'line':
+    case "line":
       drawLineToCanvas(ctx, element, stroke);
       break;
-    case 'text':
+    case "text":
       drawTextToCanvas(ctx, element, fill);
       break;
-    case 'path':
+    case "path":
       await drawPathToCanvas(ctx, element, fill, stroke);
       break;
-    case 'g':
+    case "g":
       // Group element - no direct drawing, children would be processed separately
       break;
   }
@@ -305,10 +305,10 @@ async function drawElementToCanvas(
  * Draw rectangle to canvas
  */
 function drawRectToCanvas(
-  ctx: import('@napi-rs/canvas').SKRSContext2D,
+  ctx: import("@napi-rs/canvas").SKRSContext2D,
   element: SvgElement,
   fill: string | undefined,
-  stroke: string | undefined
+  stroke: string | undefined,
 ): void {
   const x = (element.x as number) || 0;
   const y = (element.y as number) || 0;
@@ -321,12 +321,12 @@ function drawRectToCanvas(
     // Rounded rectangle
     ctx.beginPath();
     ctx.roundRect(x, y, width, height, [rx, ry]);
-    if (fill && fill !== 'none') ctx.fill();
-    if (stroke && stroke !== 'none') ctx.stroke();
+    if (fill && fill !== "none") ctx.fill();
+    if (stroke && stroke !== "none") ctx.stroke();
   } else {
     // Regular rectangle
-    if (fill && fill !== 'none') ctx.fillRect(x, y, width, height);
-    if (stroke && stroke !== 'none') ctx.strokeRect(x, y, width, height);
+    if (fill && fill !== "none") ctx.fillRect(x, y, width, height);
+    if (stroke && stroke !== "none") ctx.strokeRect(x, y, width, height);
   }
 }
 
@@ -334,10 +334,10 @@ function drawRectToCanvas(
  * Draw circle to canvas
  */
 function drawCircleToCanvas(
-  ctx: import('@napi-rs/canvas').SKRSContext2D,
+  ctx: import("@napi-rs/canvas").SKRSContext2D,
   element: SvgElement,
   fill: string | undefined,
-  stroke: string | undefined
+  stroke: string | undefined,
 ): void {
   const cx = (element.cx as number) || 0;
   const cy = (element.cy as number) || 0;
@@ -345,24 +345,24 @@ function drawCircleToCanvas(
 
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, 2 * Math.PI);
-  if (fill && fill !== 'none') ctx.fill();
-  if (stroke && stroke !== 'none') ctx.stroke();
+  if (fill && fill !== "none") ctx.fill();
+  if (stroke && stroke !== "none") ctx.stroke();
 }
 
 /**
  * Draw line to canvas
  */
 function drawLineToCanvas(
-  ctx: import('@napi-rs/canvas').SKRSContext2D,
+  ctx: import("@napi-rs/canvas").SKRSContext2D,
   element: SvgElement,
-  stroke: string | undefined
+  stroke: string | undefined,
 ): void {
   const x1 = (element.x1 as number) || 0;
   const y1 = (element.y1 as number) || 0;
   const x2 = (element.x2 as number) || 0;
   const y2 = (element.y2 as number) || 0;
 
-  if (stroke && stroke !== 'none') {
+  if (stroke && stroke !== "none") {
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
@@ -374,30 +374,30 @@ function drawLineToCanvas(
  * Draw text to canvas
  */
 function drawTextToCanvas(
-  ctx: import('@napi-rs/canvas').SKRSContext2D,
+  ctx: import("@napi-rs/canvas").SKRSContext2D,
   element: SvgElement,
-  fill: string | undefined
+  fill: string | undefined,
 ): void {
   const x = (element.x as number) || 0;
   const y = (element.y as number) || 0;
-  const text = (element.text as string) || '';
-  const fontSize = (element['font-size'] as number) || 12;
-  const fontFamily = (element['font-family'] as string) || 'sans-serif';
-  const fontWeight = (element['font-weight'] as string) || 'normal';
-  const textAnchor = (element['text-anchor'] as string) || 'start';
+  const text = (element.text as string) || "";
+  const fontSize = (element["font-size"] as number) || 12;
+  const fontFamily = (element["font-family"] as string) || "sans-serif";
+  const fontWeight = (element["font-weight"] as string) || "normal";
+  const textAnchor = (element["text-anchor"] as string) || "start";
 
   ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
 
   // Handle text-anchor alignment
-  if (textAnchor === 'middle') {
-    ctx.textAlign = 'center';
-  } else if (textAnchor === 'end') {
-    ctx.textAlign = 'right';
+  if (textAnchor === "middle") {
+    ctx.textAlign = "center";
+  } else if (textAnchor === "end") {
+    ctx.textAlign = "right";
   } else {
-    ctx.textAlign = 'left';
+    ctx.textAlign = "left";
   }
 
-  if (fill && fill !== 'none') {
+  if (fill && fill !== "none") {
     ctx.fillText(text, x, y);
   }
 }
@@ -406,20 +406,20 @@ function drawTextToCanvas(
  * Draw path to canvas (basic SVG path support)
  */
 async function drawPathToCanvas(
-  ctx: import('@napi-rs/canvas').SKRSContext2D,
+  ctx: import("@napi-rs/canvas").SKRSContext2D,
   element: SvgElement,
   fill: string | undefined,
-  stroke: string | undefined
+  stroke: string | undefined,
 ): Promise<void> {
-  const d = (element.d as string) || '';
+  const d = (element.d as string) || "";
   if (!d) return;
 
   // Use Path2D for SVG path data from @napi-rs/canvas
   const canvas = await getCanvas();
   const path = new canvas.Path2D(d);
 
-  if (fill && fill !== 'none') ctx.fill(path);
-  if (stroke && stroke !== 'none') ctx.stroke(path);
+  if (fill && fill !== "none") ctx.fill(path);
+  if (stroke && stroke !== "none") ctx.stroke(path);
 }
 
 /**
@@ -435,19 +435,19 @@ async function drawPathToCanvas(
 async function rasterizeSvgToPng(
   svgContent: string,
   width: number,
-  height: number
+  height: number,
 ): Promise<Buffer> {
   const canvas = await getCanvas();
   const cvs = canvas.createCanvas(width, height);
-  const ctx = cvs.getContext('2d');
+  const ctx = cvs.getContext("2d");
 
   // Set default background (white)
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, width, height);
 
   // Convert SVG to data URL and load as image
   // node-canvas supports loading SVG via loadImage
-  const svgBuffer = Buffer.from(svgContent, 'utf-8');
+  const svgBuffer = Buffer.from(svgContent, "utf-8");
 
   try {
     const img = await canvas.loadImage(svgBuffer);
@@ -458,8 +458,8 @@ async function rasterizeSvgToPng(
     // Scale elements to match canvas dimensions when SVG intrinsic size differs
     // Guard against zero/negative intrinsic dimensions to avoid Infinity/NaN in ctx.scale()
     const hasValidIntrinsicSize =
-      typeof animView.width === 'number' &&
-      typeof animView.height === 'number' &&
+      typeof animView.width === "number" &&
+      typeof animView.height === "number" &&
       animView.width > 0 &&
       animView.height > 0;
     ctx.save();
@@ -478,7 +478,7 @@ async function rasterizeSvgToPng(
   }
 
   // Export canvas to PNG buffer per design.md Section 3.8
-  return cvs.toBuffer('image/png');
+  return cvs.toBuffer("image/png");
 }
 
 /**
@@ -488,13 +488,31 @@ async function rasterizeSvgToPng(
  * @implements REQ-REVIEW-007, SCN-REVIEW-007-01
  */
 function parseElementAttrs(shape: string, attrsStr: string): SvgElement {
-  const element: SvgElement = { shape: shape as SvgElement['shape'] };
+  const element: SvgElement = { shape: shape as SvgElement["shape"] };
   const attrRegex = /([a-zA-Z][a-zA-Z0-9-]*)=["']([^"']*)["']/g;
   let match;
   while ((match = attrRegex.exec(attrsStr)) !== null) {
     const [, name, value] = match;
     // Convert numeric attributes
-    if (['x', 'y', 'width', 'height', 'cx', 'cy', 'r', 'x1', 'y1', 'x2', 'y2', 'rx', 'ry', 'font-size', 'stroke-width'].includes(name)) {
+    if (
+      [
+        "x",
+        "y",
+        "width",
+        "height",
+        "cx",
+        "cy",
+        "r",
+        "x1",
+        "y1",
+        "x2",
+        "y2",
+        "rx",
+        "ry",
+        "font-size",
+        "stroke-width",
+      ].includes(name)
+    ) {
       element[name] = parseFloat(value);
     } else {
       element[name] = value;
@@ -516,7 +534,7 @@ function svgToAnimView(svgContent: string): AnimView {
 
   // Extract title if present; default to 'Frame' per SCN-REVIEW-007-04
   const titleMatch = svgContent.match(/<title>([^<]*)<\/title>/);
-  const title = titleMatch ? titleMatch[1] : 'Frame';
+  const title = titleMatch ? titleMatch[1] : "Frame";
 
   const elements: SvgElement[] = [];
 
@@ -525,14 +543,14 @@ function svgToAnimView(svgContent: string): AnimView {
   let match;
   while ((match = rectRegex.exec(svgContent)) !== null) {
     const attrs = match[1] || match[2];
-    elements.push(parseElementAttrs('rect', attrs));
+    elements.push(parseElementAttrs("rect", attrs));
   }
 
   // Parse circle elements
   const circleRegex = /<circle([^>]*)\/?>|<circle([^>]*)>[^<]*<\/circle>/g;
   while ((match = circleRegex.exec(svgContent)) !== null) {
     const attrs = match[1] || match[2];
-    elements.push(parseElementAttrs('circle', attrs));
+    elements.push(parseElementAttrs("circle", attrs));
   }
 
   // Parse text elements
@@ -540,7 +558,7 @@ function svgToAnimView(svgContent: string): AnimView {
   while ((match = textRegex.exec(svgContent)) !== null) {
     const attrs = match[1];
     const text = match[2];
-    const element = parseElementAttrs('text', attrs);
+    const element = parseElementAttrs("text", attrs);
     element.text = text;
     elements.push(element);
   }
@@ -549,22 +567,22 @@ function svgToAnimView(svgContent: string): AnimView {
   const lineRegex = /<line([^>]*)\/?>|<line([^>]*)>[^<]*<\/line>/g;
   while ((match = lineRegex.exec(svgContent)) !== null) {
     const attrs = match[1] || match[2];
-    elements.push(parseElementAttrs('line', attrs));
+    elements.push(parseElementAttrs("line", attrs));
   }
 
   // Parse path elements
   const pathRegex = /<path([^>]*)\/?>|<path([^>]*)>[^<]*<\/path>/g;
   while ((match = pathRegex.exec(svgContent)) !== null) {
     const attrs = match[1] || match[2];
-    elements.push(parseElementAttrs('path', attrs));
+    elements.push(parseElementAttrs("path", attrs));
   }
 
   return {
-    frame: '0',
+    frame: "0",
     title,
     width: dimensions.width,
     height: dimensions.height,
-    elements
+    elements,
   };
 }
 
@@ -575,7 +593,7 @@ function svgToAnimView(svgContent: string): AnimView {
  * Format: \x1b_Ga=T,f=100,m=0;<base64data>\x1b\\
  */
 function renderKitty(pngData: Buffer): string {
-  const base64 = pngData.toString('base64');
+  const base64 = pngData.toString("base64");
   return `\x1b_Ga=T,f=100,m=0;${base64}\x1b\\`;
 }
 
@@ -586,7 +604,7 @@ function renderKitty(pngData: Buffer): string {
  * Format: \x1b]1337;File=inline=1;size=<bytes>:<base64data>\x07
  */
 function renderIterm2(pngData: Buffer): string {
-  const base64 = pngData.toString('base64');
+  const base64 = pngData.toString("base64");
   const size = pngData.length;
   return `\x1b]1337;File=inline=1;size=${size}:${base64}\x07`;
 }
@@ -600,16 +618,18 @@ function renderAscii(animView: AnimView, config: AsciiConfig): AsciiRenderResult
   // Apply constraints per SC-ANIM-019
   const cols = Math.max(
     ASCII_CONSTRAINTS.MIN_COLUMNS,
-    Math.min(ASCII_CONSTRAINTS.MAX_COLUMNS, config.columns ?? ASCII_CONSTRAINTS.DEFAULT_COLUMNS)
+    Math.min(ASCII_CONSTRAINTS.MAX_COLUMNS, config.columns ?? ASCII_CONSTRAINTS.DEFAULT_COLUMNS),
   );
   const rows = Math.max(
     ASCII_CONSTRAINTS.MIN_ROWS,
-    Math.min(ASCII_CONSTRAINTS.MAX_ROWS, config.rows ?? ASCII_CONSTRAINTS.DEFAULT_ROWS)
+    Math.min(ASCII_CONSTRAINTS.MAX_ROWS, config.rows ?? ASCII_CONSTRAINTS.DEFAULT_ROWS),
   );
   const colorEnabled = config.colorEnabled ?? true;
 
   // Create ASCII canvas
-  const canvas: string[][] = Array(rows).fill(null).map(() => Array(cols).fill(' '));
+  const canvas: string[][] = Array(rows)
+    .fill(null)
+    .map(() => Array(cols).fill(" "));
 
   // Scale factors
   const scaleX = cols / animView.width;
@@ -621,13 +641,13 @@ function renderAscii(animView: AnimView, config: AsciiConfig): AsciiRenderResult
   }
 
   // Convert canvas to string
-  const output = canvas.map(row => row.join('')).join('\n');
+  const output = canvas.map((row) => row.join("")).join("\n");
 
   return {
     output,
-    protocol: 'ascii',
+    protocol: "ascii",
     frameIndex: 0, // Will be set by caller
-    dimensions: { cols, rows }
+    dimensions: { cols, rows },
   };
 }
 
@@ -641,24 +661,24 @@ function renderAsciiElement(
   element: SvgElement,
   scaleX: number,
   scaleY: number,
-  colorEnabled: boolean
+  colorEnabled: boolean,
 ): void {
   const { shape } = element;
   const fillColor = element.fill as string | undefined;
-  const ansiColor = colorEnabled && fillColor ? getAnsiColor(fillColor) : '';
-  const resetColor = colorEnabled && fillColor ? '\x1b[0m' : '';
+  const ansiColor = colorEnabled && fillColor ? getAnsiColor(fillColor) : "";
+  const resetColor = colorEnabled && fillColor ? "\x1b[0m" : "";
 
   switch (shape) {
-    case 'rect':
+    case "rect":
       renderAsciiRect(canvas, element, scaleX, scaleY, ansiColor, resetColor);
       break;
-    case 'circle':
+    case "circle":
       renderAsciiCircle(canvas, element, scaleX, scaleY, ansiColor, resetColor);
       break;
-    case 'line':
+    case "line":
       renderAsciiLine(canvas, element, scaleX, scaleY, ansiColor, resetColor);
       break;
-    case 'text':
+    case "text":
       renderAsciiText(canvas, element, scaleX, scaleY, ansiColor, resetColor);
       break;
     // 'path' and 'g' are complex and not fully rendered in ASCII
@@ -677,7 +697,7 @@ function renderAsciiRect(
   scaleX: number,
   scaleY: number,
   ansiColor: string,
-  resetColor: string
+  resetColor: string,
 ): void {
   const x = Math.floor((element.x as number) * scaleX);
   const y = Math.floor((element.y as number) * scaleY);
@@ -739,12 +759,12 @@ function renderAsciiCircle(
   scaleX: number,
   scaleY: number,
   ansiColor: string,
-  resetColor: string
+  resetColor: string,
 ): void {
   const cx = Math.floor((element.cx as number) * scaleX);
   const cy = Math.floor((element.cy as number) * scaleY);
   const r = (element.r as number) || 5;
-  const filled = element.fill !== 'none' && element.fill !== undefined;
+  const filled = element.fill !== "none" && element.fill !== undefined;
 
   const maxRow = canvas.length;
   const maxCol = canvas[0]?.length ?? 0;
@@ -762,7 +782,7 @@ function renderAsciiCircle(
       canvas[cy][cx - 1] = ansiColor + BOX_CHARS.MEDIUM_CIRCLE_LEFT + resetColor;
     }
     if (cy >= 0 && cy < maxRow && cx >= 0 && cx < maxCol) {
-      canvas[cy][cx] = ansiColor + ' ' + resetColor;
+      canvas[cy][cx] = ansiColor + " " + resetColor;
     }
     if (cy >= 0 && cy < maxRow && cx + 1 >= 0 && cx + 1 < maxCol) {
       canvas[cy][cx + 1] = ansiColor + BOX_CHARS.MEDIUM_CIRCLE_RIGHT + resetColor;
@@ -784,7 +804,7 @@ function renderAsciiLine(
   scaleX: number,
   scaleY: number,
   ansiColor: string,
-  resetColor: string
+  resetColor: string,
 ): void {
   const x1 = Math.floor((element.x1 as number) * scaleX);
   const y1 = Math.floor((element.y1 as number) * scaleY);
@@ -832,11 +852,11 @@ function renderAsciiText(
   scaleX: number,
   scaleY: number,
   ansiColor: string,
-  resetColor: string
+  resetColor: string,
 ): void {
   const x = Math.floor((element.x as number) * scaleX);
   const y = Math.floor((element.y as number) * scaleY);
-  const text = (element.text as string) || '';
+  const text = (element.text as string) || "";
 
   const maxRow = canvas.length;
   const maxCol = canvas[0]?.length ?? 0;
@@ -859,24 +879,24 @@ function renderAsciiText(
 function getAnsiColor(color: string): string {
   // Basic color mapping to ANSI 256-color codes
   const colorMap: Record<string, number> = {
-    'black': 0,
-    'red': 1,
-    'green': 2,
-    'yellow': 3,
-    'blue': 21, // Brighter blue (256-color)
-    'magenta': 5,
-    'cyan': 6,
-    'white': 7,
-    '#000000': 0,
-    '#ff0000': 196,
-    '#00ff00': 46,
-    '#0000ff': 21,
-    '#ffff00': 226,
-    '#ff00ff': 201,
-    '#00ffff': 51,
-    '#ffffff': 231,
-    '#3498db': 39, // Common blue
-    'orange': 208
+    black: 0,
+    red: 1,
+    green: 2,
+    yellow: 3,
+    blue: 21, // Brighter blue (256-color)
+    magenta: 5,
+    cyan: 6,
+    white: 7,
+    "#000000": 0,
+    "#ff0000": 196,
+    "#00ff00": 46,
+    "#0000ff": 21,
+    "#ffff00": 226,
+    "#ff00ff": 201,
+    "#00ffff": 51,
+    "#ffffff": 231,
+    "#3498db": 39, // Common blue
+    orange: 208,
   };
 
   const lowerColor = color.toLowerCase();
@@ -885,7 +905,7 @@ function getAnsiColor(color: string): string {
   }
 
   // Try to parse hex color
-  if (color.startsWith('#') && color.length === 7) {
+  if (color.startsWith("#") && color.length === 7) {
     const r = parseInt(color.slice(1, 3), 16);
     const g = parseInt(color.slice(3, 5), 16);
     const b = parseInt(color.slice(5, 7), 16);
@@ -894,7 +914,7 @@ function getAnsiColor(color: string): string {
     return `\x1b[38;5;${code}m`;
   }
 
-  return '';
+  return "";
 }
 
 /**
@@ -907,14 +927,14 @@ function validateRenderInput(input: RenderInput): AnimationError | null {
   const sources = [input.animView, input.svgContent, input.svgFilePath].filter(Boolean);
 
   if (sources.length === 0) {
-    return createAnimationError('INVALID_ANIMVIEW', {
-      field: 'source (animView, svgContent, or svgFilePath)'
+    return createAnimationError("INVALID_ANIMVIEW", {
+      field: "source (animView, svgContent, or svgFilePath)",
     });
   }
 
   if (sources.length > 1) {
-    return createAnimationError('INVALID_ANIMVIEW', {
-      specificError: 'Exactly one of animView, svgContent, or svgFilePath must be provided'
+    return createAnimationError("INVALID_ANIMVIEW", {
+      specificError: "Exactly one of animView, svgContent, or svgFilePath must be provided",
     });
   }
 
@@ -935,20 +955,20 @@ function validateRenderInput(input: RenderInput): AnimationError | null {
  * NORMATIVE: SC-ANIM-016
  */
 function validateAnimView(animView: AnimView): AnimationError | null {
-  if (typeof animView.frame !== 'string') {
-    return createAnimationError('INVALID_ANIMVIEW', { field: 'frame' });
+  if (typeof animView.frame !== "string") {
+    return createAnimationError("INVALID_ANIMVIEW", { field: "frame" });
   }
-  if (typeof animView.title !== 'string') {
-    return createAnimationError('INVALID_ANIMVIEW', { field: 'title' });
+  if (typeof animView.title !== "string") {
+    return createAnimationError("INVALID_ANIMVIEW", { field: "title" });
   }
-  if (typeof animView.width !== 'number' || animView.width <= 0) {
-    return createAnimationError('INVALID_ANIMVIEW', { field: 'width' });
+  if (typeof animView.width !== "number" || animView.width <= 0) {
+    return createAnimationError("INVALID_ANIMVIEW", { field: "width" });
   }
-  if (typeof animView.height !== 'number' || animView.height <= 0) {
-    return createAnimationError('INVALID_ANIMVIEW', { field: 'height' });
+  if (typeof animView.height !== "number" || animView.height <= 0) {
+    return createAnimationError("INVALID_ANIMVIEW", { field: "height" });
   }
   if (!Array.isArray(animView.elements)) {
-    return createAnimationError('INVALID_ANIMVIEW', { field: 'elements' });
+    return createAnimationError("INVALID_ANIMVIEW", { field: "elements" });
   }
   return null;
 }
@@ -988,19 +1008,23 @@ export class RenderService {
 
     // Handle special case: fallbackPreference is 'none' - return error
     // This is for when user explicitly declines all fallbacks
-    if (input.fallbackPreference === 'none' && input.protocol !== 'kitty' && input.protocol !== 'iterm2') {
+    if (
+      input.fallbackPreference === "none" &&
+      input.protocol !== "kitty" &&
+      input.protocol !== "iterm2"
+    ) {
       return this.errors.noFallbackAvailable();
     }
 
     // Step 2 & 3: Route to appropriate renderer based on protocol
     try {
       switch (input.protocol) {
-        case 'kitty':
-        case 'iterm2':
+        case "kitty":
+        case "iterm2":
           return await this.renderTerminalGraphics(input);
-        case 'ascii':
+        case "ascii":
           return await this.renderAscii(input);
-        case 'browser':
+        case "browser":
           return await this.renderBrowser(input);
         default:
           return this.errors.renderFailed(`Unknown protocol: ${input.protocol}`);
@@ -1016,7 +1040,9 @@ export class RenderService {
    * @implements REQ-RENDER-002, REQ-RENDER-005, REQ-RENDER-006
    * NORMATIVE: SC-ANIM-005
    */
-  private async renderTerminalGraphics(input: RenderInput): Promise<TerminalRenderResult | AnimationError> {
+  private async renderTerminalGraphics(
+    input: RenderInput,
+  ): Promise<TerminalRenderResult | AnimationError> {
     // Obtain PNG data
     const pngResult = await this.obtainPngData(input);
     if (isAnimationError(pngResult)) {
@@ -1031,14 +1057,12 @@ export class RenderService {
     }
 
     // Step 5: Encode for protocol
-    const output = input.protocol === 'kitty'
-      ? renderKitty(pngData)
-      : renderIterm2(pngData);
+    const output = input.protocol === "kitty" ? renderKitty(pngData) : renderIterm2(pngData);
 
     return {
       output,
-      protocol: input.protocol as 'kitty' | 'iterm2',
-      frameIndex: input.frameIndex
+      protocol: input.protocol as "kitty" | "iterm2",
+      frameIndex: input.frameIndex,
     };
   }
 
@@ -1062,9 +1086,9 @@ export class RenderService {
         return this.errors.fileNotFound(input.svgFilePath);
       }
       const content = await this.fileSystem.readFile(input.svgFilePath);
-      animView = this.svgContentToAnimView(content.toString('utf-8'));
+      animView = this.svgContentToAnimView(content.toString("utf-8"));
     } else {
-      return this.errors.invalidAnimView('source');
+      return this.errors.invalidAnimView("source");
     }
 
     const config = input.asciiConfig ?? {};
@@ -1091,9 +1115,9 @@ export class RenderService {
         return this.errors.fileNotFound(input.svgFilePath);
       }
       const content = await this.fileSystem.readFile(input.svgFilePath);
-      svgContent = content.toString('utf-8');
+      svgContent = content.toString("utf-8");
     } else {
-      return this.errors.invalidAnimView('source');
+      return this.errors.invalidAnimView("source");
     }
 
     // Create HTML wrapper
@@ -1121,8 +1145,8 @@ ${svgContent}
 
     return {
       filePath,
-      protocol: 'browser',
-      frameIndex: input.frameIndex
+      protocol: "browser",
+      frameIndex: input.frameIndex,
     };
   }
 
@@ -1150,14 +1174,14 @@ ${svgContent}
 
       try {
         const content = await this.fileSystem.readFile(input.svgFilePath);
-        return this.rasterizer.rasterizeSvg(content.toString('utf-8'));
+        return this.rasterizer.rasterizeSvg(content.toString("utf-8"));
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         return this.errors.invalidSvg(message);
       }
     }
 
-    return this.errors.invalidAnimView('source');
+    return this.errors.invalidAnimView("source");
   }
 
   /**
@@ -1194,7 +1218,7 @@ ${svgContent}
    */
   async getFrameCount(
     traceDirectory: string,
-    filePattern?: string
+    filePattern?: string,
   ): Promise<FrameCountResult | AnimationError> {
     // Check if directory exists
     const exists = await this.fileSystem.exists(traceDirectory);
@@ -1216,7 +1240,7 @@ ${svgContent}
 
       return {
         count: sortedFiles.length,
-        files: sortedFiles
+        files: sortedFiles,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -1242,10 +1266,10 @@ function extractFrameNumber(filePath: string): number {
  */
 export function createRenderService(
   rasterizer?: RasterizerService,
-  fileSystem?: FileSystemService
+  fileSystem?: FileSystemService,
 ): RenderService {
   return new RenderService({
     rasterizer,
-    fileSystem
+    fileSystem,
   });
 }

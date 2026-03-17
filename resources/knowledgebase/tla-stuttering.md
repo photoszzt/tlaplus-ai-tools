@@ -7,7 +7,7 @@ description: How to Model Stuttering in TLA+
 
 ### What is Stuttering?
 
-In TLA+, a *stuttering step* is a step in which the system's variables do not change. Stuttering steps are important in temporal logic because they allow behaviors to be extended with 'do nothing' steps, making specifications robust to timing and implementation details.
+In TLA+, a _stuttering step_ is a step in which the system's variables do not change. Stuttering steps are important in temporal logic because they allow behaviors to be extended with 'do nothing' steps, making specifications robust to timing and implementation details.
 
 ### Stuttering is Built-In
 

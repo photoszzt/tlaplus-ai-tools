@@ -200,25 +200,30 @@ RemoveFirst(seq, elem) ==
 ## Standard Modules
 
 ### Naturals
+
 - `Nat` - Natural numbers
 - `+`, `-`, `*`, `\div`, `%`, `^`
 - `a..b` - Range
 
 ### Integers
+
 - `Int` - All integers
 - All Naturals operators
 - Negative numbers
 
 ### Sequences
+
 - `Seq(S)` - All sequences over S
 - `Len`, `Head`, `Tail`, `Append`, `\o`
 - `SubSeq`, sequence comprehensions
 
 ### FiniteSets
+
 - `Cardinality(S)` - Size of set
 - `IsFiniteSet(S)` - Check if finite
 
 ### TLC
+
 - `Print(out, val)` - Print and return val
 - `Assert(condition, message)` - Runtime assertion
 - `JavaTime` - Current time in ms
@@ -226,12 +231,14 @@ RemoveFirst(seq, elem) ==
 - `:>` - Function constructor
 
 ### Bags (multisets)
+
 - `IsABag(B)` - Check if bag
 - `BagToSet(B)` - Convert to set
 - `SetToBag(S)` - Convert to bag
 - `BagIn(x, B)` - Element in bag
 
 ### RealTime
+
 - Real-time specifications
 - Time-bounded properties
 

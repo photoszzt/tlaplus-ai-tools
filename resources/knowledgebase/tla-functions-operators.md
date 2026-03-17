@@ -8,18 +8,18 @@ description: Learn the distinction between operators and functions in TLA+. Oper
 The distinction between **functions** and **operators** in **TLA+**.
 
 ### 🔧 **Rule**
->
-> **Operators** in TLA+ are symbolic or named expressions that *take arguments and produce expressions*.  
-> **Functions** are mappings from a *domain* to a *range*, where each input in the domain maps to exactly one output.
+
+> **Operators** in TLA+ are symbolic or named expressions that _take arguments and produce expressions_.  
+> **Functions** are mappings from a _domain_ to a _range_, where each input in the domain maps to exactly one output.
 
 ---
 
 ### 🧠 Think of it like this
 
 | Concept          | Operators                                                               | Functions                                                         |
-|------------------|-------------------------------------------------------------------------|-------------------------------------------------------------------|
-| **Nature**       | Logical/mathematical *expression*                                       | *Data structure* mapping inputs to outputs                        |
-| **Usage**        | Used like a *macro* or expression generator                             | Used like a value or variable                                     |
+| ---------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| **Nature**       | Logical/mathematical _expression_                                       | _Data structure_ mapping inputs to outputs                        |
+| **Usage**        | Used like a _macro_ or expression generator                             | Used like a value or variable                                     |
 | **Input**        | Passed explicitly via parentheses (`F(x, y)`)                           | Accessed via function application (`f[x]`)                        |
 | **Definition**   | Via `==`, e.g., `F(x) == x + 1`                                         | Via `[x ∈ S ↦ expr]`, e.g., `f == [x ∈ S ↦ x + 1]`                |
 | **Evaluation**   | Substitutes and evaluates as a formula                                  | Evaluates to a value (a function object)                          |
@@ -50,6 +50,6 @@ f == [x ∈ Nat ↦ 2 * x]
 ---
 
 ### ✨ Summary Shortcut
->
+
 > **Operators** are like macros that compute expressions.  
 > **Functions** are values that map inputs to outputs.

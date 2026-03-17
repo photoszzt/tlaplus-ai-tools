@@ -36,6 +36,7 @@ This skill provides guidance on specification refinement - proving that one spec
 Concrete spec's behaviors are subset of abstract spec's behaviors.
 
 **Checked with TLC**:
+
 - Define refinement mapping
 - Check concrete implements abstract
 
@@ -44,6 +45,7 @@ Concrete spec's behaviors are subset of abstract spec's behaviors.
 Concrete spec satisfies abstract spec's liveness properties.
 
 **Requires**:
+
 - Safety refinement
 - Fairness conditions
 
@@ -52,6 +54,7 @@ Concrete spec satisfies abstract spec's liveness properties.
 ### 1. Create Abstract Specification
 
 High-level design:
+
 ```tla
 ---- MODULE AbstractCounter ----
 EXTENDS Naturals
@@ -66,6 +69,7 @@ Spec == Init /\ [][Inc]_count
 ### 2. Create Concrete Specification
 
 Implementation with more detail:
+
 ```tla
 ---- MODULE ConcreteCounter ----
 EXTENDS Naturals
@@ -82,6 +86,7 @@ Spec == Init /\ [][IncX \/ IncY]_<<x,y>>
 ### 3. Define Refinement Mapping
 
 Map concrete state to abstract state:
+
 ```tla
 count == x + y  \* How concrete variables relate to abstract
 ```
@@ -91,6 +96,7 @@ count == x + y  \* How concrete variables relate to abstract
 **Method 1: INSTANCE with substitution**
 
 In concrete spec:
+
 ```tla
 A == INSTANCE AbstractCounter WITH count <- x + y
 
@@ -118,6 +124,7 @@ THEOREM Spec => [][A!Inc]_<<x,y>>
 ```
 
 **TLC Configuration**:
+
 ```
 SPECIFICATION Spec
 INVARIANT A!TypeInvariant
@@ -141,17 +148,20 @@ If fails: Trace shows where refinement breaks ✗
 Define how concrete variables map to abstract:
 
 **Simple mapping**:
+
 ```tla
 abstractVar == concreteVar
 ```
 
 **Computed mapping**:
+
 ```tla
 count == x + y
 status == IF phase = "init" THEN "idle" ELSE "active"
 ```
 
 **Set projection**:
+
 ```tla
 items == {msg.data : msg \in messages}
 ```
@@ -187,6 +197,7 @@ ConcreteAction2 == x' = temp /\ UNCHANGED temp
 ### Data Refinement
 
 Abstract set becomes concrete sequence:
+
 ```tla
 \* Abstract
 VARIABLE items  \* Set of items
@@ -201,6 +212,7 @@ items == {queue[i] : i \in 1..Len(queue)}
 ### Protocol Refinement
 
 Abstract atomic action becomes multi-step protocol:
+
 ```tla
 \* Abstract
 Transfer(a, b, amt) ==
@@ -216,6 +228,7 @@ AbortTransfer == ...
 ### State Machine Refinement
 
 Abstract states map to concrete states:
+
 ```tla
 \* Abstract: {idle, busy}
 \* Concrete: {init, working, finalizing}
@@ -241,6 +254,7 @@ INVARIANT
 ### Trace Checking
 
 If refinement fails:
+
 1. TLC shows counterexample
 2. Trace shows concrete behavior
 3. Find where abstract property violated
@@ -249,22 +263,28 @@ If refinement fails:
 ### Common Failures
 
 **Wrong mapping**:
+
 ```
 count == x * y  \* Should be x + y
 ```
+
 Fix: Correct the mapping function.
 
 **Missing initialization**:
+
 ```
 \* Abstract: x = 0
 \* Concrete: forgot to set something
 ```
+
 Fix: Initialize all concrete state.
 
 **Extra behaviors**:
+
 ```
 \* Concrete allows actions abstract doesn't
 ```
+
 Fix: Strengthen concrete guards or abstract spec.
 
 ## TLC-Based vs TLAPS Proofs
@@ -272,11 +292,13 @@ Fix: Strengthen concrete guards or abstract spec.
 ### TLC (Model Checking)
 
 ✅ **Pros**:
+
 - Automatic verification
 - Finds counterexamples
 - Easy to use
 
 ❌ **Cons**:
+
 - Finite state spaces only
 - Not a mathematical proof
 - Bounded checking
@@ -286,11 +308,13 @@ Fix: Strengthen concrete guards or abstract spec.
 ### TLAPS (Proof System)
 
 ✅ **Pros**:
+
 - Mathematical proofs
 - Works for infinite state spaces
 - Complete verification
 
 ❌ **Cons**:
+
 - Requires manual proof
 - Steeper learning curve
 - More time-consuming
@@ -325,6 +349,7 @@ See `references/tlaps-guide.md` for TLAPS details (advanced).
 ### Modular Refinement
 
 Chain refinements:
+
 ```
 Spec1 refines Spec0 (high-level)
 Spec2 refines Spec1 (medium-level)
@@ -334,6 +359,7 @@ Spec3 refines Spec2 (implementation)
 ### Document Mapping
 
 Comment refinement mapping clearly:
+
 ```tla
 \* Refinement Mapping:
 \* Abstract 'count' represents total items
@@ -344,6 +370,7 @@ count == x + y
 ### Test Mapping
 
 Before checking refinement:
+
 ```
 1. Check concrete spec correct on its own
 2. Verify mapping makes sense
@@ -353,6 +380,7 @@ Before checking refinement:
 ## Examples
 
 See `examples/` directory:
+
 - `AbstractQueue.tla` - Simple abstract queue
 - `ConcreteQueue.tla` - Implementation with array
 - `QueueRefinement.tla` - Refinement proof

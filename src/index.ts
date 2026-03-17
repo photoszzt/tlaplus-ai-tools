@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import { parseArgs } from './cli';
-import { TLAPlusMCPServer } from './server';
-import { autoDetectToolsDir, autoDetectKbDir, validateDirectory } from './utils/paths';
+import { parseArgs } from "./cli";
+import { TLAPlusMCPServer } from "./server";
+import { autoDetectToolsDir, autoDetectKbDir, validateDirectory } from "./utils/paths";
 
 async function main() {
   try {
@@ -26,22 +26,22 @@ async function main() {
 
     // Validate directories if specified
     if (config.toolsDir) {
-      await validateDirectory(config.toolsDir, 'TLA+ tools');
+      await validateDirectory(config.toolsDir, "TLA+ tools");
     }
 
     if (config.kbDir) {
-      await validateDirectory(config.kbDir, 'Knowledge base');
+      await validateDirectory(config.kbDir, "Knowledge base");
     }
 
     if (config.workingDir) {
-      await validateDirectory(config.workingDir, 'Working');
+      await validateDirectory(config.workingDir, "Working");
     }
 
     // Start the server
     const server = new TLAPlusMCPServer(config);
     await server.start();
   } catch (error) {
-    console.error('Fatal error:', error instanceof Error ? error.message : String(error));
+    console.error("Fatal error:", error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 }

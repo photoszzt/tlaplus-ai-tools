@@ -14,16 +14,16 @@ export interface MarkdownMetadata {
  * @returns Parsed metadata object
  */
 export function parseMarkdownFrontmatter(content: string): MarkdownMetadata {
-  const normalizedContent = content.replace(/^\ufeff/, '');
+  const normalizedContent = content.replace(/^\ufeff/, "");
   const metadata: MarkdownMetadata = {};
 
   // Check if content starts with frontmatter delimiter
-  if (!normalizedContent.startsWith('---')) {
+  if (!normalizedContent.startsWith("---")) {
     return metadata;
   }
 
   // Find the end of the frontmatter section
-  const endIndex = normalizedContent.indexOf('---', 3);
+  const endIndex = normalizedContent.indexOf("---", 3);
   if (endIndex === -1) {
     return metadata;
   }
@@ -39,17 +39,17 @@ export function parseMarkdownFrontmatter(content: string): MarkdownMetadata {
     const trimmedLine = line.trim();
 
     // Parse 'title: value'
-    if (trimmedLine.startsWith('title:')) {
+    if (trimmedLine.startsWith("title:")) {
       const value = trimmedLine.substring(6).trim();
       // Remove quotes if present
-      metadata.title = value.replace(/^["']|["']$/g, '');
+      metadata.title = value.replace(/^["']|["']$/g, "");
     }
 
     // Parse 'description: value'
-    if (trimmedLine.startsWith('description:')) {
+    if (trimmedLine.startsWith("description:")) {
       const value = trimmedLine.substring(12).trim();
       // Remove quotes if present
-      metadata.description = value.replace(/^["']|["']$/g, '');
+      metadata.description = value.replace(/^["']|["']$/g, "");
     }
   }
 
@@ -64,14 +64,14 @@ export function parseMarkdownFrontmatter(content: string): MarkdownMetadata {
  * @returns Content without frontmatter
  */
 export function removeMarkdownFrontmatter(content: string): string {
-  const normalizedContent = content.replace(/^\ufeff/, '');
+  const normalizedContent = content.replace(/^\ufeff/, "");
   // Check if content starts with frontmatter delimiter
-  if (!normalizedContent.startsWith('---')) {
+  if (!normalizedContent.startsWith("---")) {
     return normalizedContent;
   }
 
   // Find the end of the frontmatter section
-  const endIndex = normalizedContent.indexOf('---', 3);
+  const endIndex = normalizedContent.indexOf("---", 3);
   if (endIndex === -1) {
     return normalizedContent;
   }
@@ -79,7 +79,10 @@ export function removeMarkdownFrontmatter(content: string): string {
   // Return content after the second '---' delimiter
   // Skip the delimiter and any following newlines
   let startIndex = endIndex + 3;
-  while (startIndex < normalizedContent.length && (normalizedContent[startIndex] === '\n' || normalizedContent[startIndex] === '\r')) {
+  while (
+    startIndex < normalizedContent.length &&
+    (normalizedContent[startIndex] === "\n" || normalizedContent[startIndex] === "\r")
+  ) {
     startIndex++;
   }
 

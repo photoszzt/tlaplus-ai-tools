@@ -1,6 +1,6 @@
 // src/utils/errors/error-context.ts
-import { ErrorCode } from './error-codes';
-import { classifyError } from './error-classifier';
+import { ErrorCode } from "./error-codes";
+import { classifyError } from "./error-classifier";
 
 export interface ErrorMetadata {
   code?: ErrorCode;
@@ -18,14 +18,14 @@ export class EnhancedError extends Error {
 
   constructor(message: string, originalError: Error, metadata: Partial<ErrorMetadata> = {}) {
     super(message);
-    this.name = 'EnhancedError';
+    this.name = "EnhancedError";
     this.originalError = originalError;
     this.code = metadata.code ?? classifyError(originalError);
     this.metadata = {
       ...metadata,
       code: this.code,
       timestamp: new Date().toISOString(),
-      stack: originalError.stack
+      stack: originalError.stack,
     };
 
     // Preserve stack trace
@@ -38,11 +38,10 @@ export class EnhancedError extends Error {
 export function enhanceError(error: Error, metadata: Partial<ErrorMetadata> = {}): EnhancedError {
   if (error instanceof EnhancedError) {
     // Merge metadata for already-enhanced errors
-    return new EnhancedError(
-      error.message,
-      error.originalError,
-      { ...error.metadata, ...metadata }
-    );
+    return new EnhancedError(error.message, error.originalError, {
+      ...error.metadata,
+      ...metadata,
+    });
   }
 
   return new EnhancedError(error.message, error, metadata);

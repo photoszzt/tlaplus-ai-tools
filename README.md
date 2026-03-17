@@ -195,7 +195,6 @@ Follow the guidance to create a simple counter specification.
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines (coming soon)
 
-
 ## Configuration
 
 ### Custom Settings (Optional)

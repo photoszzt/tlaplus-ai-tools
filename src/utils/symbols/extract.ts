@@ -1,23 +1,23 @@
-import * as path from 'path';
-import { runXmlExporter } from './xml-exporter';
-import { parseXmlSymbols } from './xml-parser';
-import { groupSymbols } from './grouping';
-import { computeBestGuess } from './best-guess';
-import { SymbolExtractionResult, CandidateGroups } from './types';
+import * as path from "path";
+import { runXmlExporter } from "./xml-exporter";
+import { parseXmlSymbols } from "./xml-parser";
+import { groupSymbols } from "./grouping";
+import { computeBestGuess } from "./best-guess";
+import { SymbolExtractionResult, CandidateGroups } from "./types";
 
 export async function extractSymbols(
   tlaFilePath: string,
   toolsDir: string,
   includeExtendedModules: boolean,
-  javaHome?: string
+  javaHome?: string,
 ): Promise<SymbolExtractionResult> {
-  const rootModule = path.basename(tlaFilePath, '.tla');
+  const rootModule = path.basename(tlaFilePath, ".tla");
 
   const { xml, stderr } = await runXmlExporter(
     tlaFilePath,
     toolsDir,
     includeExtendedModules,
-    javaHome
+    javaHome,
   );
 
   if (!xml.trim()) {
@@ -26,18 +26,18 @@ export async function extractSymbols(
 
   const allSymbols = parseXmlSymbols(xml);
 
-  const rootSymbols = allSymbols.filter(s => s.module === rootModule);
-  const extendedSymbols = allSymbols.filter(s => s.module !== rootModule);
+  const rootSymbols = allSymbols.filter((s) => s.module === rootModule);
+  const extendedSymbols = allSymbols.filter((s) => s.module !== rootModule);
 
   const candidates = groupSymbols(rootSymbols);
 
   const extendedModules: Record<string, { candidates: CandidateGroups }> = {};
   if (includeExtendedModules) {
-    const moduleNames = [...new Set(extendedSymbols.map(s => s.module))];
+    const moduleNames = [...new Set(extendedSymbols.map((s) => s.module))];
     for (const moduleName of moduleNames) {
-      const moduleSymbols = extendedSymbols.filter(s => s.module === moduleName);
+      const moduleSymbols = extendedSymbols.filter((s) => s.module === moduleName);
       extendedModules[moduleName] = {
-        candidates: groupSymbols(moduleSymbols)
+        candidates: groupSymbols(moduleSymbols),
       };
     }
   }
@@ -51,6 +51,6 @@ export async function extractSymbols(
     includeExtendedModules,
     candidates,
     bestGuess,
-    extendedModules
+    extendedModules,
   };
 }

@@ -2,11 +2,12 @@
 title: TLA+ Spec Refinement
 description: Understanding and verifying refinement in TLA+ specifications.
 ---
+
 ## 📏 TLA+ Spec Refinement
 
 ### 🔍 What is Refinement?
 
-**Refinement** means that a **lower-level (implementation) specification** correctly implements the behavior of a **higher-level (abstract) specification**. In TLA+, this allows you to write a simple spec describing *what* a system should do, and a more detailed one describing *how* it does it—and then prove they behave consistently. In short: **Implementation Spec** refines **High-Level Spec** if every behavior of the implementation is *allowed* by the high-level spec.
+**Refinement** means that a **lower-level (implementation) specification** correctly implements the behavior of a **higher-level (abstract) specification**. In TLA+, this allows you to write a simple spec describing _what_ a system should do, and a more detailed one describing _how_ it does it—and then prove they behave consistently. In short: **Implementation Spec** refines **High-Level Spec** if every behavior of the implementation is _allowed_ by the high-level spec.
 Refinement is semantic: it’s about the meaning of the specs (their behaviors), not about syntax. Specs don’t have to share variables or modules.
 
 ---
@@ -116,4 +117,4 @@ This checks: "Does my implementation spec (`Spec`) refine the abstract spec (`Hi
 
 TLA+ refinement is **stuttering insensitive**. That means if your implementation does "extra steps" such as `x' = x /\ y' = y + 1` that don’t change the abstract state (the variable `counter` above), it's still a valid refinement—as long as the visible behavior aligns.
 
-> 🧠 Think of it as: the abstract spec doesn’t care *how* the result was achieved, as long as the *resulting behavior* is the same.
+> 🧠 Think of it as: the abstract spec doesn’t care _how_ the result was achieved, as long as the _resulting behavior_ is the same.
