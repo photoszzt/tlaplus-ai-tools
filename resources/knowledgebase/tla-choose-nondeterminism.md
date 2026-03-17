@@ -5,7 +5,7 @@ description: Understanding the differences between `CHOOSE` and non-determinism 
 
 # Choosing Between `CHOOSE` and Non-Determinism in TLA+
 
-In TLA+, both `CHOOSE` and existential quantification (`∃` or `\E`) can express that **some element** with a given property exists. However, they serve **different purposes** and should be used in **different contexts**.  `CHOOSE` is constructive—it picks one such element so you can use it as a specific value in definitions, whereas `∃` is logical—it’s used to state that such an element exists, without identifying which one.
+In TLA+, both `CHOOSE` and existential quantification (`∃` or `\E`) can express that **some element** with a given property exists. However, they serve **different purposes** and should be used in **different contexts**. `CHOOSE` is constructive—it picks one such element so you can use it as a specific value in definitions, whereas `∃` is logical—it’s used to state that such an element exists, without identifying which one.
 
 ## ✅ When to Use `CHOOSE`
 
@@ -13,7 +13,7 @@ In TLA+, both `CHOOSE` and existential quantification (`∃` or `\E`) can expres
 - You want to **define a function** or variable deterministically based on some property.
 - The value must be **stable and consistent** (i.e., the same value is always chosen if the set of satisfying values remains unchanged).
 
-## 🚫 When *Not* to Use `CHOOSE`
+## 🚫 When _Not_ to Use `CHOOSE`
 
 **Do not use `CHOOSE` to eliminate non-determinism** in a behavior specification (i.e. in `Spec`) in order to reduce state space.
 
@@ -30,7 +30,7 @@ CHOOSE x \in Nat : x > 5
 > Selects **one particular natural number greater than 5**, and always returns the same one as long as the condition doesn’t change.
 
 ```tla
-NULL == 
+NULL ==
     CHOOSE x : x \notin D
 ```
 
@@ -46,7 +46,7 @@ Max(S) ==
 ```tla
 \* Assume `S \subseteq DOMAIN func`.
 RECURSIVE Sum(_, _)
-Sum(func, S) == 
+Sum(func, S) ==
     IF S = {} THEN 0
     ELSE LET x == CHOOSE x \in S : TRUE
          IN  func[x] + Sum(func, S \ {x})

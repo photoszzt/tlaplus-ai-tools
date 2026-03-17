@@ -7,7 +7,7 @@
  * @module animation/DetectionService
  */
 
-import { spawn } from 'child_process';
+import { spawn } from "child_process";
 import {
   DetectionResult,
   DetectionEnvironment,
@@ -16,9 +16,9 @@ import {
   Multiplexer,
   ConfidenceLevel,
   FallbackOption,
-  AnimationError
-} from './types';
-import { createAnimationError } from './errors';
+  AnimationError,
+} from "./types";
+import { createAnimationError } from "./errors";
 
 /**
  * Default timeout for detection in milliseconds
@@ -41,7 +41,7 @@ function defaultEnvReader(): DetectionEnvironment {
     KITTY_WINDOW_ID: process.env.KITTY_WINDOW_ID,
     TMUX: process.env.TMUX,
     STY: process.env.STY,
-    LC_TERMINAL: process.env.LC_TERMINAL
+    LC_TERMINAL: process.env.LC_TERMINAL,
   };
 }
 
@@ -55,28 +55,28 @@ async function defaultTmuxConfigReader(): Promise<boolean> {
     }, TMUX_QUERY_TIMEOUT_MS);
 
     try {
-      const proc = spawn('tmux', ['show', '-g', 'allow-passthrough'], {
-        stdio: ['ignore', 'pipe', 'pipe']
+      const proc = spawn("tmux", ["show", "-g", "allow-passthrough"], {
+        stdio: ["ignore", "pipe", "pipe"],
       });
 
-      let output = '';
+      let output = "";
 
-      proc.stdout.on('data', (data) => {
+      proc.stdout.on("data", (data) => {
         output += data.toString();
       });
 
-      proc.on('close', (code) => {
+      proc.on("close", (code) => {
         clearTimeout(timeout);
         if (code === 0) {
           // Output format: "allow-passthrough on" or "allow-passthrough off"
-          const enabled = output.toLowerCase().includes('on');
+          const enabled = output.toLowerCase().includes("on");
           resolve(enabled);
         } else {
           resolve(false);
         }
       });
 
-      proc.on('error', () => {
+      proc.on("error", () => {
         clearTimeout(timeout);
         resolve(false);
       });
@@ -95,12 +95,12 @@ async function defaultTmuxConfigReader(): Promise<boolean> {
  */
 function detectMultiplexer(env: DetectionEnvironment): Multiplexer {
   if (env.TMUX) {
-    return 'tmux';
+    return "tmux";
   }
   if (env.STY) {
-    return 'screen';
+    return "screen";
   }
-  return 'none';
+  return "none";
 }
 
 /**
@@ -111,16 +111,16 @@ function detectMultiplexer(env: DetectionEnvironment): Multiplexer {
  */
 function detectProtocol(env: DetectionEnvironment): GraphicsProtocol {
   // Check for Kitty (order matters per design.md)
-  if (env.KITTY_WINDOW_ID || env.TERM === 'xterm-kitty') {
-    return 'kitty';
+  if (env.KITTY_WINDOW_ID || env.TERM === "xterm-kitty") {
+    return "kitty";
   }
 
   // Check for iTerm2
-  if (env.TERM_PROGRAM === 'iTerm.app' || env.LC_TERMINAL === 'iTerm2') {
-    return 'iterm2';
+  if (env.TERM_PROGRAM === "iTerm.app" || env.LC_TERMINAL === "iTerm2") {
+    return "iterm2";
   }
 
-  return 'none';
+  return "none";
 }
 
 /**
@@ -132,32 +132,32 @@ function detectProtocol(env: DetectionEnvironment): GraphicsProtocol {
  */
 function determineConfidence(
   protocol: GraphicsProtocol,
-  env: DetectionEnvironment
+  env: DetectionEnvironment,
 ): ConfidenceLevel {
-  if (protocol === 'kitty') {
+  if (protocol === "kitty") {
     // High confidence if direct env var match
     if (env.KITTY_WINDOW_ID) {
-      return 'high';
+      return "high";
     }
     // Medium if inferred from TERM
-    if (env.TERM === 'xterm-kitty') {
-      return 'medium';
+    if (env.TERM === "xterm-kitty") {
+      return "medium";
     }
   }
 
-  if (protocol === 'iterm2') {
+  if (protocol === "iterm2") {
     // High confidence if direct TERM_PROGRAM match
-    if (env.TERM_PROGRAM === 'iTerm.app') {
-      return 'high';
+    if (env.TERM_PROGRAM === "iTerm.app") {
+      return "high";
     }
     // High confidence for LC_TERMINAL
-    if (env.LC_TERMINAL === 'iTerm2') {
-      return 'high';
+    if (env.LC_TERMINAL === "iTerm2") {
+      return "high";
     }
   }
 
   // Low confidence for fallback/no detection
-  return 'low';
+  return "low";
 }
 
 /**
@@ -208,7 +208,7 @@ export class DetectionService {
     // Create timeout promise for INV-DETECT-001 enforcement
     const timeoutPromise = new Promise<AnimationError>((resolve) => {
       setTimeout(() => {
-        resolve(createAnimationError('DETECTION_TIMEOUT'));
+        resolve(createAnimationError("DETECTION_TIMEOUT"));
       }, effectiveTimeout);
     });
 
@@ -237,16 +237,16 @@ export class DetectionService {
     let passthroughEnabled = true; // Default true when no multiplexer
     const passthroughVerified = false; // Always false for v1 per spec
 
-    if (multiplexer === 'tmux') {
+    if (multiplexer === "tmux") {
       passthroughEnabled = await this.tmuxConfigReader();
-    } else if (multiplexer === 'screen') {
+    } else if (multiplexer === "screen") {
       // Screen has limited graphics support per design.md
       passthroughEnabled = false;
     }
 
     // If no multiplexer, passthrough is not applicable but set to true
     // to indicate graphics can work directly
-    if (multiplexer === 'none') {
+    if (multiplexer === "none") {
       passthroughEnabled = true;
     }
 
@@ -254,7 +254,7 @@ export class DetectionService {
     const confidence = determineConfidence(protocol, env);
 
     // Step 6: Build and return result (per design.md 4.1)
-    const fallbackAvailable: FallbackOption[] = ['ascii', 'browser'];
+    const fallbackAvailable: FallbackOption[] = ["ascii", "browser"];
 
     return {
       protocol,
@@ -262,9 +262,9 @@ export class DetectionService {
       passthroughEnabled,
       passthroughVerified,
       fallbackAvailable,
-      detectionMethod: 'env',
+      detectionMethod: "env",
       confidence,
-      environment: filterEnvironment(env)
+      environment: filterEnvironment(env),
     };
   }
 }
@@ -280,11 +280,11 @@ export class DetectionService {
 export function createDetectionService(
   envReader?: () => DetectionEnvironment,
   tmuxConfigReader?: () => Promise<boolean>,
-  timeoutMs?: number
+  timeoutMs?: number,
 ): DetectionService {
   return new DetectionService({
     envReader,
     tmuxConfigReader,
-    timeoutMs
+    timeoutMs,
   });
 }

@@ -4,11 +4,11 @@
 
 /** Match types for bestGuess scoring */
 export type MatchType =
-  | 'exact'
-  | 'case_insensitive_exact'
-  | 'prefix'
-  | 'contains'
-  | 'fallback_first_candidate';
+  | "exact"
+  | "case_insensitive_exact"
+  | "prefix"
+  | "contains"
+  | "fallback_first_candidate";
 
 /** Location within a TLA+ file */
 export interface SymbolLocation {
@@ -19,15 +19,15 @@ export interface SymbolLocation {
 
 /** Raw kind from XMLExporter entry type */
 export type RawSymbolKind =
-  | 'OpDeclNode'
-  | 'UserDefinedOpKind'
-  | 'TheoremDefNode'
-  | 'AssumeDef'
+  | "OpDeclNode"
+  | "UserDefinedOpKind"
+  | "TheoremDefNode"
+  | "AssumeDef"
   | string;
 
 /**
  * Normalized symbol extracted from XMLExporter output
- * 
+ *
  * Level meanings (TLA+ semantic levels):
  * - 0: constant expressions
  * - 1: state expressions (can reference variables)
@@ -90,7 +90,7 @@ export interface BestGuess {
 
 /**
  * Complete symbol extraction result
- * 
+ *
  * schemaVersion: Bump only for breaking changes to response shape
  */
 export interface SymbolExtractionResult {

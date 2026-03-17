@@ -1,4 +1,4 @@
-import * as path from 'path';
+import * as path from "path";
 
 const mockStat = jest.fn();
 const mockAccess = jest.fn();
@@ -6,28 +6,28 @@ const mockReaddir = jest.fn();
 const mockExecSync = jest.fn();
 const mockRealpathSync = jest.fn();
 
-jest.mock('fs', () => ({
+jest.mock("fs", () => ({
   realpathSync: (...args: unknown[]) => mockRealpathSync(...args),
   promises: {
     stat: (...args: unknown[]) => mockStat(...args),
     access: (...args: unknown[]) => mockAccess(...args),
-    readdir: (...args: unknown[]) => mockReaddir(...args)
-  }
+    readdir: (...args: unknown[]) => mockReaddir(...args),
+  },
 }));
 
-jest.mock('child_process', () => ({
+jest.mock("child_process", () => ({
   execSync: (...args: unknown[]) => mockExecSync(...args),
-  execFileSync: (...args: unknown[]) => mockExecSync(...args)
+  execFileSync: (...args: unknown[]) => mockExecSync(...args),
 }));
 
 import {
   resolveAndValidatePath,
   autoDetectToolsDir,
   autoDetectKbDir,
-  validateDirectory
-} from '../paths';
+  validateDirectory,
+} from "../paths";
 
-describe('paths', () => {
+describe("paths", () => {
   beforeEach(() => {
     mockStat.mockReset();
     mockAccess.mockReset();
@@ -38,87 +38,85 @@ describe('paths', () => {
     mockRealpathSync.mockImplementation((p: string) => p);
   });
 
-  describe('resolveAndValidatePath', () => {
-    it('resolves absolute paths correctly when no workingDir', () => {
-      const absolutePath = '/absolute/path/file.txt';
+  describe("resolveAndValidatePath", () => {
+    it("resolves absolute paths correctly when no workingDir", () => {
+      const absolutePath = "/absolute/path/file.txt";
 
       const result = resolveAndValidatePath(absolutePath, null);
       expect(result).toBe(absolutePath);
     });
 
-    it('resolves relative paths correctly', () => {
-      const basePath = '/base/path';
-      const relativePath = 'relative/file.txt';
+    it("resolves relative paths correctly", () => {
+      const basePath = "/base/path";
+      const relativePath = "relative/file.txt";
       const expectedPath = path.resolve(basePath, relativePath);
 
       const result = resolveAndValidatePath(relativePath, basePath);
       expect(result).toBe(expectedPath);
     });
 
-    it('blocks path traversal with ../', () => {
-      const basePath = '/base/path';
-      const traversalPath = '../../../etc/passwd';
+    it("blocks path traversal with ../", () => {
+      const basePath = "/base/path";
+      const traversalPath = "../../../etc/passwd";
 
-      expect(() => resolveAndValidatePath(traversalPath, basePath))
-        .toThrow('Access denied');
+      expect(() => resolveAndValidatePath(traversalPath, basePath)).toThrow("Access denied");
     });
 
-    it('allows any path when workingDir is null', () => {
-      const absolutePath = '/anywhere/file.txt';
+    it("allows any path when workingDir is null", () => {
+      const absolutePath = "/anywhere/file.txt";
 
       const result = resolveAndValidatePath(absolutePath, null);
       expect(result).toBe(absolutePath);
     });
 
-    it('allows traversal when workingDir is null', () => {
+    it("allows traversal when workingDir is null", () => {
       const basePath = null;
-      const traversalPath = '../../../etc/passwd';
+      const traversalPath = "../../../etc/passwd";
       const expectedPath = path.resolve(process.cwd(), traversalPath);
 
       const result = resolveAndValidatePath(traversalPath, basePath);
       expect(result).toBe(expectedPath);
     });
 
-    it('handles Windows-style absolute paths', () => {
+    it("handles Windows-style absolute paths", () => {
       // Windows absolute paths should work regardless of platform
-      const windowsAbsolutePath = 'C:\\Users\\test\\file.txt';
+      const windowsAbsolutePath = "C:\\Users\\test\\file.txt";
 
       const result = resolveAndValidatePath(windowsAbsolutePath, null);
       // path.isAbsolute recognizes Windows paths even on Unix
       expect(path.isAbsolute(result)).toBe(true);
     });
 
-    it('handles Unix paths correctly', () => {
+    it("handles Unix paths correctly", () => {
       const originalPlatform = process.platform;
-      Object.defineProperty(process, 'platform', {
-        value: 'linux',
-        configurable: true
+      Object.defineProperty(process, "platform", {
+        value: "linux",
+        configurable: true,
       });
 
-      const basePath = '/base/path';
-      const relativePath = 'file.txt';
+      const basePath = "/base/path";
+      const relativePath = "file.txt";
       const expectedPath = path.resolve(basePath, relativePath);
 
       const result = resolveAndValidatePath(relativePath, basePath);
       expect(result).toBe(expectedPath);
 
-      Object.defineProperty(process, 'platform', {
+      Object.defineProperty(process, "platform", {
         value: originalPlatform,
-        configurable: true
+        configurable: true,
       });
     });
 
-    it('blocks absolute paths when workingDir is specified', () => {
-      const basePath = '/base/path';
-      const absolutePath = '/etc/passwd';
+    it("blocks absolute paths when workingDir is specified", () => {
+      const basePath = "/base/path";
+      const absolutePath = "/etc/passwd";
 
-      expect(() => resolveAndValidatePath(absolutePath, basePath))
-        .toThrow('Access denied');
+      expect(() => resolveAndValidatePath(absolutePath, basePath)).toThrow("Access denied");
     });
 
-    it('allows paths within working directory', () => {
-      const basePath = '/base/path';
-      const safePath = 'subdir/file.txt';
+    it("allows paths within working directory", () => {
+      const basePath = "/base/path";
+      const safePath = "subdir/file.txt";
       const expectedPath = path.resolve(basePath, safePath);
 
       const result = resolveAndValidatePath(safePath, basePath);
@@ -126,232 +124,225 @@ describe('paths', () => {
     });
   });
 
-  describe('autoDetectToolsDir', () => {
-    it('detects standalone tools directory', async () => {
+  describe("autoDetectToolsDir", () => {
+    it("detects standalone tools directory", async () => {
       mockStat.mockResolvedValue({ isDirectory: () => true });
       mockAccess.mockResolvedValue(undefined);
 
       const result = await autoDetectToolsDir();
       expect(result).not.toBeNull();
-      expect(result).toContain('tools');
-      expect(mockAccess).toHaveBeenCalledWith(
-        expect.stringContaining('tla2tools.jar')
-      );
+      expect(result).toContain("tools");
+      expect(mockAccess).toHaveBeenCalledWith(expect.stringContaining("tla2tools.jar"));
     });
 
-    it('detects fallback tools directory', async () => {
+    it("detects fallback tools directory", async () => {
       mockStat
-        .mockRejectedValueOnce(new Error('Not found'))
+        .mockRejectedValueOnce(new Error("Not found"))
         .mockResolvedValueOnce({ isDirectory: () => true });
       mockAccess.mockResolvedValueOnce(undefined);
 
       const result = await autoDetectToolsDir();
-      expect(result).toContain('tools');
+      expect(result).toContain("tools");
     });
 
-    it('detects npm global tools directory', async () => {
-      const npmRoot = '/usr/local/lib/node_modules';
+    it("detects npm global tools directory", async () => {
+      const npmRoot = "/usr/local/lib/node_modules";
       mockExecSync.mockReturnValue(`${npmRoot}\n`);
 
       mockStat
-        .mockRejectedValueOnce(new Error('Not found'))
-        .mockRejectedValueOnce(new Error('Not found'))
+        .mockRejectedValueOnce(new Error("Not found"))
+        .mockRejectedValueOnce(new Error("Not found"))
         .mockResolvedValueOnce({ isDirectory: () => true });
       mockAccess.mockResolvedValueOnce(undefined);
 
       const result = await autoDetectToolsDir();
-      expect(result).toBe(path.join(npmRoot, 'tlaplus-ai-tools', 'tools'));
+      expect(result).toBe(path.join(npmRoot, "tlaplus-ai-tools", "tools"));
     });
 
-    it('returns null when npm is not available', async () => {
+    it("returns null when npm is not available", async () => {
       mockExecSync.mockImplementation(() => {
-        throw new Error('npm not found');
+        throw new Error("npm not found");
       });
 
-      mockStat.mockRejectedValue(new Error('Not found'));
+      mockStat.mockRejectedValue(new Error("Not found"));
 
       const result = await autoDetectToolsDir();
       expect(result).toBeNull();
     });
 
-    it('returns null when no tools directory found', async () => {
-      mockStat.mockRejectedValue(new Error('Not found'));
+    it("returns null when no tools directory found", async () => {
+      mockStat.mockRejectedValue(new Error("Not found"));
       mockExecSync.mockImplementation(() => {
-        throw new Error('npm not found');
+        throw new Error("npm not found");
       });
 
       const result = await autoDetectToolsDir();
       expect(result).toBeNull();
     });
 
-    it('validates tla2tools.jar exists in tools directory', async () => {
+    it("validates tla2tools.jar exists in tools directory", async () => {
       mockStat.mockResolvedValue({ isDirectory: () => true });
-      mockAccess.mockRejectedValue(new Error('tla2tools.jar not found'));
+      mockAccess.mockRejectedValue(new Error("tla2tools.jar not found"));
       mockExecSync.mockImplementation(() => {
-        throw new Error('npm not found');
+        throw new Error("npm not found");
       });
 
       const result = await autoDetectToolsDir();
       expect(result).toBeNull();
     });
 
-    it('skips directory if it is not a directory', async () => {
+    it("skips directory if it is not a directory", async () => {
       mockStat
         .mockResolvedValueOnce({ isDirectory: () => false }) // standalone is file
         .mockResolvedValueOnce({ isDirectory: () => true }); // fallback is directory
       mockAccess.mockResolvedValue(undefined);
       mockExecSync.mockImplementation(() => {
-        throw new Error('npm not found');
+        throw new Error("npm not found");
       });
 
       const result = await autoDetectToolsDir();
-      expect(result).toContain('tools');
+      expect(result).toContain("tools");
     });
 
-    it('continues checking when jar validation fails', async () => {
+    it("continues checking when jar validation fails", async () => {
       mockStat
         .mockResolvedValueOnce({ isDirectory: () => true }) // standalone exists
         .mockResolvedValueOnce({ isDirectory: () => true }); // fallback exists
       mockAccess
-        .mockRejectedValueOnce(new Error('jar not found')) // standalone jar missing
+        .mockRejectedValueOnce(new Error("jar not found")) // standalone jar missing
         .mockResolvedValueOnce(undefined); // fallback jar exists
       mockExecSync.mockImplementation(() => {
-        throw new Error('npm not found');
+        throw new Error("npm not found");
       });
 
       const result = await autoDetectToolsDir();
-      expect(result).toContain('tools');
+      expect(result).toContain("tools");
     });
   });
 
-  describe('autoDetectKbDir', () => {
-    it('detects standalone knowledgebase directory', async () => {
+  describe("autoDetectKbDir", () => {
+    it("detects standalone knowledgebase directory", async () => {
       mockStat.mockResolvedValue({ isDirectory: () => true });
-      mockReaddir.mockResolvedValue(['README.md', 'intro.md']);
+      mockReaddir.mockResolvedValue(["README.md", "intro.md"]);
 
       const result = await autoDetectKbDir();
-      expect(result).toContain('knowledgebase');
+      expect(result).toContain("knowledgebase");
     });
 
-    it('detects fallback knowledgebase directory', async () => {
+    it("detects fallback knowledgebase directory", async () => {
       mockStat
-        .mockRejectedValueOnce(new Error('Not found')) // standalone fails
+        .mockRejectedValueOnce(new Error("Not found")) // standalone fails
         .mockResolvedValueOnce({ isDirectory: () => true }); // fallback succeeds
-      mockReaddir
-        .mockResolvedValueOnce(['README.md']);
+      mockReaddir.mockResolvedValueOnce(["README.md"]);
 
       const result = await autoDetectKbDir();
-      expect(result).toContain('knowledgebase');
+      expect(result).toContain("knowledgebase");
     });
 
-    it('detects npm global knowledgebase directory', async () => {
-      const npmRoot = '/usr/local/lib/node_modules';
+    it("detects npm global knowledgebase directory", async () => {
+      const npmRoot = "/usr/local/lib/node_modules";
       mockExecSync.mockReturnValue(`${npmRoot}\n`);
 
       mockStat
-        .mockRejectedValueOnce(new Error('Not found')) // standalone fails
-        .mockRejectedValueOnce(new Error('Not found')) // fallback fails
+        .mockRejectedValueOnce(new Error("Not found")) // standalone fails
+        .mockRejectedValueOnce(new Error("Not found")) // fallback fails
         .mockResolvedValueOnce({ isDirectory: () => true }); // npm global succeeds
-      mockReaddir
-        .mockResolvedValueOnce(['guide.md']);
+      mockReaddir.mockResolvedValueOnce(["guide.md"]);
 
       const result = await autoDetectKbDir();
-      expect(result).toBe(path.join(npmRoot, 'tlaplus-ai-tools', 'resources', 'knowledgebase'));
+      expect(result).toBe(path.join(npmRoot, "tlaplus-ai-tools", "resources", "knowledgebase"));
     });
 
-    it('returns null when no knowledgebase found', async () => {
-      mockStat.mockRejectedValue(new Error('Not found'));
+    it("returns null when no knowledgebase found", async () => {
+      mockStat.mockRejectedValue(new Error("Not found"));
       mockExecSync.mockImplementation(() => {
-        throw new Error('npm not found');
+        throw new Error("npm not found");
       });
 
       const result = await autoDetectKbDir();
       expect(result).toBeNull();
     });
 
-    it('returns null when npm is not available', async () => {
+    it("returns null when npm is not available", async () => {
       mockExecSync.mockImplementation(() => {
-        throw new Error('npm not found');
+        throw new Error("npm not found");
       });
-      mockStat.mockRejectedValue(new Error('Not found'));
+      mockStat.mockRejectedValue(new Error("Not found"));
 
       const result = await autoDetectKbDir();
       expect(result).toBeNull();
     });
 
-    it('skips directory without markdown files', async () => {
+    it("skips directory without markdown files", async () => {
       mockStat
         .mockResolvedValueOnce({ isDirectory: () => true }) // standalone exists
         .mockResolvedValueOnce({ isDirectory: () => true }); // fallback exists
       mockReaddir
-        .mockResolvedValueOnce(['file.txt', 'config.json']) // no .md files
-        .mockResolvedValueOnce(['guide.md']); // has .md files
+        .mockResolvedValueOnce(["file.txt", "config.json"]) // no .md files
+        .mockResolvedValueOnce(["guide.md"]); // has .md files
       mockExecSync.mockImplementation(() => {
-        throw new Error('npm not found');
+        throw new Error("npm not found");
       });
 
       const result = await autoDetectKbDir();
-      expect(result).toContain('knowledgebase');
+      expect(result).toContain("knowledgebase");
     });
 
-    it('handles empty directory', async () => {
-      mockStat
-        .mockResolvedValueOnce({ isDirectory: () => true });
-      mockReaddir
-        .mockResolvedValueOnce([]); // empty directory
+    it("handles empty directory", async () => {
+      mockStat.mockResolvedValueOnce({ isDirectory: () => true });
+      mockReaddir.mockResolvedValueOnce([]); // empty directory
       mockExecSync.mockImplementation(() => {
-        throw new Error('npm not found');
+        throw new Error("npm not found");
       });
 
       const result = await autoDetectKbDir();
       expect(result).toBeNull();
     });
 
-    it('skips if not a directory', async () => {
+    it("skips if not a directory", async () => {
       mockStat
         .mockResolvedValueOnce({ isDirectory: () => false }) // standalone is file
         .mockResolvedValueOnce({ isDirectory: () => true }); // fallback is directory
-      mockReaddir
-        .mockResolvedValueOnce(['guide.md']);
+      mockReaddir.mockResolvedValueOnce(["guide.md"]);
       mockExecSync.mockImplementation(() => {
-        throw new Error('npm not found');
+        throw new Error("npm not found");
       });
 
       const result = await autoDetectKbDir();
-      expect(result).toContain('knowledgebase');
+      expect(result).toContain("knowledgebase");
     });
   });
 
-  describe('validateDirectory', () => {
-    it('succeeds when directory exists', async () => {
+  describe("validateDirectory", () => {
+    it("succeeds when directory exists", async () => {
       mockStat.mockResolvedValue({ isDirectory: () => true });
 
-      await expect(validateDirectory('/valid/path', 'Test'))
-        .resolves.not.toThrow();
+      await expect(validateDirectory("/valid/path", "Test")).resolves.not.toThrow();
     });
 
-    it('throws when path does not exist', async () => {
-      const error: any = new Error('ENOENT');
-      error.code = 'ENOENT';
+    it("throws when path does not exist", async () => {
+      const error: any = new Error("ENOENT");
+      error.code = "ENOENT";
       mockStat.mockRejectedValue(error);
 
-      await expect(validateDirectory('/invalid/path', 'Test'))
-        .rejects.toThrow('Test directory not found');
+      await expect(validateDirectory("/invalid/path", "Test")).rejects.toThrow(
+        "Test directory not found",
+      );
     });
 
-    it('throws when path is not a directory', async () => {
+    it("throws when path is not a directory", async () => {
       mockStat.mockResolvedValue({ isDirectory: () => false });
 
-      await expect(validateDirectory('/file.txt', 'Test'))
-        .rejects.toThrow('Test path exists but is not a directory');
+      await expect(validateDirectory("/file.txt", "Test")).rejects.toThrow(
+        "Test path exists but is not a directory",
+      );
     });
 
-    it('rethrows other errors', async () => {
-      const error = new Error('Permission denied');
+    it("rethrows other errors", async () => {
+      const error = new Error("Permission denied");
       mockStat.mockRejectedValue(error);
 
-      await expect(validateDirectory('/forbidden', 'Test'))
-        .rejects.toThrow('Permission denied');
+      await expect(validateDirectory("/forbidden", "Test")).rejects.toThrow("Permission denied");
     });
   });
 });

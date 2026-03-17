@@ -1,30 +1,31 @@
 #!/usr/bin/env node
 
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
+const https = require("https");
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
 
 // Pinned versions (strict mode - overrides must match these)
-const DEFAULT_TLA_TOOLS_VERSION = '1.8.0';
-const DEFAULT_COMMUNITY_MODULES_VERSION = '202601200755';
+const DEFAULT_TLA_TOOLS_VERSION = "1.8.0";
+const DEFAULT_COMMUNITY_MODULES_VERSION = "202601200755";
 
 // Pre-release versions: pinned by commit SHA rather than artifact checksum,
 // because GitHub rebuilds the release asset on every commit to the tag.
-const PRE_RELEASE_VERSIONS = ['1.8.0'];
+const PRE_RELEASE_VERSIONS = ["1.8.0"];
 
 // Expected checksums for stable (non-pre-release) versions only.
 const EXPECTED_CHECKSUMS = {
   communityModules: {
-    version: '202601200755',
-    algorithm: 'sha256',
-    checksum: '5b7bb6d94ea1ccfdd2611716b81430208f709b493ae7b4f39fa7cb86a602932e'
-  }
+    version: "202601200755",
+    algorithm: "sha256",
+    checksum: "5b7bb6d94ea1ccfdd2611716b81430208f709b493ae7b4f39fa7cb86a602932e",
+  },
 };
 
 // Get versions from environment or use defaults
 const TLA_TOOLS_VERSION = process.env.TLA_TOOLS_VERSION || DEFAULT_TLA_TOOLS_VERSION;
-const COMMUNITY_MODULES_VERSION = process.env.COMMUNITY_MODULES_VERSION || DEFAULT_COMMUNITY_MODULES_VERSION;
+const COMMUNITY_MODULES_VERSION =
+  process.env.COMMUNITY_MODULES_VERSION || DEFAULT_COMMUNITY_MODULES_VERSION;
 
 // Strict mode: reject version overrides that don't match pinned versions
 if (TLA_TOOLS_VERSION !== DEFAULT_TLA_TOOLS_VERSION) {
@@ -39,7 +40,9 @@ if (COMMUNITY_MODULES_VERSION !== DEFAULT_COMMUNITY_MODULES_VERSION) {
   console.error(`✗ Error: COMMUNITY_MODULES_VERSION override rejected`);
   console.error(`  Expected: ${DEFAULT_COMMUNITY_MODULES_VERSION}`);
   console.error(`  Got: ${COMMUNITY_MODULES_VERSION}`);
-  console.error(`  This plugin requires exact version ${DEFAULT_COMMUNITY_MODULES_VERSION} for checksum verification.`);
+  console.error(
+    `  This plugin requires exact version ${DEFAULT_COMMUNITY_MODULES_VERSION} for checksum verification.`,
+  );
   process.exit(1);
 }
 
@@ -48,10 +51,10 @@ const TLA_TOOLS_URL = `https://github.com/tlaplus/tlaplus/releases/download/v${T
 const COMMUNITY_MODULES_URL = `https://github.com/tlaplus/CommunityModules/releases/download/${COMMUNITY_MODULES_VERSION}/CommunityModules-deps.jar`;
 
 // Paths (support TLA_TOOLS_DIR environment variable)
-const TOOLS_DIR = process.env.TLA_TOOLS_DIR || path.join(__dirname, '..', 'tools');
-const TLA_TOOLS_PATH = path.join(TOOLS_DIR, 'tla2tools.jar');
-const COMMUNITY_MODULES_PATH = path.join(TOOLS_DIR, 'CommunityModules-deps.jar');
-const LOCK_FILE_PATH = path.join(TOOLS_DIR, '.setup-lock.json');
+const TOOLS_DIR = process.env.TLA_TOOLS_DIR || path.join(__dirname, "..", "tools");
+const TLA_TOOLS_PATH = path.join(TOOLS_DIR, "tla2tools.jar");
+const COMMUNITY_MODULES_PATH = path.join(TOOLS_DIR, "CommunityModules-deps.jar");
+const LOCK_FILE_PATH = path.join(TOOLS_DIR, ".setup-lock.json");
 
 const MAX_REDIRECTS = 5;
 const TIMEOUT_MS = 120000;
@@ -67,7 +70,7 @@ const GITHUB_API_TIMEOUT_MS = 10000;
  */
 function readLock() {
   try {
-    return JSON.parse(fs.readFileSync(LOCK_FILE_PATH, 'utf8'));
+    return JSON.parse(fs.readFileSync(LOCK_FILE_PATH, "utf8"));
   } catch {
     return {};
   }
@@ -81,7 +84,7 @@ function readLock() {
 function writeLock(key, entry) {
   const lock = readLock();
   lock[key] = entry;
-  fs.writeFileSync(LOCK_FILE_PATH, JSON.stringify(lock, null, 2) + '\n', 'utf8');
+  fs.writeFileSync(LOCK_FILE_PATH, JSON.stringify(lock, null, 2) + "\n", "utf8");
 }
 
 // ---------------------------------------------------------------------------
@@ -114,28 +117,30 @@ function resolveAssetUrl(url, redirectCount = 0) {
       {
         hostname: parsed.hostname,
         path: parsed.pathname + parsed.search,
-        method: 'HEAD',
-        headers: { 'User-Agent': 'tlaplus-ai-tools-setup' }
+        method: "HEAD",
+        headers: { "User-Agent": "tlaplus-ai-tools-setup" },
       },
       (res) => {
         if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
-          const next = res.headers.location.startsWith('http')
+          const next = res.headers.location.startsWith("http")
             ? res.headers.location
             : `https://${parsed.hostname}${res.headers.location}`;
-          resolveAssetUrl(next, redirectCount + 1).then(resolve).catch(reject);
+          resolveAssetUrl(next, redirectCount + 1)
+            .then(resolve)
+            .catch(reject);
         } else if (res.statusCode === 200) {
           resolve(url);
         } else {
           reject(new Error(`HEAD request returned HTTP ${res.statusCode} for ${url}`));
         }
-      }
+      },
     );
 
     req.setTimeout(GITHUB_API_TIMEOUT_MS, () => {
       req.destroy();
       reject(new Error(`HEAD request timed out`));
     });
-    req.on('error', reject);
+    req.on("error", reject);
     req.end();
   });
 }
@@ -154,7 +159,7 @@ function calculateChecksum(filePath, algorithm) {
   const hash = crypto.createHash(algorithm);
   const data = fs.readFileSync(filePath);
   hash.update(data);
-  return hash.digest('hex');
+  return hash.digest("hex");
 }
 
 /**
@@ -187,7 +192,7 @@ function downloadFile(url, destPath, redirectCount = 0) {
       return;
     }
 
-    const tempPath = destPath + '.tmp';
+    const tempPath = destPath + ".tmp";
     const file = fs.createWriteStream(tempPath);
     let timeout;
 
@@ -202,42 +207,52 @@ function downloadFile(url, destPath, redirectCount = 0) {
       reject(new Error(`Download timeout after ${TIMEOUT_MS / 1000}s`));
     }, TIMEOUT_MS);
 
-    https.get(url, (response) => {
-      const { statusCode } = response;
+    https
+      .get(url, (response) => {
+        const { statusCode } = response;
 
-      if ([301, 302, 303, 307, 308].includes(statusCode)) {
-        const redirectUrl = response.headers.location;
-        if (!redirectUrl) {
-          cleanup();
-          reject(new Error(`Redirect without Location header (status ${statusCode})`));
+        if ([301, 302, 303, 307, 308].includes(statusCode)) {
+          const redirectUrl = response.headers.location;
+          if (!redirectUrl) {
+            cleanup();
+            reject(new Error(`Redirect without Location header (status ${statusCode})`));
+            return;
+          }
+          clearTimeout(timeout);
+          file.close();
+          if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+          console.log(`  Following redirect...`);
+          downloadFile(redirectUrl, destPath, redirectCount + 1)
+            .then(resolve)
+            .catch(reject);
           return;
         }
-        clearTimeout(timeout);
-        file.close();
-        if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
-        console.log(`  Following redirect...`);
-        downloadFile(redirectUrl, destPath, redirectCount + 1).then(resolve).catch(reject);
-        return;
-      }
 
-      if (statusCode !== 200) {
-        cleanup();
-        reject(new Error(`HTTP ${statusCode} from ${url}`));
-        return;
-      }
+        if (statusCode !== 200) {
+          cleanup();
+          reject(new Error(`HTTP ${statusCode} from ${url}`));
+          return;
+        }
 
-      response.pipe(file);
+        response.pipe(file);
 
-      file.on('finish', () => {
-        clearTimeout(timeout);
-        file.close(() => {
-          fs.renameSync(tempPath, destPath);
-          resolve();
+        file.on("finish", () => {
+          clearTimeout(timeout);
+          file.close(() => {
+            fs.renameSync(tempPath, destPath);
+            resolve();
+          });
         });
-      });
 
-      file.on('error', (err) => { cleanup(); reject(err); });
-    }).on('error', (err) => { cleanup(); reject(err); });
+        file.on("error", (err) => {
+          cleanup();
+          reject(err);
+        });
+      })
+      .on("error", (err) => {
+        cleanup();
+        reject(err);
+      });
   });
 }
 
@@ -329,16 +344,21 @@ async function downloadAndVerifyPreRelease(name, url, destPath, lockKey) {
     const parsedUrl = new URL(rawUrl);
     currentAssetUrl = parsedUrl.origin + parsedUrl.pathname;
     // Print the last two path segments as a short identifier
-    const id = currentAssetUrl.split('/').slice(-2).join('/');
+    const id = currentAssetUrl.split("/").slice(-2).join("/");
     console.log(` ${id}`);
   } catch (err) {
-    console.log('');
+    console.log("");
     console.warn(`  Warning: could not resolve asset URL (${err.message})`);
   }
 
   // --- Step 2: fast path — asset hasn't changed and file exists ---
-  if (currentAssetUrl && currentAssetUrl === entry.assetUrl && fs.existsSync(destPath) && entry.sha256) {
-    const result = verifyChecksum(destPath, 'sha256', entry.sha256);
+  if (
+    currentAssetUrl &&
+    currentAssetUrl === entry.assetUrl &&
+    fs.existsSync(destPath) &&
+    entry.sha256
+  ) {
+    const result = verifyChecksum(destPath, "sha256", entry.sha256);
     if (result.valid) {
       console.log(`✓ ${name} up-to-date (asset unchanged, sha256 verified)`);
       return;
@@ -346,7 +366,7 @@ async function downloadAndVerifyPreRelease(name, url, destPath, lockKey) {
     console.warn(`  Stored checksum mismatch — re-downloading ${name}`);
   } else if (!currentAssetUrl && fs.existsSync(destPath) && entry.sha256) {
     // Offline fallback: verify cached file and continue with a warning
-    const result = verifyChecksum(destPath, 'sha256', entry.sha256);
+    const result = verifyChecksum(destPath, "sha256", entry.sha256);
     if (result.valid) {
       console.log(`✓ ${name} using cached version (offline, sha256 verified)`);
       return;
@@ -369,11 +389,11 @@ async function downloadAndVerifyPreRelease(name, url, destPath, lockKey) {
   }
 
   // --- Step 4: compute sha256 and update lockfile ---
-  const sha256 = calculateChecksum(destPath, 'sha256');
+  const sha256 = calculateChecksum(destPath, "sha256");
   writeLock(lockKey, {
     assetUrl: currentAssetUrl || null,
     sha256,
-    downloadedAt: new Date().toISOString()
+    downloadedAt: new Date().toISOString(),
   });
 
   console.log(`✓ ${name} locked — sha256: ${sha256}`);
@@ -384,12 +404,12 @@ async function downloadAndVerifyPreRelease(name, url, destPath, lockKey) {
 // ---------------------------------------------------------------------------
 
 async function setup() {
-  console.log('TLA+ Tools Setup');
-  console.log('================');
+  console.log("TLA+ Tools Setup");
+  console.log("================");
   console.log(`TLA Tools Version:        ${TLA_TOOLS_VERSION}`);
   console.log(`Community Modules Version: ${COMMUNITY_MODULES_VERSION}`);
   console.log(`Tools Directory:           ${TOOLS_DIR}`);
-  console.log('');
+  console.log("");
 
   if (!fs.existsSync(TOOLS_DIR)) {
     console.log(`Creating directory: ${TOOLS_DIR}`);
@@ -397,43 +417,39 @@ async function setup() {
   }
 
   if (PRE_RELEASE_VERSIONS.includes(TLA_TOOLS_VERSION)) {
-    await downloadAndVerifyPreRelease('tla2tools.jar', TLA_TOOLS_URL, TLA_TOOLS_PATH, 'tla2tools');
+    await downloadAndVerifyPreRelease("tla2tools.jar", TLA_TOOLS_URL, TLA_TOOLS_PATH, "tla2tools");
   } else {
     const tla2toolsChecksums = EXPECTED_CHECKSUMS.tla2tools;
-    if (
-      !tla2toolsChecksums ||
-      !tla2toolsChecksums.algorithm ||
-      !tla2toolsChecksums.checksum
-    ) {
+    if (!tla2toolsChecksums || !tla2toolsChecksums.algorithm || !tla2toolsChecksums.checksum) {
       throw new Error(
         `Missing expected checksums for TLA+ Tools version "${TLA_TOOLS_VERSION}". ` +
-          'Please add a "tla2tools" entry with "algorithm" and "checksum" to EXPECTED_CHECKSUMS.'
+          'Please add a "tla2tools" entry with "algorithm" and "checksum" to EXPECTED_CHECKSUMS.',
       );
     }
 
     await downloadAndVerify(
-      'tla2tools.jar',
+      "tla2tools.jar",
       TLA_TOOLS_URL,
       TLA_TOOLS_PATH,
       tla2toolsChecksums.algorithm,
-      tla2toolsChecksums.checksum
+      tla2toolsChecksums.checksum,
     );
   }
 
   await downloadAndVerify(
-    'CommunityModules-deps.jar',
+    "CommunityModules-deps.jar",
     COMMUNITY_MODULES_URL,
     COMMUNITY_MODULES_PATH,
     EXPECTED_CHECKSUMS.communityModules.algorithm,
-    EXPECTED_CHECKSUMS.communityModules.checksum
+    EXPECTED_CHECKSUMS.communityModules.checksum,
   );
 
-  console.log('');
-  console.log('Setup complete!');
-  console.log('');
-  console.log('Next steps:');
-  console.log('1. Ensure Java is installed: java -version');
-  console.log('2. Test TLC: java -jar tools/tla2tools.jar');
+  console.log("");
+  console.log("Setup complete!");
+  console.log("");
+  console.log("Next steps:");
+  console.log("1. Ensure Java is installed: java -version");
+  console.log("2. Test TLC: java -jar tools/tla2tools.jar");
 }
 
 // Run setup
@@ -457,5 +473,5 @@ module.exports = {
   PRE_RELEASE_VERSIONS,
   EXPECTED_CHECKSUMS,
   DEFAULT_TLA_TOOLS_VERSION,
-  DEFAULT_COMMUNITY_MODULES_VERSION
+  DEFAULT_COMMUNITY_MODULES_VERSION,
 };

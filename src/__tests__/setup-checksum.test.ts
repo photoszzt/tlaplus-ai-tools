@@ -1,18 +1,24 @@
 // Test checksum verification from scripts/setup.js
-import * as fs from 'fs';
-import * as path from 'path';
-import * as crypto from 'crypto';
+import * as fs from "fs";
+import * as path from "path";
+import * as crypto from "crypto";
 
 // Import setup helpers
-const setupModule = require('../../scripts/setup.js');
-const { calculateChecksum, verifyChecksum, EXPECTED_CHECKSUMS, PRE_RELEASE_VERSIONS, DEFAULT_TLA_TOOLS_VERSION } = setupModule;
+const setupModule = require("../../scripts/setup.js");
+const {
+  calculateChecksum,
+  verifyChecksum,
+  EXPECTED_CHECKSUMS,
+  PRE_RELEASE_VERSIONS,
+  DEFAULT_TLA_TOOLS_VERSION,
+} = setupModule;
 
-describe('Setup Checksum Verification', () => {
+describe("Setup Checksum Verification", () => {
   let tempDir: string;
 
   beforeEach(() => {
     // Create temp directory for test files
-    tempDir = path.join(__dirname, 'temp-checksum-test');
+    tempDir = path.join(__dirname, "temp-checksum-test");
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
     }
@@ -25,184 +31,184 @@ describe('Setup Checksum Verification', () => {
     }
   });
 
-  describe('calculateChecksum', () => {
-    it('calculates SHA1 checksum correctly', () => {
-      const testFile = path.join(tempDir, 'test-sha1.txt');
-      const content = 'Hello, TLA+!';
+  describe("calculateChecksum", () => {
+    it("calculates SHA1 checksum correctly", () => {
+      const testFile = path.join(tempDir, "test-sha1.txt");
+      const content = "Hello, TLA+!";
       fs.writeFileSync(testFile, content);
 
-      const expectedSha1 = crypto.createHash('sha1').update(content).digest('hex');
-      const actualSha1 = calculateChecksum(testFile, 'sha1');
+      const expectedSha1 = crypto.createHash("sha1").update(content).digest("hex");
+      const actualSha1 = calculateChecksum(testFile, "sha1");
 
       expect(actualSha1).toBe(expectedSha1);
     });
 
-    it('calculates SHA256 checksum correctly', () => {
-      const testFile = path.join(tempDir, 'test-sha256.txt');
-      const content = 'TLA+ Model Checking';
+    it("calculates SHA256 checksum correctly", () => {
+      const testFile = path.join(tempDir, "test-sha256.txt");
+      const content = "TLA+ Model Checking";
       fs.writeFileSync(testFile, content);
 
-      const expectedSha256 = crypto.createHash('sha256').update(content).digest('hex');
-      const actualSha256 = calculateChecksum(testFile, 'sha256');
+      const expectedSha256 = crypto.createHash("sha256").update(content).digest("hex");
+      const actualSha256 = calculateChecksum(testFile, "sha256");
 
       expect(actualSha256).toBe(expectedSha256);
     });
 
-    it('produces different checksums for different content', () => {
-      const file1 = path.join(tempDir, 'file1.txt');
-      const file2 = path.join(tempDir, 'file2.txt');
-      
-      fs.writeFileSync(file1, 'content1');
-      fs.writeFileSync(file2, 'content2');
+    it("produces different checksums for different content", () => {
+      const file1 = path.join(tempDir, "file1.txt");
+      const file2 = path.join(tempDir, "file2.txt");
 
-      const checksum1 = calculateChecksum(file1, 'sha256');
-      const checksum2 = calculateChecksum(file2, 'sha256');
+      fs.writeFileSync(file1, "content1");
+      fs.writeFileSync(file2, "content2");
+
+      const checksum1 = calculateChecksum(file1, "sha256");
+      const checksum2 = calculateChecksum(file2, "sha256");
 
       expect(checksum1).not.toBe(checksum2);
     });
 
-    it('produces same checksum for identical content', () => {
-      const file1 = path.join(tempDir, 'identical1.txt');
-      const file2 = path.join(tempDir, 'identical2.txt');
-      
-      const content = 'identical content';
+    it("produces same checksum for identical content", () => {
+      const file1 = path.join(tempDir, "identical1.txt");
+      const file2 = path.join(tempDir, "identical2.txt");
+
+      const content = "identical content";
       fs.writeFileSync(file1, content);
       fs.writeFileSync(file2, content);
 
-      const checksum1 = calculateChecksum(file1, 'sha256');
-      const checksum2 = calculateChecksum(file2, 'sha256');
+      const checksum1 = calculateChecksum(file1, "sha256");
+      const checksum2 = calculateChecksum(file2, "sha256");
 
       expect(checksum1).toBe(checksum2);
     });
   });
 
-  describe('verifyChecksum', () => {
-    it('returns valid=true when checksum matches', () => {
-      const testFile = path.join(tempDir, 'valid.txt');
-      const content = 'valid content';
+  describe("verifyChecksum", () => {
+    it("returns valid=true when checksum matches", () => {
+      const testFile = path.join(tempDir, "valid.txt");
+      const content = "valid content";
       fs.writeFileSync(testFile, content);
 
-      const expectedChecksum = crypto.createHash('sha256').update(content).digest('hex');
-      const result = verifyChecksum(testFile, 'sha256', expectedChecksum);
+      const expectedChecksum = crypto.createHash("sha256").update(content).digest("hex");
+      const result = verifyChecksum(testFile, "sha256", expectedChecksum);
 
       expect(result.valid).toBe(true);
       expect(result.actual).toBe(expectedChecksum);
       expect(result.expected).toBe(expectedChecksum);
     });
 
-    it('returns valid=false when checksum mismatches', () => {
-      const testFile = path.join(tempDir, 'invalid.txt');
-      fs.writeFileSync(testFile, 'actual content');
+    it("returns valid=false when checksum mismatches", () => {
+      const testFile = path.join(tempDir, "invalid.txt");
+      fs.writeFileSync(testFile, "actual content");
 
-      const wrongChecksum = crypto.createHash('sha256').update('wrong content').digest('hex');
-      const result = verifyChecksum(testFile, 'sha256', wrongChecksum);
+      const wrongChecksum = crypto.createHash("sha256").update("wrong content").digest("hex");
+      const result = verifyChecksum(testFile, "sha256", wrongChecksum);
 
       expect(result.valid).toBe(false);
       expect(result.actual).not.toBe(wrongChecksum);
       expect(result.expected).toBe(wrongChecksum);
     });
 
-    it('detects corrupted file (checksum mismatch)', () => {
-      const testFile = path.join(tempDir, 'corrupted.jar');
-      
+    it("detects corrupted file (checksum mismatch)", () => {
+      const testFile = path.join(tempDir, "corrupted.jar");
+
       // Write original content
-      const originalContent = Buffer.from('original JAR content');
+      const originalContent = Buffer.from("original JAR content");
       fs.writeFileSync(testFile, originalContent);
-      const originalChecksum = crypto.createHash('sha1').update(originalContent).digest('hex');
+      const originalChecksum = crypto.createHash("sha1").update(originalContent).digest("hex");
 
       // Corrupt the file
-      const corruptedContent = Buffer.from('corrupted JAR content');
+      const corruptedContent = Buffer.from("corrupted JAR content");
       fs.writeFileSync(testFile, corruptedContent);
 
       // Verify with original checksum (should fail)
-      const result = verifyChecksum(testFile, 'sha1', originalChecksum);
+      const result = verifyChecksum(testFile, "sha1", originalChecksum);
 
       expect(result.valid).toBe(false);
       expect(result.actual).not.toBe(originalChecksum);
     });
 
-    it('works with different hash algorithms', () => {
-      const testFile = path.join(tempDir, 'multi-algo.txt');
-      const content = 'test content';
+    it("works with different hash algorithms", () => {
+      const testFile = path.join(tempDir, "multi-algo.txt");
+      const content = "test content";
       fs.writeFileSync(testFile, content);
 
-      const sha1Expected = crypto.createHash('sha1').update(content).digest('hex');
-      const sha256Expected = crypto.createHash('sha256').update(content).digest('hex');
+      const sha1Expected = crypto.createHash("sha1").update(content).digest("hex");
+      const sha256Expected = crypto.createHash("sha256").update(content).digest("hex");
 
-      const sha1Result = verifyChecksum(testFile, 'sha1', sha1Expected);
-      const sha256Result = verifyChecksum(testFile, 'sha256', sha256Expected);
+      const sha1Result = verifyChecksum(testFile, "sha1", sha1Expected);
+      const sha256Result = verifyChecksum(testFile, "sha256", sha256Expected);
 
       expect(sha1Result.valid).toBe(true);
       expect(sha256Result.valid).toBe(true);
     });
   });
 
-  describe('EXPECTED_CHECKSUMS', () => {
-    it('does not have tla2tools entry (pre-release versions use commit SHA pinning)', () => {
+  describe("EXPECTED_CHECKSUMS", () => {
+    it("does not have tla2tools entry (pre-release versions use commit SHA pinning)", () => {
       // tla2tools 1.8.0 is a pre-release, so it's pinned by commit SHA
       // rather than artifact checksum in EXPECTED_CHECKSUMS
       expect(EXPECTED_CHECKSUMS.tla2tools).toBeUndefined();
       expect(PRE_RELEASE_VERSIONS).toContain(DEFAULT_TLA_TOOLS_VERSION);
     });
 
-    it('has correct structure for communityModules', () => {
+    it("has correct structure for communityModules", () => {
       expect(EXPECTED_CHECKSUMS.communityModules).toBeDefined();
-      expect(EXPECTED_CHECKSUMS.communityModules.version).toBe('202601200755');
-      expect(EXPECTED_CHECKSUMS.communityModules.algorithm).toBe('sha256');
+      expect(EXPECTED_CHECKSUMS.communityModules.version).toBe("202601200755");
+      expect(EXPECTED_CHECKSUMS.communityModules.algorithm).toBe("sha256");
       expect(EXPECTED_CHECKSUMS.communityModules.checksum).toMatch(/^[a-f0-9]{64}$/); // SHA256 is 64 hex chars
     });
 
-    it('uses pinned version 1.8.0 for tla2tools', () => {
-      expect(DEFAULT_TLA_TOOLS_VERSION).toBe('1.8.0');
+    it("uses pinned version 1.8.0 for tla2tools", () => {
+      expect(DEFAULT_TLA_TOOLS_VERSION).toBe("1.8.0");
     });
   });
 
-  describe('Checksum verification workflow', () => {
-    it('simulates successful verification on fresh download', () => {
-      const testFile = path.join(tempDir, 'tla2tools.jar');
-      
+  describe("Checksum verification workflow", () => {
+    it("simulates successful verification on fresh download", () => {
+      const testFile = path.join(tempDir, "tla2tools.jar");
+
       // Simulate download with correct content
-      const correctContent = Buffer.from('correct tla2tools v1.8.0 content');
+      const correctContent = Buffer.from("correct tla2tools v1.8.0 content");
       fs.writeFileSync(testFile, correctContent);
-      const correctChecksum = crypto.createHash('sha1').update(correctContent).digest('hex');
+      const correctChecksum = crypto.createHash("sha1").update(correctContent).digest("hex");
 
       // Verify
-      const result = verifyChecksum(testFile, 'sha1', correctChecksum);
+      const result = verifyChecksum(testFile, "sha1", correctChecksum);
 
       expect(result.valid).toBe(true);
     });
 
-    it('simulates detection of corrupted download', () => {
-      const testFile = path.join(tempDir, 'tla2tools.jar');
-      
+    it("simulates detection of corrupted download", () => {
+      const testFile = path.join(tempDir, "tla2tools.jar");
+
       // Expected checksum for correct file
-      const correctContent = Buffer.from('correct tla2tools v1.8.0 content');
-      const correctChecksum = crypto.createHash('sha1').update(correctContent).digest('hex');
+      const correctContent = Buffer.from("correct tla2tools v1.8.0 content");
+      const correctChecksum = crypto.createHash("sha1").update(correctContent).digest("hex");
 
       // But file is corrupted
-      const corruptedContent = Buffer.from('corrupted incomplete download');
+      const corruptedContent = Buffer.from("corrupted incomplete download");
       fs.writeFileSync(testFile, corruptedContent);
 
       // Verify (should fail)
-      const result = verifyChecksum(testFile, 'sha1', correctChecksum);
+      const result = verifyChecksum(testFile, "sha1", correctChecksum);
 
       expect(result.valid).toBe(false);
       expect(result.actual).not.toBe(correctChecksum);
     });
 
-    it('simulates detection of wrong version', () => {
-      const testFile = path.join(tempDir, 'tla2tools.jar');
-      
+    it("simulates detection of wrong version", () => {
+      const testFile = path.join(tempDir, "tla2tools.jar");
+
       // Expected checksum for v1.8.0
-      const v180Content = Buffer.from('tla2tools v1.8.0');
-      const v180Checksum = crypto.createHash('sha1').update(v180Content).digest('hex');
+      const v180Content = Buffer.from("tla2tools v1.8.0");
+      const v180Checksum = crypto.createHash("sha1").update(v180Content).digest("hex");
 
       // But user has v1.7.0
-      const v170Content = Buffer.from('tla2tools v1.7.0');
+      const v170Content = Buffer.from("tla2tools v1.7.0");
       fs.writeFileSync(testFile, v170Content);
 
       // Verify (should fail)
-      const result = verifyChecksum(testFile, 'sha1', v180Checksum);
+      const result = verifyChecksum(testFile, "sha1", v180Checksum);
 
       expect(result.valid).toBe(false);
       expect(result.actual).not.toBe(v180Checksum);

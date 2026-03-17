@@ -14,12 +14,14 @@ Validate the syntax and semantics of a TLA+ specification using the SANY parser.
 ## Usage
 
 **Plain path:**
+
 ```
 /tla-parse test-specs/Counter.tla
 /tla-parse specs/MySpec.tla
 ```
 
 **With @ prefix:**
+
 ```
 /tla-parse @test-specs/Counter.tla
 /tla-parse @Counter.tla
@@ -49,13 +51,13 @@ Do NOT use for model checking---that's `/tla-check` or `/tla-smoke`.
 
 ## Common Error Messages
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `Unexpected token` | Syntax error (typo, bracket mismatch) | Review line and check parentheses, EXTENDS clause |
-| `Unknown operator` | Reference to undefined operator or typo | Check operator name spelling; ensure it's defined |
-| `Module not found` | EXTENDS or INSTANCE references non-existent module | Verify module name and path; check for typos |
-| `Level conflict` | Mixing constants and variables incorrectly | Ensure operators have consistent levels (constant/variable) |
-| `Type mismatch` | Incompatible types in operator (e.g., set vs element) | Review operator definitions and usage |
+| Error              | Cause                                                 | Fix                                                         |
+| ------------------ | ----------------------------------------------------- | ----------------------------------------------------------- |
+| `Unexpected token` | Syntax error (typo, bracket mismatch)                 | Review line and check parentheses, EXTENDS clause           |
+| `Unknown operator` | Reference to undefined operator or typo               | Check operator name spelling; ensure it's defined           |
+| `Module not found` | EXTENDS or INSTANCE references non-existent module    | Verify module name and path; check for typos                |
+| `Level conflict`   | Mixing constants and variables incorrectly            | Ensure operators have consistent levels (constant/variable) |
+| `Type mismatch`    | Incompatible types in operator (e.g., set vs element) | Review operator definitions and usage                       |
 
 ## Examples
 

@@ -1,8 +1,8 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from "fs";
+import * as path from "path";
 
-const TLA_TOOLS_LIB_NAME = 'tla2tools.jar';
-const TLA_CMODS_LIB_NAME = 'CommunityModules-deps.jar';
+const TLA_TOOLS_LIB_NAME = "tla2tools.jar";
+const TLA_CMODS_LIB_NAME = "CommunityModules-deps.jar";
 
 /**
  * Get path to tla2tools.jar in the tools directory
@@ -17,7 +17,7 @@ export function getTlaToolsJarPath(toolsDir: string): string {
   if (!fs.existsSync(jarPath)) {
     throw new Error(
       `TLA+ tools jar not found: ${jarPath}\n\n` +
-      `Please ensure ${TLA_TOOLS_LIB_NAME} exists in the tools directory, or use --tools-dir to specify the correct location.`
+        `Please ensure ${TLA_TOOLS_LIB_NAME} exists in the tools directory, or use --tools-dir to specify the correct location.`,
     );
   }
 
@@ -37,7 +37,7 @@ export function getCommunityModulesJarPath(toolsDir: string): string {
   if (!fs.existsSync(jarPath)) {
     throw new Error(
       `Community modules jar not found: ${jarPath}\n\n` +
-      `Please ensure ${TLA_CMODS_LIB_NAME} exists in the tools directory, or use --tools-dir to specify the correct location.`
+        `Please ensure ${TLA_CMODS_LIB_NAME} exists in the tools directory, or use --tools-dir to specify the correct location.`,
     );
   }
 
@@ -69,11 +69,8 @@ export function getModuleSearchPaths(toolsDir: string): string[] {
   const tlaToolsJar = getTlaToolsJarPath(toolsDir);
   const cmodsJar = getCommunityModulesJarPath(toolsDir);
 
-  const TLA_TOOLS_STANDARD_MODULES = '/tla2sany/StandardModules';
+  const TLA_TOOLS_STANDARD_MODULES = "/tla2sany/StandardModules";
 
   // Use jarfile: scheme instead of jar:file: for better compatibility
-  return [
-    `jarfile:${tlaToolsJar}!${TLA_TOOLS_STANDARD_MODULES}`,
-    `jarfile:${cmodsJar}!/`
-  ];
+  return [`jarfile:${tlaToolsJar}!${TLA_TOOLS_STANDARD_MODULES}`, `jarfile:${cmodsJar}!/`];
 }

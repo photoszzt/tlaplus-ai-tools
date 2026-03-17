@@ -9,8 +9,8 @@
 // Spec: docs/review-remediation/spec.md
 // Contract: docs/review-remediation/contract.md
 
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 /**
  * Register a tool on the McpServer with a simplified type signature.
@@ -32,7 +32,7 @@ export function registerTool(
   description: string,
   paramsSchema: Record<string, unknown>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  callback: (args: any, extra: any) => CallToolResult | Promise<CallToolResult>
+  callback: (args: any, extra: any) => CallToolResult | Promise<CallToolResult>,
 ): void {
   // Use Function cast to bypass the overloaded tool() type resolution.
   // At runtime, this calls server.tool(name, description, paramsSchema, callback)

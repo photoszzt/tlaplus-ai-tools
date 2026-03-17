@@ -1,11 +1,11 @@
-import { XMLParser } from 'fast-xml-parser';
-import { NormalizedSymbol, SymbolLocation, RawSymbolKind } from './types';
+import { XMLParser } from "fast-xml-parser";
+import { NormalizedSymbol, SymbolLocation, RawSymbolKind } from "./types";
 
 export function parseXmlSymbols(xmlContent: string): NormalizedSymbol[] {
   const parser = new XMLParser({
     ignoreAttributes: false,
-    attributeNamePrefix: '',
-    isArray: (name) => ['entry', 'ModuleNodeRef', 'operands', 'params'].includes(name)
+    attributeNamePrefix: "",
+    isArray: (name) => ["entry", "ModuleNodeRef", "operands", "params"].includes(name),
   });
 
   const xmlObj = parser.parse(xmlContent);
@@ -35,16 +35,16 @@ function parseEntry(entry: unknown): NormalizedSymbol | null {
 
   if (e.UserDefinedOpKind) {
     node = e.UserDefinedOpKind as Record<string, unknown>;
-    rawKind = 'UserDefinedOpKind';
+    rawKind = "UserDefinedOpKind";
   } else if (e.OpDeclNode) {
     node = e.OpDeclNode as Record<string, unknown>;
-    rawKind = 'OpDeclNode';
+    rawKind = "OpDeclNode";
   } else if (e.TheoremDefNode) {
     node = e.TheoremDefNode as Record<string, unknown>;
-    rawKind = 'TheoremDefNode';
+    rawKind = "TheoremDefNode";
   } else if (e.AssumeDef) {
     node = e.AssumeDef as Record<string, unknown>;
-    rawKind = 'AssumeDef';
+    rawKind = "AssumeDef";
   } else {
     return null;
   }
@@ -57,9 +57,10 @@ function parseEntry(entry: unknown): NormalizedSymbol | null {
   const { module, name } = parseUniqueName(uniqueName);
   const location = parseLocation(node.location);
 
-  const level = node.level !== undefined ? parseInt(String(node.level), 10) as 0 | 1 | 2 | 3 : undefined;
+  const level =
+    node.level !== undefined ? (parseInt(String(node.level), 10) as 0 | 1 | 2 | 3) : undefined;
   const arity = node.arity !== undefined ? parseInt(String(node.arity), 10) : undefined;
-  const preComments = node['pre-comments'] as string | undefined;
+  const preComments = node["pre-comments"] as string | undefined;
   const comment = preComments?.trim() || undefined;
 
   return {
@@ -70,18 +71,18 @@ function parseEntry(entry: unknown): NormalizedSymbol | null {
     arity,
     location,
     comment,
-    rawKind
+    rawKind,
   };
 }
 
 function parseUniqueName(uniqueName: string): { module: string; name: string } {
-  const bangIndex = uniqueName.indexOf('!');
+  const bangIndex = uniqueName.indexOf("!");
   if (bangIndex === -1) {
-    return { module: '', name: uniqueName };
+    return { module: "", name: uniqueName };
   }
   return {
     module: uniqueName.substring(0, bangIndex),
-    name: uniqueName.substring(bangIndex + 1)
+    name: uniqueName.substring(bangIndex + 1),
   };
 }
 
@@ -97,12 +98,12 @@ function parseLocation(loc: unknown): SymbolLocation | undefined {
   return {
     file: l.filename as string | undefined,
     start: {
-      line: parseInt(String(line?.begin || '0'), 10),
-      col: parseInt(String(column?.begin || '0'), 10)
+      line: parseInt(String(line?.begin || "0"), 10),
+      col: parseInt(String(column?.begin || "0"), 10),
     },
     end: {
-      line: parseInt(String(line?.end || '0'), 10),
-      col: parseInt(String(column?.end || '0'), 10)
-    }
+      line: parseInt(String(line?.end || "0"), 10),
+      col: parseInt(String(column?.end || "0"), 10),
+    },
   };
 }

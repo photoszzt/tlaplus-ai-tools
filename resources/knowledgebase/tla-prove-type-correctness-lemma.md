@@ -2,10 +2,11 @@
 title: Proving Type Correctness (`TypeOK`) in TLA⁺ with TLAPS
 description: Guidance for Proving Type Correctness in TLA⁺ with TLAPS
 ---
+
 ### 🔍 Guidance for Proving Type Correctness (`TypeOK`) in TLA⁺ with TLAPS
 
 To formally prove type correctness using TLAPS, follow these steps.
-All proofs must be placed in a separate file with the _proof.tla extension (e.g., MyModule_proof.tla).
+All proofs must be placed in a separate file with the \_proof.tla extension (e.g., MyModule_proof.tla).
 
 ---
 
@@ -13,8 +14,8 @@ All proofs must be placed in a separate file with the _proof.tla extension (e.g.
 
 Before writing the proof, ensure that the TLAPS pragmas such as `PTL`, `SMT`, etc., are available by either:
 
-* Adding `EXTENDS TLAPS`, or
-* Using `INSTANCE TLAPS`.
+- Adding `EXTENDS TLAPS`, or
+- Using `INSTANCE TLAPS`.
 
 This makes the necessary proof strategies accessible to the prover.
 
@@ -67,12 +68,12 @@ TLAPS **must be run**—either through the **TLA⁺ extension in VSCode** or via
 
 **To check a proof in VSCode**:
 
-* Open the `_proof.tla` file in VSCode.
-* Right-click anywhere inside the proof and select **“TLA+: Check Prove Step in TLAPS”**, or use the command palette.
+- Open the `_proof.tla` file in VSCode.
+- Right-click anywhere inside the proof and select **“TLA+: Check Prove Step in TLAPS”**, or use the command palette.
 
 **To check a proof on the command line**:
 
-* Run the following command:
+- Run the following command:
 
   ```bash
   $ opam exec -- tlapm MyModule_proof

@@ -1,14 +1,14 @@
-import { parseXmlSymbols } from '../xml-parser';
+import { parseXmlSymbols } from "../xml-parser";
 
-describe('xml-parser', () => {
-  describe('parseXmlSymbols', () => {
-    it('parses empty modules element', () => {
-      const xml = '<modules></modules>';
+describe("xml-parser", () => {
+  describe("parseXmlSymbols", () => {
+    it("parses empty modules element", () => {
+      const xml = "<modules></modules>";
       const result = parseXmlSymbols(xml);
       expect(result).toEqual([]);
     });
 
-    it('parses UserDefinedOpKind entries', () => {
+    it("parses UserDefinedOpKind entries", () => {
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <modules>
   <context>
@@ -31,21 +31,21 @@ describe('xml-parser', () => {
       const result = parseXmlSymbols(xml);
 
       expect(result).toHaveLength(1);
-      expect(result[0].name).toBe('Init');
-      expect(result[0].module).toBe('Counter');
-      expect(result[0].uniqueName).toBe('Counter!Init');
+      expect(result[0].name).toBe("Init");
+      expect(result[0].module).toBe("Counter");
+      expect(result[0].uniqueName).toBe("Counter!Init");
       expect(result[0].level).toBe(1);
       expect(result[0].arity).toBe(0);
-      expect(result[0].rawKind).toBe('UserDefinedOpKind');
-      expect(result[0].comment).toBe('Initial state predicate');
+      expect(result[0].rawKind).toBe("UserDefinedOpKind");
+      expect(result[0].comment).toBe("Initial state predicate");
       expect(result[0].location).toEqual({
-        file: 'Counter',
+        file: "Counter",
         start: { line: 10, col: 1 },
-        end: { line: 10, col: 15 }
+        end: { line: 10, col: 15 },
       });
     });
 
-    it('parses OpDeclNode entries (variables/constants)', () => {
+    it("parses OpDeclNode entries (variables/constants)", () => {
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <modules>
   <context>
@@ -67,13 +67,13 @@ describe('xml-parser', () => {
       const result = parseXmlSymbols(xml);
 
       expect(result).toHaveLength(1);
-      expect(result[0].name).toBe('count');
-      expect(result[0].module).toBe('Counter');
+      expect(result[0].name).toBe("count");
+      expect(result[0].module).toBe("Counter");
       expect(result[0].level).toBe(1);
-      expect(result[0].rawKind).toBe('OpDeclNode');
+      expect(result[0].rawKind).toBe("OpDeclNode");
     });
 
-    it('parses constant declarations (level 0)', () => {
+    it("parses constant declarations (level 0)", () => {
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <modules>
   <context>
@@ -95,11 +95,11 @@ describe('xml-parser', () => {
       const result = parseXmlSymbols(xml);
 
       expect(result).toHaveLength(1);
-      expect(result[0].name).toBe('MaxValue');
+      expect(result[0].name).toBe("MaxValue");
       expect(result[0].level).toBe(0);
     });
 
-    it('parses TheoremDefNode entries', () => {
+    it("parses TheoremDefNode entries", () => {
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <modules>
   <context>
@@ -119,11 +119,11 @@ describe('xml-parser', () => {
       const result = parseXmlSymbols(xml);
 
       expect(result).toHaveLength(1);
-      expect(result[0].name).toBe('TypeOK');
-      expect(result[0].rawKind).toBe('TheoremDefNode');
+      expect(result[0].name).toBe("TypeOK");
+      expect(result[0].rawKind).toBe("TheoremDefNode");
     });
 
-    it('parses AssumeDef entries', () => {
+    it("parses AssumeDef entries", () => {
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <modules>
   <context>
@@ -143,11 +143,11 @@ describe('xml-parser', () => {
       const result = parseXmlSymbols(xml);
 
       expect(result).toHaveLength(1);
-      expect(result[0].name).toBe('Assumption1');
-      expect(result[0].rawKind).toBe('AssumeDef');
+      expect(result[0].name).toBe("Assumption1");
+      expect(result[0].rawKind).toBe("AssumeDef");
     });
 
-    it('parses multiple entries', () => {
+    it("parses multiple entries", () => {
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <modules>
   <context>
@@ -181,10 +181,10 @@ describe('xml-parser', () => {
       const result = parseXmlSymbols(xml);
 
       expect(result).toHaveLength(3);
-      expect(result.map(s => s.name)).toEqual(['MaxValue', 'count', 'Init']);
+      expect(result.map((s) => s.name)).toEqual(["MaxValue", "count", "Init"]);
     });
 
-    it('extracts module name from uniquename with ! separator', () => {
+    it("extracts module name from uniquename with ! separator", () => {
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <modules>
   <context>
@@ -201,11 +201,11 @@ describe('xml-parser', () => {
 
       const result = parseXmlSymbols(xml);
 
-      expect(result[0].module).toBe('MyModule');
-      expect(result[0].name).toBe('MyOperator');
+      expect(result[0].module).toBe("MyModule");
+      expect(result[0].name).toBe("MyOperator");
     });
 
-    it('handles missing optional fields gracefully', () => {
+    it("handles missing optional fields gracefully", () => {
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <modules>
   <context>
@@ -226,13 +226,13 @@ describe('xml-parser', () => {
       expect(result[0].comment).toBeUndefined();
     });
 
-    it('returns empty array on malformed XML without modules', () => {
-      const xml = '<modules><unclosed>';
+    it("returns empty array on malformed XML without modules", () => {
+      const xml = "<modules><unclosed>";
       const result = parseXmlSymbols(xml);
       expect(result).toEqual([]);
     });
 
-    it('handles action-level operators (level 2)', () => {
+    it("handles action-level operators (level 2)", () => {
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <modules>
   <context>
@@ -252,7 +252,7 @@ describe('xml-parser', () => {
       expect(result[0].level).toBe(2);
     });
 
-    it('handles temporal-level operators (level 3)', () => {
+    it("handles temporal-level operators (level 3)", () => {
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <modules>
   <context>

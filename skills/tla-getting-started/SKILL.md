@@ -22,6 +22,7 @@ TLA+ is a formal specification language for designing, modeling, and verifying c
 ### State Machines
 
 TLA+ specifications describe state machines:
+
 - **States** - Snapshots of system variables at a point in time
 - **Initial states** - Valid starting configurations (Init predicate)
 - **Transitions** - How system moves from one state to another (Next action)
@@ -207,6 +208,7 @@ Begin with minimal specs (1-2 variables, 2-3 actions). Add complexity gradually.
 ### Name Clearly
 
 Use descriptive names for constants, variables, and actions:
+
 - Good: `MaxClients`, `activeConnections`, `AcceptConnection`
 - Avoid: `M`, `x`, `A1`
 
@@ -230,6 +232,7 @@ Action == count' = (count + 1) % MaxValue  \* Wrap around at max
 ### Test Incrementally
 
 After each change:
+
 1. Parse with SANY to catch syntax errors
 2. Smoke test with TLC to find quick issues
 3. Full model check with appropriate bounds
@@ -269,12 +272,14 @@ Invariants check current state, not next state.
 ### Reference Files
 
 For detailed syntax and concepts:
+
 - **`references/syntax-basics.md`** - Complete TLA+ syntax reference
 - **`references/temporal-operators.md`** - Understanding temporal logic
 
 ### Example Specs
 
 Working specifications in `examples/`:
+
 - **`Counter.tla`** - Simple counter with increment
 - **`SimpleLock.tla`** - Basic mutual exclusion lock
 - **`Counter.cfg`** - Example configuration file
@@ -282,6 +287,7 @@ Working specifications in `examples/`:
 ### Knowledge Base
 
 Access knowledge base articles for deeper topics:
+
 - `tla-functions-operators.md` - Functions and operators
 - `tla-symbols-set-operations.md` - Set operations and symbols
 - `tla-indentation.md` - Indentation and formatting
@@ -289,6 +295,7 @@ Access knowledge base articles for deeper topics:
 ### MCP Tools
 
 Use these tools for learning:
+
 - `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse` - Validate syntax
 - `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_modules` - List available modules
 - `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke` - Quick testing (3 seconds)
@@ -297,6 +304,7 @@ Use these tools for learning:
 ### Skills
 
 Available slash commands:
+
 - `/tla-parse` - Parse and validate syntax
 - `/tla-smoke` - Quick smoke test
 - `/tla-symbols` - Extract symbols and suggest config

@@ -26,12 +26,14 @@ INVARIANTS
 ## What Goes in `.cfg` vs `.tla` Files
 
 ### In `.cfg` Files (Configuration Only)
+
 - **Which specification or behavior to check** (SPECIFICATION or INIT+NEXT)
 - **References to constant definitions** (using constant replacement with `<-`)
 - **Which properties to verify** (references to formulas defined in `.tla`)
 - **Model-checking parameters** (symmetry sets, views, constraints)
 
 ### In `.tla` Files (Specification Logic)
+
 - **All formulas and definitions** (Init, Next, invariants, properties)
 - **CONSTANT and VARIABLE declarations**
 - **Constant value definitions** (preferred location for model values)
@@ -45,21 +47,26 @@ INVARIANTS
 You must specify what behavior TLC should check using **one** of these approaches:
 
 #### Option A: SPECIFICATION (Recommended)
+
 ```
 SPECIFICATION Spec
 ```
+
 References a temporal formula from the `.tla` file (typically `Init /\ [][Next]_vars /\ Fairness`). **Accepts:** Level 3 (temporal formulas).
 
 #### Option B: INIT + NEXT (For Safety Properties Only)
+
 ```
 INIT Init
 NEXT Next
 ```
+
 Explicitly specifies the initial state predicate and next-state action. **INIT accepts:** Level 1 (state-level formulas). **NEXT accepts:** Level 2 (action-level formulas).
 
 **Important limitation:** This approach only checks safety properties (invariants). It does not support fairness constraints, so temporal properties (liveness) cannot be verified. Use SPECIFICATION if you need to check temporal properties.
 
 **Use INIT + NEXT only when:**
+
 - You only want to check invariants (safety properties)
 - You don't need to verify any temporal properties (liveness)
 
@@ -70,9 +77,11 @@ Explicitly specifies the initial state predicate and next-state action. **INIT a
 Selects which constant definitions from the `.tla` file to use.
 
 #### Constant Replacements (Recommended Approach)
+
 Define your model values in the `.tla` file, then reference them in the `.cfg`:
 
 **In `.tla` file:**
+
 ```tla
 CONSTANTS N, Servers
 
@@ -81,6 +90,7 @@ MC_Servers == {s1, s2, s3}
 ```
 
 **In `.cfg` file:**
+
 ```
 CONSTANTS
     N <- MC_N
@@ -88,6 +98,7 @@ CONSTANTS
 ```
 
 The `<-` operator replaces a constant (or operator) with a different definition from the `.tla` file. This is useful for:
+
 - Providing finite models of infinite sets (e.g., `Nat <- NatModel` where `NatModel == 0..5`)
 - Swapping implementations for model checking
 - Selecting different model sizes or configurations
@@ -95,6 +106,7 @@ The `<-` operator replaces a constant (or operator) with a different definition 
 #### Direct Constant Assignments (Discouraged)
 
 While TLC allows direct value assignments in `.cfg` files:
+
 ```
 CONSTANTS
     N = 4
@@ -263,6 +275,7 @@ CHECK_DEADLOCK
 ## Complete Example (Best Practice)
 
 **File: `MySpec.tla`**
+
 ```tla
 ---- MODULE MySpec ----
 EXTENDS Integers, FiniteSets
@@ -271,13 +284,13 @@ CONSTANTS N, MaxVal, Servers
 
 VARIABLES state, counter
 
-TypeOK == 
+TypeOK ==
     /\ counter \in 0..N
     /\ state \in {"idle", "working", "done"}
 
 Init == counter = 0 /\ state = "idle"
 
-Next == 
+Next ==
     \/ counter < N /\ counter' = counter + 1 /\ state' = "working"
     \/ counter = N /\ state' = "done" /\ UNCHANGED counter
 
@@ -289,6 +302,7 @@ Eventually == <>(state = "done")
 ```
 
 **File: `MCMySpec.tla` (Model Checker definitions)**
+
 ```tla
 ---- MODULE MCMySpec ----
 EXTENDS MySpec
@@ -301,6 +315,7 @@ MC_Servers == {s1, s2}
 ```
 
 **File: `MCMySpec.cfg`**
+
 ```
 SPECIFICATION Spec
 
@@ -325,14 +340,17 @@ CHECK_DEADLOCK
 ## Common Patterns
 
 ### Model Constants with Finite Sets
+
 When your spec uses infinite sets like `Nat`, define a finite model:
 
 **In main spec `.tla`:**
+
 ```tla
 CONSTANTS Nat, N
 ```
 
 **In model checker `.tla` (e.g., `MCMySpec.tla`):**
+
 ```tla
 EXTENDS MySpec
 
@@ -341,6 +359,7 @@ MC_N == 3
 ```
 
 **In `.cfg`:**
+
 ```
 CONSTANTS
     Nat <- MC_Nat
@@ -348,19 +367,23 @@ CONSTANTS
 ```
 
 ### Symmetry Reduction
+
 **In main spec `.tla`:**
+
 ```tla
 CONSTANTS Servers
 Symmetry == Permutations(Servers)
 ```
 
 **In model checker `.tla`:**
+
 ```tla
 EXTENDS MySpec
 MC_Servers == {s1, s2, s3}
 ```
 
 **In `.cfg`:**
+
 ```
 CONSTANTS
     Servers <- MC_Servers
@@ -369,12 +392,15 @@ SYMMETRY
 ```
 
 ### Bounding Exploration
+
 **In `.tla`:**
+
 ```tla
 StateLimit == Len(messages) <= 5
 ```
 
 **In `.cfg`:**
+
 ```
 CONSTRAINTS
     StateLimit
@@ -406,35 +432,35 @@ TLA⁺ formulas can be classified by **levels**, reflecting the kinds of express
 | **Level**   | **Description**                                                                                               | **Typical Contents**                                              |
 | ----------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | **Level 0** | **Constant-level formulas** — built only from constants (no variables or temporal operators).                 | Constants, arithmetic, logical expressions over constants.        |
-| **Level 1** | **State-level formulas** — built from *unprimed variables* (describe states).                                 | Predicates over state variables, no primed or temporal operators. |
-| **Level 2** | **Action-level formulas** — built from *primed and unprimed variables* (describe transitions between states). | Actions, next-state relations.                                    |
-| **Level 3** | **Temporal formulas** — built using *temporal operators* (e.g., [], <>, ~>, etc.).                               | Specifications, liveness properties.                              |
+| **Level 1** | **State-level formulas** — built from _unprimed variables_ (describe states).                                 | Predicates over state variables, no primed or temporal operators. |
+| **Level 2** | **Action-level formulas** — built from _primed and unprimed variables_ (describe transitions between states). | Actions, next-state relations.                                    |
+| **Level 3** | **Temporal formulas** — built using _temporal operators_ (e.g., [], <>, ~>, etc.).                            | Specifications, liveness properties.                              |
 
 > **Degeneracy:**
 >
-> * Any level-0 formula is a degenerate level-1 formula.
-> * Any level-1 formula is a degenerate level-2 formula.
-> * Any level-2 formula is a degenerate level-3 formula.
+> - Any level-0 formula is a degenerate level-1 formula.
+> - Any level-1 formula is a degenerate level-2 formula.
+> - Any level-2 formula is a degenerate level-3 formula.
 
 ## Summary Table
 
-| Section | Purpose | Should Reference `.tla`? | Formula Level |
-|---------|---------|-------------------|---------------|
-| `SPECIFICATION` | Temporal formula to check | Yes (formula name) | 3 |
-| `INIT` | Initial state predicate | Yes (formula name) | 1 |
-| `NEXT` | Next-state action | Yes (formula name) | 2 |
-| `CONSTANTS` | Replace constants with definitions | **Yes (use `<-` replacement)** | 0 |
-| `INVARIANTS` | State predicates to verify | Yes (formula names) | 1 |
-| `PROPERTIES` | Temporal properties to verify | Yes (formula names) | 2 or 3 |
-| `CONSTRAINTS` | State space bounds | Yes (formula names) | 1 |
-| `ACTION_CONSTRAINT` | Action space bounds | Yes (formula names) | 2 |
-| `SYMMETRY` | Symmetry reduction | Yes (permutation set) | 1 |
-| `VIEW` | State abstraction | Yes (formula name) | 1 |
-| `ALIAS` | Trace display mapping | Yes (formula name) | 2 |
-| `POSTCONDITION` | End-of-trace condition | Yes (formula name) | 0 |
-| `CHECK_DEADLOCK` | Deadlock checking control | No (TRUE/FALSE only) | N/A |
+| Section             | Purpose                            | Should Reference `.tla`?       | Formula Level |
+| ------------------- | ---------------------------------- | ------------------------------ | ------------- |
+| `SPECIFICATION`     | Temporal formula to check          | Yes (formula name)             | 3             |
+| `INIT`              | Initial state predicate            | Yes (formula name)             | 1             |
+| `NEXT`              | Next-state action                  | Yes (formula name)             | 2             |
+| `CONSTANTS`         | Replace constants with definitions | **Yes (use `<-` replacement)** | 0             |
+| `INVARIANTS`        | State predicates to verify         | Yes (formula names)            | 1             |
+| `PROPERTIES`        | Temporal properties to verify      | Yes (formula names)            | 2 or 3        |
+| `CONSTRAINTS`       | State space bounds                 | Yes (formula names)            | 1             |
+| `ACTION_CONSTRAINT` | Action space bounds                | Yes (formula names)            | 2             |
+| `SYMMETRY`          | Symmetry reduction                 | Yes (permutation set)          | 1             |
+| `VIEW`              | State abstraction                  | Yes (formula name)             | 1             |
+| `ALIAS`             | Trace display mapping              | Yes (formula name)             | 2             |
+| `POSTCONDITION`     | End-of-trace condition             | Yes (formula name)             | 0             |
+| `CHECK_DEADLOCK`    | Deadlock checking control          | No (TRUE/FALSE only)           | N/A           |
 
 > **Note:**
 >
-> * `PROPERTY` may accept formulas of level 2 (action-level) or level 3 (temporal).
-> * Each lower-level formula is valid where a higher-level formula is expected, due to degeneracy.
+> - `PROPERTY` may accept formulas of level 2 (action-level) or level 3 (temporal).
+> - Each lower-level formula is valid where a higher-level formula is expected, due to degeneracy.

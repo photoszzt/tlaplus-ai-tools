@@ -2,7 +2,7 @@
  * Mock MCP server for testing tool registration
  */
 
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 export interface MockTool {
   name: string;
@@ -25,16 +25,23 @@ function createMockMcpServerInternal() {
   const resources = new Map<string, MockResource>();
 
   return {
-    tool: jest.fn((name: string, description: string, schema: any, handler: (args: any, context?: any) => Promise<any>) => {
-      tools.set(name, { name, description, schema, handler });
-    }),
+    tool: jest.fn(
+      (
+        name: string,
+        description: string,
+        schema: any,
+        handler: (args: any, context?: any) => Promise<any>,
+      ) => {
+        tools.set(name, { name, description, schema, handler });
+      },
+    ),
     resource: jest.fn((uri: string, name: string, metadata: any, handler: () => Promise<any>) => {
       resources.set(uri, { uri, name, metadata, handler });
     }),
     getRegisteredTools: () => tools,
     getRegisteredResources: () => resources,
     connect: jest.fn().mockResolvedValue(undefined),
-    close: jest.fn().mockResolvedValue(undefined)
+    close: jest.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -47,7 +54,7 @@ export async function callRegisteredTool(
   server: ReturnType<typeof createMockMcpServer>,
   toolName: string,
   args: any,
-  context?: any
+  context?: any,
 ): Promise<any> {
   const tool = server.getRegisteredTools().get(toolName);
   if (!tool) {
@@ -58,7 +65,7 @@ export async function callRegisteredTool(
 
 export async function callRegisteredResource(
   server: ReturnType<typeof createMockMcpServer>,
-  resourceUri: string
+  resourceUri: string,
 ): Promise<any> {
   const resource = server.getRegisteredResources().get(resourceUri);
   if (!resource) {

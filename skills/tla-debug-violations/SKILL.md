@@ -50,12 +50,14 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check --fileName Spec.tla --cfgFile
 ```
 
 **If invariants fail**:
+
 - Focus on the invariant violation first
 - Examine the counterexample trace
 - Invariants are easier to debug than liveness properties
 - Fix invariant violations before checking properties
 
 **If invariants pass**:
+
 - Your safety properties are correct
 - The issue is with liveness properties
 - Proceed to Step 4
@@ -75,11 +77,13 @@ If invariants pass but properties fail, re-enable properties one at a time:
 ## Common Causes of Violations
 
 ### Invariant Violations
+
 - **Type errors**: Variable has wrong type
 - **Logic errors**: Next action allows invalid transitions
 - **Missing constraints**: Init or Next too permissive
 
 ### Property Violations
+
 - **Missing fairness**: Add `WF_vars(Action)` or `SF_vars(Action)`
 - **Deadlock**: Spec allows states with no outgoing transitions
 - **Incorrect temporal formula**: `[]<>P` vs `<>[]P` confusion

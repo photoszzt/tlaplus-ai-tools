@@ -19,10 +19,7 @@
     "formal-methods"
   ],
   "skills": "./skills/",
-  "agents": [
-    "./agents/animation-creator.md",
-    "./agents/trace-analyzer.md"
-  ],
+  "agents": ["./agents/animation-creator.md", "./agents/trace-analyzer.md"],
   "mcpServers": {
     "tlaplus": {
       "command": "node",

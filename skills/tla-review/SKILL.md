@@ -2,7 +2,15 @@
 name: tla-review
 description: Comprehensive TLA+ specification review with checklist and automated validation
 version: 1.0.0
-allowed-tools: [Read, Grep, Write, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke]
+allowed-tools:
+  [
+    Read,
+    Grep,
+    Write,
+    mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse,
+    mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol,
+    mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke,
+  ]
 ---
 
 # TLA+ Specification Review
@@ -46,6 +54,7 @@ Print `Spec path: <spec_path>`
 **Step 3: Parse Flags**
 
 Extract flags from the argument:
+
 - `--no-smoke`: Skip smoke test (default: smoke enabled)
 
 **Step 4: Determine CFG Argument**
@@ -57,16 +66,19 @@ Parse the second token from the argument (split by space, take second). If it en
 Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse` with `fileName=<spec_path>`
 
 Store result:
+
 - `PARSE_SUCCESS=true/false`
 - `PARSE_ERRORS=<error list>`
 
 **Step 6: Extract Symbols**
 
 Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol` with:
+
 - `fileName=<spec_path>`
 - `includeExtendedModules=false`
 
 Store result:
+
 - `SYMBOLS=<symbol extraction result>`
 - Extract: `CONSTANTS`, `VARIABLES`, `INIT`, `NEXT`, `SPEC`, `INVARIANTS`, `PROPERTIES`
 
@@ -79,6 +91,7 @@ Apply CFG selection algorithm (same as `/tla-smoke`):
 **Phase 1: Ensure precondition**
 
 Extract spec name and directory:
+
 ```
 SPEC_DIR = dirname(SPEC_PATH)
 SPEC_NAME = basename(SPEC_PATH, .tla)
@@ -124,11 +137,13 @@ If precondition satisfied:
 Store final cfg path in `FINAL_CFG`.
 
 Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke` with:
+
 - `fileName=<SPEC_PATH>`
 - `cfgFile=<FINAL_CFG>`
 - `extraJavaOpts=["-Dtlc2.TLC.stopAfter=3"]`
 
 Store result:
+
 - `SMOKE_SUCCESS=true/false`
 - `SMOKE_VIOLATIONS=<violation list>`
 

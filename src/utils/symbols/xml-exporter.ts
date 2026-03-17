@@ -1,8 +1,8 @@
-import * as path from 'path';
-import { runJavaCommand, ProcessInfo } from '../java';
-import { getClassPath } from '../tla-tools';
+import * as path from "path";
+import { runJavaCommand, ProcessInfo } from "../java";
+import { getClassPath } from "../tla-tools";
 
-const XML_EXPORTER_MAIN_CLASS = 'tla2sany.xml.XMLExporter';
+const XML_EXPORTER_MAIN_CLASS = "tla2sany.xml.XMLExporter";
 
 export interface XmlExporterResult {
   xml: string;
@@ -13,13 +13,13 @@ export async function runXmlExporter(
   tlaFilePath: string,
   toolsDir: string,
   includeExtendedModules: boolean,
-  javaHome?: string
+  javaHome?: string,
 ): Promise<XmlExporterResult> {
   const classPath = getClassPath(toolsDir);
 
-  const args = ['-o', '-u'];
+  const args = ["-o", "-u"];
   if (!includeExtendedModules) {
-    args.push('-r');
+    args.push("-r");
   }
   args.push(path.basename(tlaFilePath));
 
@@ -31,11 +31,11 @@ export async function runXmlExporter(
     args,
     [],
     javaHome,
-    workingDir
+    workingDir,
   );
 
-  let xml = '';
-  let stderr = '';
+  let xml = "";
+  let stderr = "";
 
   if (procInfo.stdout) {
     for await (const chunk of procInfo.stdout) {
@@ -51,7 +51,7 @@ export async function runXmlExporter(
 
   if (procInfo.process.exitCode === null) {
     await new Promise<void>((resolve) => {
-      procInfo.process.once('close', () => resolve());
+      procInfo.process.once("close", () => resolve());
     });
   }
 

@@ -1,5 +1,5 @@
-import { spawn, execSync, ChildProcess, SpawnOptions } from 'child_process';
-import type { Readable } from 'stream';
+import { spawn, execSync, ChildProcess, SpawnOptions } from "child_process";
+import type { Readable } from "stream";
 
 export interface RunProcessOptions {
   command: string;
@@ -57,7 +57,12 @@ function appendTail(existing: Buffer, chunk: Buffer, maxBytes: number): Buffer {
   return Buffer.concat([sliced, chunk]);
 }
 
-function appendOutput(buffers: OutputBuffers, target: keyof OutputBuffers, chunk: Buffer, maxBytes: number): void {
+function appendOutput(
+  buffers: OutputBuffers,
+  target: keyof OutputBuffers,
+  chunk: Buffer,
+  maxBytes: number,
+): void {
   buffers[target] = appendTail(buffers[target], chunk, maxBytes);
 }
 
@@ -77,10 +82,10 @@ function killProcessTree(proc: ChildProcess, signal: NodeJS.Signals): void {
     return;
   }
 
-  if (process.platform === 'win32') {
-    if (signal === 'SIGKILL') {
+  if (process.platform === "win32") {
+    if (signal === "SIGKILL") {
       try {
-        execSync(`taskkill /pid ${proc.pid} /T /F`, { stdio: 'ignore' });
+        execSync(`taskkill /pid ${proc.pid} /T /F`, { stdio: "ignore" });
         return;
       } catch {
         // Fall back to regular kill below.
@@ -94,7 +99,7 @@ function killProcessTree(proc: ChildProcess, signal: NodeJS.Signals): void {
     return;
   }
 
-  if (process.platform === 'linux') {
+  if (process.platform === "linux") {
     try {
       process.kill(-proc.pid, signal);
       return;
@@ -116,7 +121,7 @@ export async function runProcess(options: RunProcessOptions): Promise<RunProcess
   const buffers: OutputBuffers = {
     stdout: Buffer.alloc(0),
     stderr: Buffer.alloc(0),
-    combined: Buffer.alloc(0)
+    combined: Buffer.alloc(0),
   };
 
   let timedOut = false;
@@ -149,13 +154,13 @@ export async function runProcess(options: RunProcessOptions): Promise<RunProcess
       }
 
       if (options.signal) {
-        options.signal.removeEventListener('abort', onAbort);
+        options.signal.removeEventListener("abort", onAbort);
       }
 
       if (processHandle) {
-        processHandle.removeListener('error', onError);
-        processHandle.removeListener('close', onClose);
-        processHandle.removeListener('exit', onExit);
+        processHandle.removeListener("error", onError);
+        processHandle.removeListener("close", onClose);
+        processHandle.removeListener("exit", onExit);
 
         cleanupStream(processHandle.stdout, onStdoutData, onStreamError);
         cleanupStream(processHandle.stderr, onStderrData, onStreamError);
@@ -168,12 +173,12 @@ export async function runProcess(options: RunProcessOptions): Promise<RunProcess
         killed,
         stdout: buffers.stdout.toString(),
         stderr: buffers.stderr.toString(),
-        combined: buffers.combined.toString()
+        combined: buffers.combined.toString(),
       });
     };
 
-    const terminate = (reason: 'timeout' | 'abort') => {
-      if (reason === 'timeout') {
+    const terminate = (reason: "timeout" | "abort") => {
+      if (reason === "timeout") {
         timedOut = true;
       } else {
         aborted = true;
@@ -184,17 +189,23 @@ export async function runProcess(options: RunProcessOptions): Promise<RunProcess
         return;
       }
 
-      const grace = reason === 'abort' ? 0 : killGraceMs;
+      const grace = reason === "abort" ? 0 : killGraceMs;
       killed = true;
-      killProcessTree(processHandle, 'SIGTERM');
+      killProcessTree(processHandle, "SIGTERM");
 
-      graceId = setTimeout(() => {
-        killProcessTree(processHandle!, 'SIGKILL');
-      }, Math.max(0, grace));
+      graceId = setTimeout(
+        () => {
+          killProcessTree(processHandle!, "SIGKILL");
+        },
+        Math.max(0, grace),
+      );
 
-      forceResolveId = setTimeout(() => {
-        finalize(exitCode);
-      }, Math.max(0, grace) + 1000);
+      forceResolveId = setTimeout(
+        () => {
+          finalize(exitCode);
+        },
+        Math.max(0, grace) + 1000,
+      );
     };
 
     const onExit = (code: number | null) => {
@@ -209,40 +220,40 @@ export async function runProcess(options: RunProcessOptions): Promise<RunProcess
     const onError = (err: Error) => {
       const message = `Process error: ${err.message}\n`;
       const buf = Buffer.from(message);
-      appendOutput(buffers, 'stderr', buf, maxOutputBytes);
-      appendOutput(buffers, 'combined', buf, maxOutputBytes);
+      appendOutput(buffers, "stderr", buf, maxOutputBytes);
+      appendOutput(buffers, "combined", buf, maxOutputBytes);
       finalize(exitCode);
     };
 
     const onStreamError = (err: Error) => {
       const message = `Stream error: ${err.message}\n`;
       const buf = Buffer.from(message);
-      appendOutput(buffers, 'stderr', buf, maxOutputBytes);
-      appendOutput(buffers, 'combined', buf, maxOutputBytes);
+      appendOutput(buffers, "stderr", buf, maxOutputBytes);
+      appendOutput(buffers, "combined", buf, maxOutputBytes);
     };
 
     const onStdoutData = (chunk: Buffer | string) => {
       const buf = toBuffer(chunk);
-      appendOutput(buffers, 'stdout', buf, maxOutputBytes);
-      appendOutput(buffers, 'combined', buf, maxOutputBytes);
+      appendOutput(buffers, "stdout", buf, maxOutputBytes);
+      appendOutput(buffers, "combined", buf, maxOutputBytes);
     };
 
     const onStderrData = (chunk: Buffer | string) => {
       const buf = toBuffer(chunk);
-      appendOutput(buffers, 'stderr', buf, maxOutputBytes);
-      appendOutput(buffers, 'combined', buf, maxOutputBytes);
+      appendOutput(buffers, "stderr", buf, maxOutputBytes);
+      appendOutput(buffers, "combined", buf, maxOutputBytes);
     };
 
     const onAbort = () => {
-      terminate('abort');
+      terminate("abort");
     };
 
     const spawnOptions: SpawnOptions = {
       cwd: options.cwd ?? process.cwd(),
       env: options.env ? { ...process.env, ...options.env } : process.env,
-      detached: process.platform !== 'win32',
-      windowsHide: process.platform === 'win32',
-      stdio: ['ignore', 'pipe', 'pipe']
+      detached: process.platform !== "win32",
+      windowsHide: process.platform === "win32",
+      stdio: ["ignore", "pipe", "pipe"],
     };
 
     processHandle = spawn(options.command, options.args, spawnOptions);
@@ -252,25 +263,25 @@ export async function runProcess(options: RunProcessOptions): Promise<RunProcess
       return;
     }
 
-    child.once('error', onError);
-    child.once('close', onClose);
-    child.once('exit', onExit);
+    child.once("error", onError);
+    child.once("close", onClose);
+    child.once("exit", onExit);
 
     if (child.stdout) {
-      child.stdout.on('data', onStdoutData);
-      child.stdout.on('error', onStreamError);
+      child.stdout.on("data", onStdoutData);
+      child.stdout.on("error", onStreamError);
       safeResume(child.stdout);
     }
 
     if (child.stderr) {
-      child.stderr.on('data', onStderrData);
-      child.stderr.on('error', onStreamError);
+      child.stderr.on("data", onStderrData);
+      child.stderr.on("error", onStreamError);
       safeResume(child.stderr);
     }
 
     if (options.timeoutMs && options.timeoutMs > 0) {
       timeoutId = setTimeout(() => {
-        terminate('timeout');
+        terminate("timeout");
       }, options.timeoutMs);
     }
 
@@ -278,7 +289,7 @@ export async function runProcess(options: RunProcessOptions): Promise<RunProcess
       if (options.signal.aborted) {
         onAbort();
       } else {
-        options.signal.addEventListener('abort', onAbort);
+        options.signal.addEventListener("abort", onAbort);
       }
     }
   });
@@ -287,15 +298,15 @@ export async function runProcess(options: RunProcessOptions): Promise<RunProcess
 function cleanupStream(
   stream: Readable | null | undefined,
   onData: (chunk: Buffer | string) => void,
-  onError: (err: Error) => void
+  onError: (err: Error) => void,
 ): void {
   if (!stream) {
     return;
   }
-  stream.removeListener('data', onData);
-  stream.removeListener('error', onError);
-  stream.removeAllListeners('end');
-  stream.removeAllListeners('close');
-  stream.removeAllListeners('readable');
+  stream.removeListener("data", onData);
+  stream.removeListener("error", onError);
+  stream.removeAllListeners("end");
+  stream.removeAllListeners("close");
+  stream.removeAllListeners("readable");
   stream.destroy();
 }

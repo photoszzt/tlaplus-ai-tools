@@ -2,7 +2,14 @@
 name: tla-symbols
 description: Extract symbols from TLA+ spec and generate TLC configuration
 version: 1.0.0
-allowed-tools: [Read, Write, Grep, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol]
+allowed-tools:
+  [
+    Read,
+    Write,
+    Grep,
+    mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse,
+    mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol,
+  ]
 ---
 
 # Extract Symbols and Generate Config
@@ -14,6 +21,7 @@ Extract symbols (constants, variables, operators) from a TLA+ specification and 
 ## Usage
 
 Preferred (always works):
+
 ```
 /tla-symbols test-specs/Counter.tla
 /tla-symbols test-specs/Counter.tla --extended
@@ -51,10 +59,12 @@ If parse errors exist, print them and exit.
 **Step 4: Extract Symbols**
 
 Determine `includeExtendedModules`:
+
 - If the argument contains `--extended`, set to `true`
 - Else set to `false`
 
 Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol` with:
+
 - `fileName=<spec_path>`
 - `includeExtendedModules=<flag>`
 
@@ -63,6 +73,7 @@ Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol` with:
 From the symbol extraction result (SymbolExtractionResult schema):
 
 Determine output filename:
+
 - Extract spec name from path (e.g., `Counter.tla` -> `Counter`)
 - If `<SpecName>.cfg` does NOT exist: write to `<SpecName>.cfg`
 - Else: write to `<SpecName>.generated.cfg`
@@ -88,6 +99,7 @@ Generate config content following this template:
 Where:
 
 **BEHAVIOR_SPEC** (use bestGuess, never invent):
+
 - If `bestGuess.spec` exists: `SPECIFICATION <bestGuess.spec.name>`
 - Else if `bestGuess.init` AND `bestGuess.next` exist:
   ```
@@ -103,14 +115,17 @@ Where:
   ```
 
 **INVARIANTS** (use bestGuess.invariants, never invent):
+
 - For each inv in `bestGuess.invariants`: `INVARIANT <inv.name>`
 - If empty: omit
 
 **PROPERTIES** (use bestGuess.properties, never invent):
+
 - For each prop in `bestGuess.properties`: `PROPERTY <prop.name>`
 - If empty: omit
 
 **CONSTANTS_STUBS** (use candidates.constants, never invent values):
+
 - If `candidates.constants` is non-empty, emit commented stubs:
   ```
   \* Constants detected by SANY; TLC requires concrete assignments before model checking.
@@ -130,6 +145,7 @@ Print `CFG written: <filename>`
 **Step 7: Advise User**
 
 Print:
+
 ```
 Next steps:
 1. Edit <cfg-file> to assign constant values

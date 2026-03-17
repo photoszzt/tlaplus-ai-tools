@@ -7,7 +7,7 @@
  * @module animation/errors
  */
 
-import { AnimationError, AnimationErrorCode } from './types';
+import { AnimationError, AnimationErrorCode } from "./types";
 
 /**
  * Error remediation mapping
@@ -16,64 +16,48 @@ import { AnimationError, AnimationErrorCode } from './types';
  */
 const ERROR_REMEDIATION: Record<AnimationErrorCode, { message: string; remediation: string[] }> = {
   DETECTION_TIMEOUT: {
-    message: 'Terminal graphics detection timed out after 500ms',
+    message: "Terminal graphics detection timed out after 500ms",
     remediation: [
-      'Try again or use ASCII fallback. If in tmux, ensure allow-passthrough is enabled.'
-    ]
+      "Try again or use ASCII fallback. If in tmux, ensure allow-passthrough is enabled.",
+    ],
   },
   UNKNOWN_TERMINAL: {
-    message: 'Could not detect terminal type from environment',
-    remediation: [
-      'Set TERM_PROGRAM or use --protocol to specify: kitty, iterm2, ascii'
-    ]
+    message: "Could not detect terminal type from environment",
+    remediation: ["Set TERM_PROGRAM or use --protocol to specify: kitty, iterm2, ascii"],
   },
   PASSTHROUGH_NOT_ENABLED: {
-    message: 'tmux detected but allow-passthrough is not enabled',
-    remediation: [
-      'Run: tmux set -g allow-passthrough on'
-    ]
+    message: "tmux detected but allow-passthrough is not enabled",
+    remediation: ["Run: tmux set -g allow-passthrough on"],
   },
   RENDER_FAILED: {
-    message: 'Failed to render frame',
-    remediation: [
-      'Check error message for details',
-      'Try using ASCII or browser fallback'
-    ]
+    message: "Failed to render frame",
+    remediation: ["Check error message for details", "Try using ASCII or browser fallback"],
   },
   FRAME_TOO_LARGE: {
-    message: 'Frame exceeds 1MB limit',
-    remediation: [
-      'Reduce animation complexity or canvas size'
-    ]
+    message: "Frame exceeds 1MB limit",
+    remediation: ["Reduce animation complexity or canvas size"],
   },
   INVALID_ANIMVIEW: {
-    message: 'AnimView record missing required field',
-    remediation: [
-      'Ensure AnimView has: frame, title, width, height, elements'
-    ]
+    message: "AnimView record missing required field",
+    remediation: ["Ensure AnimView has: frame, title, width, height, elements"],
   },
   NO_FALLBACK_AVAILABLE: {
-    message: 'Terminal does not support graphics and no fallback was accepted. Options: set fallbackPreference to \'ascii\' or \'browser\', or use a graphics-capable terminal (Kitty, iTerm2).',
+    message:
+      "Terminal does not support graphics and no fallback was accepted. Options: set fallbackPreference to 'ascii' or 'browser', or use a graphics-capable terminal (Kitty, iTerm2).",
     remediation: [
-      'Set TLAPLUS_ANIMATION_FALLBACK=ascii for ASCII art output',
-      'Set TLAPLUS_ANIMATION_FALLBACK=browser to open in browser',
-      'Use a terminal with graphics support (Kitty, iTerm2)'
-    ]
+      "Set TLAPLUS_ANIMATION_FALLBACK=ascii for ASCII art output",
+      "Set TLAPLUS_ANIMATION_FALLBACK=browser to open in browser",
+      "Use a terminal with graphics support (Kitty, iTerm2)",
+    ],
   },
   FILE_NOT_FOUND: {
-    message: 'File not found',
-    remediation: [
-      'Verify file path is correct',
-      'Check file permissions'
-    ]
+    message: "File not found",
+    remediation: ["Verify file path is correct", "Check file permissions"],
   },
   INVALID_SVG: {
-    message: 'Invalid SVG content',
-    remediation: [
-      'Ensure SVG is well-formed XML',
-      'Check SVG syntax'
-    ]
-  }
+    message: "Invalid SVG content",
+    remediation: ["Ensure SVG is well-formed XML", "Check SVG syntax"],
+  },
 };
 
 /**
@@ -87,7 +71,7 @@ const ERROR_REMEDIATION: Record<AnimationErrorCode, { message: string; remediati
  */
 export function createAnimationError(
   code: AnimationErrorCode,
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ): AnimationError {
   const template = ERROR_REMEDIATION[code];
   let message = template.message;
@@ -95,16 +79,16 @@ export function createAnimationError(
 
   // Add details to message if provided
   if (details) {
-    if (details.specificError && typeof details.specificError === 'string') {
+    if (details.specificError && typeof details.specificError === "string") {
       message = `${template.message}: ${details.specificError}`;
     }
-    if (details.path && typeof details.path === 'string') {
+    if (details.path && typeof details.path === "string") {
       message = `${template.message}: ${details.path}`;
     }
-    if (details.actualSize && typeof details.actualSize === 'number') {
+    if (details.actualSize && typeof details.actualSize === "number") {
       message = `${template.message} (${formatBytes(details.actualSize)})`;
     }
-    if (details.field && typeof details.field === 'string') {
+    if (details.field && typeof details.field === "string") {
       message = `${template.message}: ${details.field}`;
     }
     if (details.width && details.height) {
@@ -120,7 +104,7 @@ export function createAnimationError(
   return {
     error: code,
     message,
-    remediation
+    remediation,
   };
 }
 
@@ -147,7 +131,7 @@ export class ErrorService {
    * @implements REQ-DETECT-001
    */
   detectionTimeout(): AnimationError {
-    return createAnimationError('DETECTION_TIMEOUT');
+    return createAnimationError("DETECTION_TIMEOUT");
   }
 
   /**
@@ -155,7 +139,7 @@ export class ErrorService {
    * @implements REQ-ERROR-001
    */
   unknownTerminal(): AnimationError {
-    return createAnimationError('UNKNOWN_TERMINAL');
+    return createAnimationError("UNKNOWN_TERMINAL");
   }
 
   /**
@@ -163,7 +147,7 @@ export class ErrorService {
    * @implements REQ-DETECT-002
    */
   passthroughNotEnabled(): AnimationError {
-    return createAnimationError('PASSTHROUGH_NOT_ENABLED');
+    return createAnimationError("PASSTHROUGH_NOT_ENABLED");
   }
 
   /**
@@ -172,7 +156,7 @@ export class ErrorService {
    * @param specificError - The specific error message
    */
   renderFailed(specificError: string): AnimationError {
-    return createAnimationError('RENDER_FAILED', { specificError });
+    return createAnimationError("RENDER_FAILED", { specificError });
   }
 
   /**
@@ -184,7 +168,7 @@ export class ErrorService {
    * @param height - Canvas height
    */
   frameTooLarge(actualSize: number, width: number, height: number): AnimationError {
-    return createAnimationError('FRAME_TOO_LARGE', { actualSize, width, height });
+    return createAnimationError("FRAME_TOO_LARGE", { actualSize, width, height });
   }
 
   /**
@@ -193,7 +177,7 @@ export class ErrorService {
    * @param field - The missing field name
    */
   invalidAnimView(field: string): AnimationError {
-    return createAnimationError('INVALID_ANIMVIEW', { field });
+    return createAnimationError("INVALID_ANIMVIEW", { field });
   }
 
   /**
@@ -201,7 +185,7 @@ export class ErrorService {
    * @implements REQ-FALLBACK-006
    */
   noFallbackAvailable(): AnimationError {
-    return createAnimationError('NO_FALLBACK_AVAILABLE');
+    return createAnimationError("NO_FALLBACK_AVAILABLE");
   }
 
   /**
@@ -210,7 +194,7 @@ export class ErrorService {
    * @param path - The file path that was not found
    */
   fileNotFound(path: string): AnimationError {
-    return createAnimationError('FILE_NOT_FOUND', { path });
+    return createAnimationError("FILE_NOT_FOUND", { path });
   }
 
   /**
@@ -219,7 +203,7 @@ export class ErrorService {
    * @param specificError - The specific parse error
    */
   invalidSvg(specificError: string): AnimationError {
-    return createAnimationError('INVALID_SVG', { specificError });
+    return createAnimationError("INVALID_SVG", { specificError });
   }
 }
 

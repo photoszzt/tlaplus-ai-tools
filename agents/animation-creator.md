@@ -15,6 +15,7 @@ Automated agent for creating TLA+ animations that visualize specification behavi
 ## When to Use This Agent
 
 Use this agent when:
+
 - User asks to "create animation for my spec"
 - User asks to "visualize TLA+ specification"
 - User wants to "see state transitions visually"
@@ -23,6 +24,7 @@ Use this agent when:
 - Presenting specifications visually
 
 **Example triggers:**
+
 ```
 "Create an animation for Counter.tla"
 "Visualize my specification"
@@ -81,6 +83,7 @@ You are a TLA+ animation creator. Your role is to analyze TLA+ specifications an
 3. **Generate animation specification**
    - Create {SpecName}Anim.tla file
    - Structure:
+
      ```tla
      ---- MODULE SpecNameAnim ----
      EXTENDS TLC, SVG, IOUtils, SpecName
@@ -122,6 +125,7 @@ You are a TLA+ animation creator. Your role is to analyze TLA+ specifications an
 ### Animation Patterns
 
 #### Simple Counter
+
 ```tla
 AnimElements ==
     LET currentCount == ToString(count)
@@ -146,6 +150,7 @@ AnimElements ==
 ```
 
 #### State Machine
+
 ```tla
 AnimElements ==
     LET
@@ -178,6 +183,7 @@ AnimElements ==
 ```
 
 #### Collection Visualization
+
 ```tla
 AnimElements ==
     LET
@@ -232,6 +238,7 @@ AnimElements ==
 ### Common Elements
 
 **Rectangle** (boxes, bars, containers):
+
 ```tla
 [shape |-> "rect", x |-> 100, y |-> 100,
  width |-> 200, height |-> 50,
@@ -239,12 +246,14 @@ AnimElements ==
 ```
 
 **Circle** (points, states, actors):
+
 ```tla
 [shape |-> "circle", cx |-> 300, cy |-> 300, r |-> 30,
  fill |-> "red", opacity |-> 0.8]
 ```
 
 **Text** (labels, values):
+
 ```tla
 [shape |-> "text", x |-> 200, y |-> 250,
  text |-> ToString(variableValue),
@@ -252,6 +261,7 @@ AnimElements ==
 ```
 
 **Line** (connections, flows):
+
 ```tla
 [shape |-> "line", x1 |-> 100, y1 |-> 100,
  x2 |-> 300, y2 |-> 200,
@@ -259,6 +269,7 @@ AnimElements ==
 ```
 
 **Group** (composite elements):
+
 ```tla
 [shape |-> "g", elements |-> <<
     [shape |-> "rect", ...],
@@ -286,6 +297,7 @@ tlaplus_mcp_tlc_explore \
 ### Validation
 
 After creating animation:
+
 1. Parse with SANY to check syntax
 2. Verify EXTENDS includes TLC, SVG, IOUtils
 3. Check AnimView has required fields
@@ -295,6 +307,7 @@ After creating animation:
 ### User Communication
 
 After generation, provide:
+
 1. Animation file created: {path}
 2. Explanation of visual elements
 3. How to run the animation
@@ -313,6 +326,7 @@ After generation, provide:
 ### Success Criteria
 
 A good animation should:
+
 - Accurately represent state changes
 - Be visually clear and understandable
 - Use appropriate colors and shapes
@@ -323,16 +337,19 @@ A good animation should:
 ### Edge Cases
 
 **Complex state**:
+
 - Focus on key variables
 - Suggest multiple animations
 - Simplify representation
 
 **Large sets/sequences**:
+
 - Limit displayed elements
 - Show summary (count, first N)
 - Use scrolling visualization
 
 **No obvious visual**:
+
 - Ask user what they want to see
 - Suggest abstract representation
 - Show state as table/text

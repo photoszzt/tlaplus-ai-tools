@@ -19,7 +19,7 @@ EXTENDS Naturals, Sequences
 
 This makes operators like `+`, `<`, `Len`, `Append`, etc., available without qualification.
 
-> Think of `EXTENDS` as syntactically *inlining* the target module. This is convenient but can lead to **name clashes**—especially if multiple modules define the same operator or constant name.
+> Think of `EXTENDS` as syntactically _inlining_ the target module. This is convenient but can lead to **name clashes**—especially if multiple modules define the same operator or constant name.
 
 For instance, if your module already defines `Len`, and you `EXTEND Sequences`, you’ll get a conflict since both define `Len`.
 
@@ -97,10 +97,10 @@ S2 == INSTANCE Stack WITH Elem <- {"a", "b"}, stack <- s2
 
 ### TL;DR
 
-| Use Case                        | Use `EXTENDS`                 | Use `INSTANCE`                                       |
-|--------------------------------|-------------------------------|------------------------------------------------------|
-| Bring in standard definitions  | ✅ Yes                         | ✖ Not typical                                        |
-| Avoid name clashes             | ✖ Risk of conflict            | ✅ Use qualified access (`M!Op`)                     |
-| Module has `CONSTANTS`         | ✖ Not allowed                 | ✅ Use `WITH` to provide values                      |
-| Module has `VARIABLES`         | ✖ Not allowed                 | ✅ Map to local variables (refinement)               |
-| Multiple versions with config  | ✖ Not possible                | ✅ Each instance can use different substitutions     |
+| Use Case                      | Use `EXTENDS`      | Use `INSTANCE`                                   |
+| ----------------------------- | ------------------ | ------------------------------------------------ |
+| Bring in standard definitions | ✅ Yes             | ✖ Not typical                                    |
+| Avoid name clashes            | ✖ Risk of conflict | ✅ Use qualified access (`M!Op`)                 |
+| Module has `CONSTANTS`        | ✖ Not allowed      | ✅ Use `WITH` to provide values                  |
+| Module has `VARIABLES`        | ✖ Not allowed      | ✅ Map to local variables (refinement)           |
+| Multiple versions with config | ✖ Not possible     | ✅ Each instance can use different substitutions |

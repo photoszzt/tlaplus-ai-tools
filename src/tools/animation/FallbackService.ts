@@ -7,9 +7,9 @@
  * @module animation/FallbackService
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import * as os from 'os';
+import * as fs from "fs/promises";
+import * as path from "path";
+import * as os from "os";
 
 import {
   AnimView,
@@ -18,9 +18,9 @@ import {
   BrowserRenderResult,
   AnimationError,
   SvgElement,
-  FileSystemService
-} from './types';
-import { createAnimationError, errorService } from './errors';
+  FileSystemService,
+} from "./types";
+import { createAnimationError, errorService } from "./errors";
 
 /**
  * ASCII box-drawing characters
@@ -28,17 +28,17 @@ import { createAnimationError, errorService } from './errors';
  * NORMATIVE: SC-ANIM-009
  */
 const BOX_CHARS = {
-  TOP_LEFT: '\u250C',         // ┌
-  TOP_RIGHT: '\u2510',        // ┐
-  BOTTOM_LEFT: '\u2514',      // └
-  BOTTOM_RIGHT: '\u2518',     // ┘
-  HORIZONTAL: '\u2500',       // ─
-  VERTICAL: '\u2502',         // │
-  FILLED_CIRCLE: '\u25CF',    // ●
-  OUTLINE_CIRCLE: '\u25CB',   // ○
-  SMALL_CIRCLE: 'O',
-  MEDIUM_CIRCLE_LEFT: '(',
-  MEDIUM_CIRCLE_RIGHT: ')'
+  TOP_LEFT: "\u250C", // ┌
+  TOP_RIGHT: "\u2510", // ┐
+  BOTTOM_LEFT: "\u2514", // └
+  BOTTOM_RIGHT: "\u2518", // ┘
+  HORIZONTAL: "\u2500", // ─
+  VERTICAL: "\u2502", // │
+  FILLED_CIRCLE: "\u25CF", // ●
+  OUTLINE_CIRCLE: "\u25CB", // ○
+  SMALL_CIRCLE: "O",
+  MEDIUM_CIRCLE_LEFT: "(",
+  MEDIUM_CIRCLE_RIGHT: ")",
 };
 
 /**
@@ -52,7 +52,7 @@ const ASCII_CONSTRAINTS = {
   DEFAULT_COLUMNS: 80,
   MIN_ROWS: 20,
   MAX_ROWS: 60,
-  DEFAULT_ROWS: 24
+  DEFAULT_ROWS: 24,
 };
 
 /**
@@ -78,11 +78,11 @@ function createDefaultFileSystem(): FileSystemService {
       const files = await fs.readdir(cwd);
       const regex = globToRegex(pattern);
       const matched = files
-        .filter(f => regex.test(f))
-        .map(f => path.join(cwd, f))
+        .filter((f) => regex.test(f))
+        .map((f) => path.join(cwd, f))
         .sort();
       return matched;
-    }
+    },
   };
 }
 
@@ -91,9 +91,9 @@ function createDefaultFileSystem(): FileSystemService {
  */
 function globToRegex(pattern: string): RegExp {
   const escaped = pattern
-    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
-    .replace(/\*/g, '.*')
-    .replace(/\?/g, '.');
+    .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+    .replace(/\*/g, ".*")
+    .replace(/\?/g, ".");
   return new RegExp(`^${escaped}$`);
 }
 
@@ -102,11 +102,11 @@ function globToRegex(pattern: string): RegExp {
  */
 function escapeXml(str: string): string {
   return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 }
 
 /**
@@ -115,7 +115,7 @@ function escapeXml(str: string): string {
  * @returns SVG content string
  */
 function animViewToSvg(animView: AnimView): string {
-  const elements = animView.elements.map(el => svgElementToString(el)).join('\n  ');
+  const elements = animView.elements.map((el) => svgElementToString(el)).join("\n  ");
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${animView.width}" height="${animView.height}">
   <title>${escapeXml(animView.title)}</title>
   ${elements}
@@ -130,17 +130,17 @@ function svgElementToString(element: SvgElement): string {
   const attrStrings = Object.entries(attrs)
     .filter(([, v]) => v !== undefined)
     .map(([k, v]) => `${k}="${escapeXml(String(v))}"`)
-    .join(' ');
+    .join(" ");
 
-  if (shape === 'g') {
+  if (shape === "g") {
     return `<g ${attrStrings}></g>`;
   }
-  if (shape === 'text') {
-    const text = (attrs.text as string) || '';
+  if (shape === "text") {
+    const text = (attrs.text as string) || "";
     const filteredAttrs = Object.entries(attrs)
-      .filter(([k, v]) => k !== 'text' && v !== undefined)
+      .filter(([k, v]) => k !== "text" && v !== undefined)
       .map(([k, v]) => `${k}="${escapeXml(String(v))}"`)
-      .join(' ');
+      .join(" ");
     return `<text ${filteredAttrs}>${escapeXml(text)}</text>`;
   }
   return `<${shape} ${attrStrings}/>`;
@@ -154,24 +154,24 @@ function svgElementToString(element: SvgElement): string {
 function getAnsiColor(color: string): string {
   // Basic color mapping to ANSI 256-color codes
   const colorMap: Record<string, number> = {
-    'black': 0,
-    'red': 1,
-    'green': 2,
-    'yellow': 3,
-    'blue': 21,
-    'magenta': 5,
-    'cyan': 6,
-    'white': 7,
-    '#000000': 0,
-    '#ff0000': 196,
-    '#00ff00': 46,
-    '#0000ff': 21,
-    '#ffff00': 226,
-    '#ff00ff': 201,
-    '#00ffff': 51,
-    '#ffffff': 231,
-    '#3498db': 39,
-    'orange': 208
+    black: 0,
+    red: 1,
+    green: 2,
+    yellow: 3,
+    blue: 21,
+    magenta: 5,
+    cyan: 6,
+    white: 7,
+    "#000000": 0,
+    "#ff0000": 196,
+    "#00ff00": 46,
+    "#0000ff": 21,
+    "#ffff00": 226,
+    "#ff00ff": 201,
+    "#00ffff": 51,
+    "#ffffff": 231,
+    "#3498db": 39,
+    orange: 208,
   };
 
   const lowerColor = color.toLowerCase();
@@ -180,7 +180,7 @@ function getAnsiColor(color: string): string {
   }
 
   // Try to parse hex color
-  if (color.startsWith('#') && color.length === 7) {
+  if (color.startsWith("#") && color.length === 7) {
     const r = parseInt(color.slice(1, 3), 16);
     const g = parseInt(color.slice(3, 5), 16);
     const b = parseInt(color.slice(5, 7), 16);
@@ -189,7 +189,7 @@ function getAnsiColor(color: string): string {
     return `\x1b[38;5;${code}m`;
   }
 
-  return '';
+  return "";
 }
 
 /**
@@ -198,8 +198,8 @@ function getAnsiColor(color: string): string {
  * NORMATIVE: SC-ANIM-020
  */
 function detectColorSupport(): boolean {
-  const term = process.env.TERM || '';
-  return term.includes('256color') || term.includes('truecolor');
+  const term = process.env.TERM || "";
+  return term.includes("256color") || term.includes("truecolor");
 }
 
 /**
@@ -212,24 +212,24 @@ function renderAsciiElement(
   element: SvgElement,
   scaleX: number,
   scaleY: number,
-  colorEnabled: boolean
+  colorEnabled: boolean,
 ): void {
   const { shape } = element;
   const fillColor = element.fill as string | undefined;
-  const ansiColor = colorEnabled && fillColor ? getAnsiColor(fillColor) : '';
-  const resetColor = colorEnabled && fillColor ? '\x1b[0m' : '';
+  const ansiColor = colorEnabled && fillColor ? getAnsiColor(fillColor) : "";
+  const resetColor = colorEnabled && fillColor ? "\x1b[0m" : "";
 
   switch (shape) {
-    case 'rect':
+    case "rect":
       renderAsciiRect(canvas, element, scaleX, scaleY, ansiColor, resetColor);
       break;
-    case 'circle':
+    case "circle":
       renderAsciiCircle(canvas, element, scaleX, scaleY, ansiColor, resetColor);
       break;
-    case 'line':
+    case "line":
       renderAsciiLine(canvas, element, scaleX, scaleY, ansiColor, resetColor);
       break;
-    case 'text':
+    case "text":
       renderAsciiText(canvas, element, scaleX, scaleY, ansiColor, resetColor);
       break;
     // 'path' and 'g' are complex and not fully rendered in ASCII
@@ -256,7 +256,7 @@ function renderAsciiRect(
   scaleX: number,
   scaleY: number,
   ansiColor: string,
-  resetColor: string
+  resetColor: string,
 ): void {
   const x = Math.floor((element.x as number) * scaleX);
   const y = Math.floor((element.y as number) * scaleY);
@@ -323,12 +323,12 @@ function renderAsciiCircle(
   scaleX: number,
   scaleY: number,
   ansiColor: string,
-  resetColor: string
+  resetColor: string,
 ): void {
   const cx = Math.floor((element.cx as number) * scaleX);
   const cy = Math.floor((element.cy as number) * scaleY);
   const r = (element.r as number) || 5;
-  const filled = element.fill !== 'none' && element.fill !== undefined;
+  const filled = element.fill !== "none" && element.fill !== undefined;
 
   const maxRow = canvas.length;
   const maxCol = canvas[0]?.length ?? 0;
@@ -346,7 +346,7 @@ function renderAsciiCircle(
       canvas[cy][cx - 1] = ansiColor + BOX_CHARS.MEDIUM_CIRCLE_LEFT + resetColor;
     }
     if (cy >= 0 && cy < maxRow && cx >= 0 && cx < maxCol) {
-      canvas[cy][cx] = ansiColor + ' ' + resetColor;
+      canvas[cy][cx] = ansiColor + " " + resetColor;
     }
     if (cy >= 0 && cy < maxRow && cx + 1 >= 0 && cx + 1 < maxCol) {
       canvas[cy][cx + 1] = ansiColor + BOX_CHARS.MEDIUM_CIRCLE_RIGHT + resetColor;
@@ -371,7 +371,7 @@ function renderAsciiLine(
   scaleX: number,
   scaleY: number,
   ansiColor: string,
-  resetColor: string
+  resetColor: string,
 ): void {
   const x1 = Math.floor((element.x1 as number) * scaleX);
   const y1 = Math.floor((element.y1 as number) * scaleY);
@@ -420,11 +420,11 @@ function renderAsciiText(
   scaleX: number,
   scaleY: number,
   ansiColor: string,
-  resetColor: string
+  resetColor: string,
 ): void {
   const x = Math.floor((element.x as number) * scaleX);
   const y = Math.floor((element.y as number) * scaleY);
-  const text = (element.text as string) || '';
+  const text = (element.text as string) || "";
 
   const maxRow = canvas.length;
   const maxCol = canvas[0]?.length ?? 0;
@@ -489,18 +489,23 @@ export class FallbackService {
     // Enforce canvas size constraints: MIN 40x20, MAX 200x60, DEFAULT 80x24
     const cols = Math.max(
       ASCII_CONSTRAINTS.MIN_COLUMNS,
-      Math.min(ASCII_CONSTRAINTS.MAX_COLUMNS, effectiveConfig.columns ?? ASCII_CONSTRAINTS.DEFAULT_COLUMNS)
+      Math.min(
+        ASCII_CONSTRAINTS.MAX_COLUMNS,
+        effectiveConfig.columns ?? ASCII_CONSTRAINTS.DEFAULT_COLUMNS,
+      ),
     );
     const rows = Math.max(
       ASCII_CONSTRAINTS.MIN_ROWS,
-      Math.min(ASCII_CONSTRAINTS.MAX_ROWS, effectiveConfig.rows ?? ASCII_CONSTRAINTS.DEFAULT_ROWS)
+      Math.min(ASCII_CONSTRAINTS.MAX_ROWS, effectiveConfig.rows ?? ASCII_CONSTRAINTS.DEFAULT_ROWS),
     );
 
     // Color enabled by default, but check terminal support per SC-ANIM-020
     const colorEnabled = effectiveConfig.colorEnabled ?? detectColorSupport();
 
     // Create ASCII canvas
-    const canvas: string[][] = Array(rows).fill(null).map(() => Array(cols).fill(' '));
+    const canvas: string[][] = Array(rows)
+      .fill(null)
+      .map(() => Array(cols).fill(" "));
 
     // Scale factors from pixel coordinates to character coordinates
     const scaleX = cols / animView.width;
@@ -512,13 +517,13 @@ export class FallbackService {
     }
 
     // Convert canvas to string
-    const output = canvas.map(row => row.join('')).join('\n');
+    const output = canvas.map((row) => row.join("")).join("\n");
 
     return {
       output,
-      protocol: 'ascii',
+      protocol: "ascii",
       frameIndex: 0, // Will be set by caller
-      dimensions: { cols, rows }
+      dimensions: { cols, rows },
     };
   }
 
@@ -538,12 +543,12 @@ export class FallbackService {
   async renderBrowser(
     animViewOrSvg: AnimView | string,
     outputPath?: string,
-    frameIndex: number = 0
+    frameIndex: number = 0,
   ): Promise<BrowserRenderResult | AnimationError> {
     let svgContent: string;
 
     // Convert AnimView to SVG if needed
-    if (typeof animViewOrSvg === 'string') {
+    if (typeof animViewOrSvg === "string") {
       svgContent = animViewOrSvg;
     } else {
       svgContent = animViewToSvg(animViewOrSvg);
@@ -581,12 +586,14 @@ ${svgContent}
 
       return {
         filePath,
-        protocol: 'browser',
-        frameIndex
+        protocol: "browser",
+        frameIndex,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      return createAnimationError('RENDER_FAILED', { specificError: `Failed to save file: ${message}` });
+      return createAnimationError("RENDER_FAILED", {
+        specificError: `Failed to save file: ${message}`,
+      });
     }
   }
 
@@ -606,8 +613,6 @@ ${svgContent}
  * @param fileSystem - File system abstraction (for testing)
  * @returns FallbackService instance
  */
-export function createFallbackService(
-  fileSystem?: FileSystemService
-): FallbackService {
+export function createFallbackService(fileSystem?: FileSystemService): FallbackService {
   return new FallbackService({ fileSystem });
 }

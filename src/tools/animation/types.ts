@@ -12,35 +12,35 @@
  * @implements REQ-DETECT-003
  * NORMATIVE: SC-ANIM-003
  */
-export type GraphicsProtocol = 'kitty' | 'iterm2' | 'none';
+export type GraphicsProtocol = "kitty" | "iterm2" | "none";
 
 /**
  * Supported terminal multiplexers
  * @implements REQ-DETECT-003
  * NORMATIVE: SC-ANIM-003
  */
-export type Multiplexer = 'tmux' | 'screen' | 'none';
+export type Multiplexer = "tmux" | "screen" | "none";
 
 /**
  * How terminal detection was performed
  * @implements REQ-DETECT-003
  * NORMATIVE: SC-ANIM-003
  */
-export type DetectionMethod = 'env' | 'query' | 'probe';
+export type DetectionMethod = "env" | "query" | "probe";
 
 /**
  * Confidence level in detection result
  * @implements REQ-DETECT-003
  * NORMATIVE: SC-ANIM-003
  */
-export type ConfidenceLevel = 'high' | 'medium' | 'low';
+export type ConfidenceLevel = "high" | "medium" | "low";
 
 /**
  * Available fallback options
  * @implements REQ-FALLBACK-001
  * NORMATIVE: SC-ANIM-007
  */
-export type FallbackOption = 'ascii' | 'browser';
+export type FallbackOption = "ascii" | "browser";
 
 /**
  * Environment variables captured during detection
@@ -92,7 +92,7 @@ export interface DetectionResult {
  * @implements REQ-RENDER-004
  * NORMATIVE: SC-ANIM-016
  */
-export type SvgShape = 'rect' | 'circle' | 'text' | 'line' | 'path' | 'g';
+export type SvgShape = "rect" | "circle" | "text" | "line" | "path" | "g";
 
 /**
  * SVG element record from TLA+ animation
@@ -134,21 +134,21 @@ export interface AnimView {
  * @implements REQ-ARCH-003
  * NORMATIVE: SC-ANIM-012
  */
-export type RenderUseCase = 'live' | 'static' | 'trace';
+export type RenderUseCase = "live" | "static" | "trace";
 
 /**
  * Protocol to use for rendering
  * @implements REQ-ARCH-005
  * NORMATIVE: SC-ANIM-023
  */
-export type RenderProtocol = 'kitty' | 'iterm2' | 'ascii' | 'browser';
+export type RenderProtocol = "kitty" | "iterm2" | "ascii" | "browser";
 
 /**
  * Fallback preference
  * @implements REQ-FALLBACK-002
  * NORMATIVE: SC-ANIM-008
  */
-export type FallbackPreference = 'ascii' | 'browser' | 'prompt' | 'none';
+export type FallbackPreference = "ascii" | "browser" | "prompt" | "none";
 
 /**
  * ASCII rendering configuration
@@ -173,7 +173,7 @@ export interface AsciiConfig {
  */
 export interface RenderInput {
   /** Operation type (always "render") */
-  operation: 'render';
+  operation: "render";
 
   /** Target protocol (Claude's decision, MCP trusts it) */
   protocol: RenderProtocol;
@@ -224,7 +224,7 @@ export interface TerminalRenderResult {
   output: string;
 
   /** Protocol used */
-  protocol: 'kitty' | 'iterm2';
+  protocol: "kitty" | "iterm2";
 
   /** Frame index rendered */
   frameIndex: number;
@@ -240,7 +240,7 @@ export interface AsciiRenderResult {
   output: string;
 
   /** Protocol used */
-  protocol: 'ascii';
+  protocol: "ascii";
 
   /** Frame index rendered */
   frameIndex: number;
@@ -262,7 +262,7 @@ export interface BrowserRenderResult {
   filePath: string;
 
   /** Protocol used */
-  protocol: 'browser';
+  protocol: "browser";
 
   /** Frame index rendered */
   frameIndex: number;
@@ -292,15 +292,15 @@ export interface FrameCountResult {
  * NORMATIVE: SC-ANIM-014
  */
 export type AnimationErrorCode =
-  | 'DETECTION_TIMEOUT'
-  | 'UNKNOWN_TERMINAL'
-  | 'PASSTHROUGH_NOT_ENABLED'
-  | 'RENDER_FAILED'
-  | 'FRAME_TOO_LARGE'
-  | 'INVALID_ANIMVIEW'
-  | 'NO_FALLBACK_AVAILABLE'
-  | 'FILE_NOT_FOUND'
-  | 'INVALID_SVG';
+  | "DETECTION_TIMEOUT"
+  | "UNKNOWN_TERMINAL"
+  | "PASSTHROUGH_NOT_ENABLED"
+  | "RENDER_FAILED"
+  | "FRAME_TOO_LARGE"
+  | "INVALID_ANIMVIEW"
+  | "NO_FALLBACK_AVAILABLE"
+  | "FILE_NOT_FOUND"
+  | "INVALID_SVG";
 
 /**
  * Error response structure
@@ -325,7 +325,7 @@ export interface AnimationError {
  */
 export interface FrameCountInput {
   /** Operation type (always "frameCount") */
-  operation: 'frameCount';
+  operation: "frameCount";
 
   /** Directory containing trace files */
   traceDirectory: string;
@@ -393,16 +393,16 @@ export interface RenderServiceOptions {
  * Type guard for AnimationError
  */
 export function isAnimationError(value: unknown): value is AnimationError {
-  if (typeof value !== 'object' || value === null) {
+  if (typeof value !== "object" || value === null) {
     return false;
   }
   const obj = value as Record<string, unknown>;
   return (
-    typeof obj.error === 'string' &&
-    typeof obj.message === 'string' &&
+    typeof obj.error === "string" &&
+    typeof obj.message === "string" &&
     Array.isArray(obj.remediation) &&
     obj.remediation.length > 0 &&
-    obj.remediation.every((r: unknown) => typeof r === 'string')
+    obj.remediation.every((r: unknown) => typeof r === "string")
   );
 }
 
@@ -410,25 +410,25 @@ export function isAnimationError(value: unknown): value is AnimationError {
  * Type guard for RenderResult
  */
 export function isRenderResult(value: unknown): value is RenderResult {
-  if (typeof value !== 'object' || value === null) {
+  if (typeof value !== "object" || value === null) {
     return false;
   }
   const obj = value as Record<string, unknown>;
-  if (typeof obj.protocol !== 'string' || typeof obj.frameIndex !== 'number') {
+  if (typeof obj.protocol !== "string" || typeof obj.frameIndex !== "number") {
     return false;
   }
-  if (obj.protocol === 'browser') {
-    return typeof obj.filePath === 'string';
+  if (obj.protocol === "browser") {
+    return typeof obj.filePath === "string";
   }
-  if (obj.protocol === 'ascii') {
+  if (obj.protocol === "ascii") {
     return (
-      typeof obj.output === 'string' &&
-      typeof obj.dimensions === 'object' &&
+      typeof obj.output === "string" &&
+      typeof obj.dimensions === "object" &&
       obj.dimensions !== null
     );
   }
-  if (obj.protocol === 'kitty' || obj.protocol === 'iterm2') {
-    return typeof obj.output === 'string';
+  if (obj.protocol === "kitty" || obj.protocol === "iterm2") {
+    return typeof obj.output === "string";
   }
   return false;
 }

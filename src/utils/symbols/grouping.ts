@@ -1,4 +1,4 @@
-import { NormalizedSymbol, CandidateGroups, OutputSymbol } from './types';
+import { NormalizedSymbol, CandidateGroups, OutputSymbol } from "./types";
 
 export function groupSymbols(symbols: NormalizedSymbol[]): CandidateGroups {
   const groups: CandidateGroups = {
@@ -9,7 +9,7 @@ export function groupSymbols(symbols: NormalizedSymbol[]): CandidateGroups {
     temporalFormulas: [],
     operatorsWithArgs: [],
     theorems: [],
-    assumptions: []
+    assumptions: [],
   };
 
   const seen = new Set<string>();
@@ -23,17 +23,17 @@ export function groupSymbols(symbols: NormalizedSymbol[]): CandidateGroups {
 
     const output = toOutputSymbol(symbol);
 
-    if (symbol.rawKind === 'TheoremDefNode') {
+    if (symbol.rawKind === "TheoremDefNode") {
       groups.theorems.push(output);
-    } else if (symbol.rawKind === 'AssumeDef') {
+    } else if (symbol.rawKind === "AssumeDef") {
       groups.assumptions.push(output);
-    } else if (symbol.rawKind === 'OpDeclNode') {
+    } else if (symbol.rawKind === "OpDeclNode") {
       if (symbol.level === 0) {
         groups.constants.push(output);
       } else if (symbol.level === 1) {
         groups.variables.push(output);
       }
-    } else if (symbol.rawKind === 'UserDefinedOpKind') {
+    } else if (symbol.rawKind === "UserDefinedOpKind") {
       if (symbol.arity !== undefined && symbol.arity > 0) {
         groups.operatorsWithArgs.push(output);
       } else if (symbol.level === 1) {

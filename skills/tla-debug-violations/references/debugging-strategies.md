@@ -7,6 +7,7 @@ Advanced strategies for debugging TLA+ specification violations.
 ### 1. Reproduce the Issue
 
 Make violation consistent:
+
 - Use same constants
 - Same configuration
 - Same TLC seed (if random)
@@ -15,6 +16,7 @@ Make violation consistent:
 ### 2. Minimize the Counterexample
 
 Reduce to smallest failing case:
+
 - Decrease constants
 - Simplify configuration
 - Remove non-essential properties
@@ -23,6 +25,7 @@ Reduce to smallest failing case:
 ### 3. Understand the Trace
 
 Analyze execution:
+
 - Read trace carefully
 - Understand each state
 - Identify transitions
@@ -31,6 +34,7 @@ Analyze execution:
 ### 4. Form Hypothesis
 
 Guess what's wrong:
+
 - Which action is buggy?
 - Is guard too weak?
 - Is initialization wrong?
@@ -39,6 +43,7 @@ Guess what's wrong:
 ### 5. Test Hypothesis
 
 Verify your guess:
+
 - Add temporary invariants
 - Add Print statements
 - Modify spec slightly
@@ -47,6 +52,7 @@ Verify your guess:
 ### 6. Fix and Verify
 
 Apply fix:
+
 - Make minimal change
 - Re-run all checks
 - Test with larger constants
@@ -57,14 +63,17 @@ Apply fix:
 ### Understand the Invariant
 
 What does it check?
+
 ```tla
 BoundInvariant == count <= MaxValue
 ```
+
 Checks: count never exceeds MaxValue
 
 ### Find Violation State
 
 In trace, which state violates?
+
 ```
 State 1: count = 0    ✓
 State 2: count = 5    ✓
@@ -74,6 +83,7 @@ State 3: count = 11   ✗ Violation!
 ### Identify Transition
 
 Which action caused it?
+
 ```
 State 2 → State 3: Action Increment
 ```
@@ -81,12 +91,14 @@ State 2 → State 3: Action Increment
 ### Analyze Action
 
 Is action buggy?
+
 ```tla
 Increment ==
     /\ count' = count + 10    \* BUG: No guard!
 ```
 
 Fix: Add guard
+
 ```tla
 Increment ==
     /\ count + 10 <= MaxValue  \* Add guard
@@ -100,18 +112,22 @@ Increment ==
 **Symptom**: Property `<>P` or `[]<>P` fails
 
 **Common causes**:
+
 1. Missing fairness (WF or SF)
 2. Deadlock
 3. Incorrect formula
 
 **Debug steps**:
+
 1. Check if deadlock:
+
    ```tla
    NoDeadlock == ENABLED <<Next>>_vars
    INVARIANT NoDeadlock
    ```
 
 2. Add fairness:
+
    ```tla
    Spec == Init /\ [][Next]_vars /\ WF_vars(Action)
    ```
@@ -123,6 +139,7 @@ Increment ==
 **Symptom**: Property fails due to stuttering
 
 **Solution**: Check specification formula
+
 ```tla
 \* Wrong (doesn't allow stuttering)
 Spec == Init /\ <<Next>>_vars
@@ -134,6 +151,7 @@ Spec == Init /\ [][Next]_vars
 ### Fairness Issues
 
 **Strong vs Weak**:
+
 - **WF_vars(A)**: If A stays enabled, eventually happens
 - **SF_vars(A)**: If A infinitely often enabled, eventually happens
 
@@ -201,6 +219,7 @@ Action == x' = x + 1 /\ UNCHANGED y
 ### Add Intermediate Invariants
 
 Catch bugs earlier:
+
 ```tla
 \* Original invariant
 FinalInvariant == result = ExpectedResult
@@ -216,6 +235,7 @@ Step2Done => Step2Correct
 ### Use TLC's Print
 
 Add visibility:
+
 ```tla
 Action ==
     /\ condition
@@ -228,6 +248,7 @@ Prints during model checking.
 ### Constrain State Space
 
 Focus on problematic area:
+
 ```tla
 CONSTRAINT
     suspiciousVar <= 10  \* Limit to where bug occurs
@@ -236,6 +257,7 @@ CONSTRAINT
 ### Binary Search on Constants
 
 Find threshold where bug appears:
+
 ```
 N = 5:  Pass
 N = 10: Fail
@@ -246,6 +268,7 @@ N = 8:  Fail  <- Bug threshold found
 ### Simplify Spec Temporarily
 
 Comment out parts:
+
 ```tla
 Next ==
     \/ Action1
@@ -260,6 +283,7 @@ Find which action causes issue.
 ### State Diffing
 
 Compare successive states:
+
 ```
 State 1: x = 5, y = 0, status = "idle"
 State 2: x = 5, y = 1, status = "active"
@@ -280,6 +304,7 @@ Why? Check action logic for bug.
 ### Trace Patterns
 
 Look for repeated patterns:
+
 ```
 State 1-5:   Normal progression
 State 6-10:  Stuck in loop
@@ -293,6 +318,7 @@ Issue likely in loop logic (states 6-10).
 ### Separate Concerns
 
 Debug one thing at a time:
+
 ```
 \* First: Check only type invariant
 INVARIANT TypeInvariant
@@ -316,6 +342,7 @@ Large.cfg:    N = 10 (stress testing)
 ### Add Constraints
 
 Limit to problematic region:
+
 ```
 CONSTRAINT
     depth <= 20       \* Limit trace length
@@ -337,6 +364,7 @@ Fresh perspective helps.
 ### Simplify Problem
 
 Start from working spec:
+
 ```
 1. Take last working version
 2. Add changes incrementally
@@ -347,6 +375,7 @@ Start from working spec:
 ### Check Assumptions
 
 Question everything:
+
 ```
 - Is invariant correct?
 - Is spec modeling right thing?
@@ -369,6 +398,7 @@ Question everything:
 ### Use Strong Type Invariants
 
 Catch bugs early:
+
 ```tla
 TypeInvariant ==
     /\ count \in Nat
@@ -390,6 +420,7 @@ Find bugs in small state spaces first.
 ### Record Bugs Found
 
 Document:
+
 - What was wrong
 - How to reproduce
 - What fixed it
@@ -408,6 +439,7 @@ Action ==
 ## Summary
 
 Systematic debugging:
+
 1. Reproduce consistently
 2. Minimize counterexample
 3. Understand trace thoroughly
@@ -417,6 +449,7 @@ Systematic debugging:
 7. Document learnings
 
 Most bugs are:
+
 - Missing guards
 - Wrong initialization
 - Incorrect EXCEPT syntax
@@ -424,6 +457,7 @@ Most bugs are:
 - Off-by-one errors
 
 Use tools and agents:
+
 - `/tla-parse` - Syntax check
 - `/tla-smoke` - Quick test
 - trace-analyzer agent - Analyze violations
