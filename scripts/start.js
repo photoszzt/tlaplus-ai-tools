@@ -9,24 +9,24 @@
  * - Cross-platform: uses Node.js instead of bash
  */
 
-const { execFileSync } = require('child_process');
-const path = require('path');
-const fs = require('fs');
+const { execFileSync } = require("child_process");
+const path = require("path");
+const fs = require("fs");
 
-const isWin = process.platform === 'win32';
-const npmCmd = isWin ? 'npm.cmd' : 'npm';
+const isWin = process.platform === "win32";
+const npmCmd = isWin ? "npm.cmd" : "npm";
 
-const rootDir = path.resolve(__dirname, '..');
+const rootDir = path.resolve(__dirname, "..");
 process.chdir(rootDir);
 
 // Format an npm install error with stderr/stdout details.
 function formatInstallError(err) {
   let detail = String(err);
   if (err.stderr) {
-    detail += '\nnpm stderr:\n' + String(err.stderr);
+    detail += "\nnpm stderr:\n" + String(err.stderr);
   }
   if (err.stdout) {
-    detail += '\nnpm stdout:\n' + String(err.stdout);
+    detail += "\nnpm stdout:\n" + String(err.stdout);
   }
   return detail;
 }
@@ -36,8 +36,8 @@ function formatInstallError(err) {
 // and requires explicit opt-in (TLAPLUS_AUTO_INSTALL=1) outside of that.
 // TLAPLUS_NO_AUTO_INSTALL=1 always disables auto-install regardless of context.
 function isAutoInstallAllowed() {
-  if (process.env.TLAPLUS_NO_AUTO_INSTALL === '1') return false;
-  if (process.env.TLAPLUS_AUTO_INSTALL === '1') return true;
+  if (process.env.TLAPLUS_NO_AUTO_INSTALL === "1") return false;
+  if (process.env.TLAPLUS_AUTO_INSTALL === "1") return true;
   // In plugin-cache contexts, auto-install by default
   if (process.env.CLAUDE_PLUGIN_ROOT) return true;
   return false;
@@ -45,15 +45,15 @@ function isAutoInstallAllowed() {
 
 // Install dependencies, suppressing stdout to avoid corrupting MCP stdio transport.
 function npmInstall() {
-  const hasLockfile = fs.existsSync(path.join(rootDir, 'package-lock.json'));
+  const hasLockfile = fs.existsSync(path.join(rootDir, "package-lock.json"));
   const npmArgs = hasLockfile
-    ? ['ci', '--no-audit', '--no-fund']
-    : ['install', '--no-audit', '--no-fund'];
-  if (process.env.NODE_ENV === 'production') {
-    npmArgs.push('--omit=dev');
+    ? ["ci", "--no-audit", "--no-fund"]
+    : ["install", "--no-audit", "--no-fund"];
+  if (process.env.NODE_ENV === "production") {
+    npmArgs.push("--omit=dev");
   }
   execFileSync(npmCmd, npmArgs, {
-    stdio: ['ignore', 'pipe', 'pipe'],
+    stdio: ["ignore", "pipe", "pipe"],
     cwd: rootDir,
   });
 }
@@ -63,13 +63,13 @@ function npmInstall() {
 // but dependencies are still resolvable through the parent tree.
 function runtimeDepsResolvable() {
   try {
-    require.resolve('@modelcontextprotocol/sdk');
-    require.resolve('fast-xml-parser');
-    require.resolve('zod');
-    require.resolve('express');
-    require.resolve('adm-zip');
+    require.resolve("@modelcontextprotocol/sdk");
+    require.resolve("fast-xml-parser");
+    require.resolve("zod");
+    require.resolve("express");
+    require.resolve("adm-zip");
     return true;
-  } catch (_) {
+  } catch {
     return false;
   }
 }
@@ -77,50 +77,50 @@ function runtimeDepsResolvable() {
 // Auto-install dependencies if key runtime deps are not resolvable
 if (!runtimeDepsResolvable()) {
   if (!isAutoInstallAllowed()) {
-    const hasLockfile = fs.existsSync(path.join(rootDir, 'package-lock.json'));
-    const manualCmd = hasLockfile ? 'npm ci' : 'npm install';
+    const hasLockfile = fs.existsSync(path.join(rootDir, "package-lock.json"));
+    const manualCmd = hasLockfile ? "npm ci" : "npm install";
     process.stderr.write(
-      'Error: Required dependencies are not resolvable and auto-install is not enabled.\n' +
-        `Run "${manualCmd}" manually, or set TLAPLUS_AUTO_INSTALL=1 to allow automatic installation.\n`
+      "Error: Required dependencies are not resolvable and auto-install is not enabled.\n" +
+        `Run "${manualCmd}" manually, or set TLAPLUS_AUTO_INSTALL=1 to allow automatic installation.\n`,
     );
     process.exit(1);
   }
   try {
     npmInstall();
   } catch (err) {
-    if (err && err.code === 'ENOENT') {
+    if (err && err.code === "ENOENT") {
       process.stderr.write(
-        'Error: npm executable not found. Ensure that Node.js and npm are installed and available on your PATH.\n'
+        "Error: npm executable not found. Ensure that Node.js and npm are installed and available on your PATH.\n",
       );
       process.exit(1);
     }
     process.stderr.write(
-      'Error: Failed to install dependencies.\n' + formatInstallError(err) + '\n'
+      "Error: Failed to install dependencies.\n" + formatInstallError(err) + "\n",
     );
-    process.exit(typeof err.status === 'number' ? err.status : 1);
+    process.exit(typeof err.status === "number" ? err.status : 1);
   }
 }
 
-const srcEntry = path.join(rootDir, 'src', 'index.ts');
-const distEntry = path.join(rootDir, 'dist', 'index.js');
+const srcEntry = path.join(rootDir, "src", "index.ts");
+const distEntry = path.join(rootDir, "dist", "index.js");
 
 // Check if tsx is available for running TypeScript source directly
 let hasTsx = false;
 if (fs.existsSync(srcEntry)) {
   try {
-    require.resolve('tsx/cjs');
+    require.resolve("tsx/cjs");
     hasTsx = true;
-  } catch (_) {
+  } catch {
     // tsx not resolvable — attempt to (re)install dependencies, then retry
     if (isAutoInstallAllowed()) {
       try {
         npmInstall();
-        require.resolve('tsx/cjs');
+        require.resolve("tsx/cjs");
         hasTsx = true;
       } catch (installErr) {
-        if (installErr && installErr.code === 'ENOENT') {
+        if (installErr && installErr.code === "ENOENT") {
           process.stderr.write(
-            'Error: npm executable not found. Ensure that Node.js and npm are installed and available on your PATH.\n'
+            "Error: npm executable not found. Ensure that Node.js and npm are installed and available on your PATH.\n",
           );
           process.exit(1);
         }
@@ -128,7 +128,7 @@ if (fs.existsSync(srcEntry)) {
         process.stderr.write(
           'Warning: Failed to ensure "tsx" is installed via dependency installation.\n' +
             formatInstallError(installErr) +
-            '\n'
+            "\n",
         );
       }
     }
@@ -140,11 +140,13 @@ if (fs.existsSync(srcEntry) && hasTsx) {
   // Register tsx loader and run in-process so stdin/stdout stay
   // owned by this process, which is required for MCP stdio transport.
   try {
-    require('tsx/cjs');
+    require("tsx/cjs");
     require(srcEntry);
   } catch (err) {
     process.stderr.write(
-      'Error: Failed to start server from src/index.ts.\n' + (err instanceof Error && err.stack ? err.stack : String(err)) + '\n'
+      "Error: Failed to start server from src/index.ts.\n" +
+        (err instanceof Error && err.stack ? err.stack : String(err)) +
+        "\n",
     );
     process.exit(1);
   }
@@ -154,7 +156,9 @@ if (fs.existsSync(srcEntry) && hasTsx) {
     require(distEntry);
   } catch (err) {
     process.stderr.write(
-      'Error: Failed to start server from dist/index.js.\n' + (err instanceof Error && err.stack ? err.stack : String(err)) + '\n'
+      "Error: Failed to start server from dist/index.js.\n" +
+        (err instanceof Error && err.stack ? err.stack : String(err)) +
+        "\n",
     );
     process.exit(1);
   }
@@ -162,13 +166,13 @@ if (fs.existsSync(srcEntry) && hasTsx) {
   // src/ exists but tsx is not available and no dist/ fallback
   process.stderr.write(
     'Error: The "tsx" runtime is not available, but src/index.ts exists.\n' +
-      'Run "npm install" (and ensure "tsx" is listed as a dependency) before starting the server.\n'
+      'Run "npm install" (and ensure "tsx" is listed as a dependency) before starting the server.\n',
   );
   process.exit(1);
 } else {
   process.stderr.write(
-    'Error: Neither src/index.ts nor dist/index.js found.\n' +
-      'Run "npm run build" or ensure src/ is available.\n'
+    "Error: Neither src/index.ts nor dist/index.js found.\n" +
+      'Run "npm run build" or ensure src/ is available.\n',
   );
   process.exit(1);
 }

@@ -1,6 +1,6 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { ServerConfig } from './types';
+import * as fs from "fs";
+import * as path from "path";
+import { ServerConfig } from "./types";
 
 /**
  * All flags recognised by the CLI.  Used by requireValue() to distinguish
@@ -8,17 +8,17 @@ import { ServerConfig } from './types';
  * value that happens to start with '-'" (e.g. negative numbers, paths).
  */
 const KNOWN_FLAGS: string[] = [
-  '--http',
-  '--port',
-  '--working-dir',
-  '--tools-dir',
-  '--kb-dir',
-  '--java-home',
-  '--verbose',
-  '--help',
-  '-h',
-  '--version',
-  '-v',
+  "--http",
+  "--port",
+  "--working-dir",
+  "--tools-dir",
+  "--kb-dir",
+  "--java-home",
+  "--verbose",
+  "--help",
+  "-h",
+  "--version",
+  "-v",
 ];
 
 /**
@@ -34,9 +34,9 @@ function requireValue(argv: string[], index: number, flag: string): void {
   const next = argv[nextIndex];
 
   if (
-    nextIndex >= argv.length ||          // no next token
-    next === '--' ||                     // end of options marker
-    KNOWN_FLAGS.includes(next)           // another recognized flag
+    nextIndex >= argv.length || // no next token
+    next === "--" || // end of options marker
+    KNOWN_FLAGS.includes(next) // another recognized flag
   ) {
     throw new Error(`Missing value for ${flag}`);
   }
@@ -60,13 +60,13 @@ export function parseArgs(argv: string[]): ServerConfig {
     const arg = argv[i];
 
     switch (arg) {
-      case '--http':
+      case "--http":
         config.http = true;
         break;
 
       // @implements REQ-REVIEW-008, SCN-REVIEW-008-01, SCN-REVIEW-008-02
-      case '--port': {
-        requireValue(argv, i, '--port');
+      case "--port": {
+        requireValue(argv, i, "--port");
         const port = parseInt(argv[++i], 10);
         if (isNaN(port) || port < 0 || port > 65535) {
           throw new Error(`Invalid port number: ${argv[i]}. Must be between 0 and 65535.`);
@@ -75,42 +75,42 @@ export function parseArgs(argv: string[]): ServerConfig {
         break;
       }
 
-      case '--working-dir': {
-        requireValue(argv, i, '--working-dir');
+      case "--working-dir": {
+        requireValue(argv, i, "--working-dir");
         config.workingDir = path.resolve(argv[++i]);
         break;
       }
 
-      case '--tools-dir': {
-        requireValue(argv, i, '--tools-dir');
+      case "--tools-dir": {
+        requireValue(argv, i, "--tools-dir");
         config.toolsDir = path.resolve(argv[++i]);
         break;
       }
 
-      case '--kb-dir': {
-        requireValue(argv, i, '--kb-dir');
+      case "--kb-dir": {
+        requireValue(argv, i, "--kb-dir");
         config.kbDir = path.resolve(argv[++i]);
         break;
       }
 
-      case '--java-home': {
-        requireValue(argv, i, '--java-home');
+      case "--java-home": {
+        requireValue(argv, i, "--java-home");
         config.javaHome = path.resolve(argv[++i]);
         break;
       }
 
-      case '--verbose':
+      case "--verbose":
         config.verbose = true;
         break;
 
-      case '--help':
-      case '-h':
+      case "--help":
+      case "-h":
         showHelp();
         process.exit(0);
         break;
 
-      case '--version':
-      case '-v':
+      case "--version":
+      case "-v":
         showVersion();
         process.exit(0);
         break;
@@ -172,10 +172,10 @@ DOCUMENTATION:
  */
 export function showVersion(): void {
   try {
-    const packageJsonPath = path.join(__dirname, '..', 'package.json');
-    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+    const packageJsonPath = path.join(__dirname, "..", "package.json");
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
     console.log(`TLA+ MCP Server v${packageJson.version}`);
-  } catch (error) {
-    console.log('TLA+ MCP Server (version unknown)');
+  } catch {
+    console.log("TLA+ MCP Server (version unknown)");
   }
 }

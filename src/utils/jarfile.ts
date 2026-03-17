@@ -1,10 +1,10 @@
-import AdmZip from 'adm-zip';
-import * as fs from 'fs';
-import * as os from 'os';
-import * as path from 'path';
-import * as crypto from 'crypto';
+import AdmZip from "adm-zip";
+import * as fs from "fs";
+import * as os from "os";
+import * as path from "path";
+import * as crypto from "crypto";
 // @implements REQ-REVIEW-003, SCN-REVIEW-003-01, SCN-REVIEW-003-02
-import { withRetry, ErrorCode, enhanceError, classifyError } from './errors';
+import { withRetry, ErrorCode, enhanceError, classifyError } from "./errors";
 
 /**
  * Utilities for reading TLA+ modules from JAR files.
@@ -26,12 +26,12 @@ export interface ParsedJarfileUri {
  * @throws Error if URI is malformed
  */
 export function parseJarfileUri(uri: string): ParsedJarfileUri {
-  if (!uri.startsWith('jarfile:')) {
+  if (!uri.startsWith("jarfile:")) {
     throw new Error(`Invalid jarfile URI: must start with 'jarfile:' - got: ${uri}`);
   }
 
-  const withoutScheme = uri.slice('jarfile:'.length);
-  const separatorIndex = withoutScheme.indexOf('!');
+  const withoutScheme = uri.slice("jarfile:".length);
+  const separatorIndex = withoutScheme.indexOf("!");
 
   if (separatorIndex === -1) {
     throw new Error(`Invalid jarfile URI: missing '!' separator - got: ${uri}`);
@@ -44,7 +44,7 @@ export function parseJarfileUri(uri: string): ParsedJarfileUri {
 
   // Inner path is after '!' - may have leading '/' which we strip
   let innerPath = withoutScheme.slice(separatorIndex + 1);
-  if (innerPath.startsWith('/')) {
+  if (innerPath.startsWith("/")) {
     innerPath = innerPath.slice(1);
   }
 
@@ -55,33 +55,33 @@ export function parseJarfileUri(uri: string): ParsedJarfileUri {
  * Check if a string is a jarfile: URI.
  */
 export function isJarfileUri(uriPath: string): boolean {
-  return uriPath.startsWith('jarfile:');
+  return uriPath.startsWith("jarfile:");
 }
 
 export function listJarEntries(jarPath: string, innerDir: string): string[] {
   const zip = new AdmZip(jarPath);
   const entries = zip.getEntries();
 
-  let normalizedDir = innerDir.replace(/\\/g, '/');
-  if (normalizedDir.endsWith('/')) {
+  let normalizedDir = innerDir.replace(/\\/g, "/");
+  if (normalizedDir.endsWith("/")) {
     normalizedDir = normalizedDir.slice(0, -1);
   }
 
-  const prefix = normalizedDir ? normalizedDir + '/' : '';
+  const prefix = normalizedDir ? normalizedDir + "/" : "";
   const results: string[] = [];
 
   for (const entry of entries) {
     if (entry.isDirectory) continue;
 
-    const entryPath = entry.entryName.replace(/\\/g, '/');
+    const entryPath = entry.entryName.replace(/\\/g, "/");
 
     if (prefix) {
       if (!entryPath.startsWith(prefix)) continue;
       const relativePath = entryPath.slice(prefix.length);
-      if (relativePath.includes('/')) continue;
+      if (relativePath.includes("/")) continue;
       results.push(relativePath);
     } else {
-      if (entryPath.includes('/')) continue;
+      if (entryPath.includes("/")) continue;
       results.push(entryPath);
     }
   }
@@ -92,13 +92,13 @@ export function listJarEntries(jarPath: string, innerDir: string): string[] {
 export function listTlaModulesInJar(
   jarPath: string,
   innerDir: string,
-  returnFullUri: boolean = false
+  returnFullUri: boolean = false,
 ): string[] {
   const entries = listJarEntries(jarPath, innerDir);
 
   const tlaModules = entries.filter((name) => {
-    if (!name.endsWith('.tla')) return false;
-    if (name.startsWith('_')) return false;
+    if (!name.endsWith(".tla")) return false;
+    if (name.startsWith("_")) return false;
     return true;
   });
 
@@ -106,8 +106,8 @@ export function listTlaModulesInJar(
     return tlaModules;
   }
 
-  let normalizedDir = innerDir.replace(/\\/g, '/');
-  if (normalizedDir.endsWith('/')) {
+  let normalizedDir = innerDir.replace(/\\/g, "/");
+  if (normalizedDir.endsWith("/")) {
     normalizedDir = normalizedDir.slice(0, -1);
   }
 
@@ -140,7 +140,7 @@ export class LRUCache<K, V> {
   }
 
   private trackEviction(result: Promise<void> | void): void {
-    if (result && typeof (result as Promise<void>).then === 'function') {
+    if (result && typeof (result as Promise<void>).then === "function") {
       const promise = result as Promise<void>;
       this.pendingEvictions.add(promise);
       promise.finally(() => this.pendingEvictions.delete(promise));
@@ -174,7 +174,9 @@ export class LRUCache<K, V> {
         this.trackEviction(this.onEvict?.(firstKey, evictedValue));
         // @implements SCN-REVIEW-004-04
         if (process.env.DEBUG || process.env.VERBOSE) {
-          console.error(`JAR cache eviction: removing entry ${String(firstKey)} (size: ${this.map.size}/${this.maxSize})`);
+          console.error(
+            `JAR cache eviction: removing entry ${String(firstKey)} (size: ${this.map.size}/${this.maxSize})`,
+          );
         }
       }
     }
@@ -195,7 +197,7 @@ export class LRUCache<K, V> {
   }
 
   async flush(): Promise<void> {
-    await Promise.all([...this.pendingEvictions]);
+    await Promise.all(this.pendingEvictions);
     this.pendingEvictions.clear();
   }
 
@@ -221,24 +223,27 @@ export function getMaxCacheSize(): number {
 }
 
 // @implements REQ-REVIEW-004, SCN-REVIEW-004-05
-const extractionCache = new LRUCache<string, string>(getMaxCacheSize(), async (_key, cachedPath) => {
-  // Determine the correct directory to remove.
-  // extractJarEntry stores a file path (e.g., <cacheDir>/<hash>/Module.tla),
-  // while extractJarDirectory stores a directory path (e.g., <cacheDir>/<hash>).
-  // For file paths we must delete the parent directory to avoid orphaned dirs.
-  try {
-    const stats = await fs.promises.stat(cachedPath);
-    const dirToRemove = stats.isFile() ? path.dirname(cachedPath) : cachedPath;
-    await fs.promises.rm(dirToRemove, { recursive: true, force: true });
-  } catch (err) {
-    if (process.env.DEBUG || process.env.VERBOSE) {
-      console.error('Failed to remove cached extraction path:', cachedPath, err);
+const extractionCache = new LRUCache<string, string>(
+  getMaxCacheSize(),
+  async (_key, cachedPath) => {
+    // Determine the correct directory to remove.
+    // extractJarEntry stores a file path (e.g., <cacheDir>/<hash>/Module.tla),
+    // while extractJarDirectory stores a directory path (e.g., <cacheDir>/<hash>).
+    // For file paths we must delete the parent directory to avoid orphaned dirs.
+    try {
+      const stats = await fs.promises.stat(cachedPath);
+      const dirToRemove = stats.isFile() ? path.dirname(cachedPath) : cachedPath;
+      await fs.promises.rm(dirToRemove, { recursive: true, force: true });
+    } catch (err) {
+      if (process.env.DEBUG || process.env.VERBOSE) {
+        console.error("Failed to remove cached extraction path:", cachedPath, err);
+      }
     }
-  }
-});
+  },
+);
 
 async function getCacheDir(): Promise<string> {
-  const cacheBase = path.join(os.tmpdir(), 'tlaplus-mcp', 'jar-cache');
+  const cacheBase = path.join(os.tmpdir(), "tlaplus-mcp", "jar-cache");
   await fs.promises.mkdir(cacheBase, { recursive: true });
   return cacheBase;
 }
@@ -246,7 +251,7 @@ async function getCacheDir(): Promise<string> {
 async function getCacheKey(jarPath: string, innerPath: string): Promise<string> {
   const stats = await fs.promises.stat(jarPath);
   const data = `${jarPath}:${stats.mtimeMs}:${innerPath}`;
-  return crypto.createHash('sha256').update(data).digest('hex').slice(0, 16);
+  return crypto.createHash("sha256").update(data).digest("hex").slice(0, 16);
 }
 
 export async function clearJarCache(): Promise<void> {
@@ -257,7 +262,7 @@ export async function clearJarCache(): Promise<void> {
 // @implements REQ-REVIEW-003, SCN-REVIEW-003-01
 export async function extractJarEntry(jarPath: string, innerPath: string): Promise<string> {
   // Validation stays outside retry
-  if (innerPath.includes('..') || path.isAbsolute(innerPath)) {
+  if (innerPath.includes("..") || path.isAbsolute(innerPath)) {
     throw new Error(`Invalid inner path (path traversal rejected): ${innerPath}`);
   }
 
@@ -277,13 +282,12 @@ export async function extractJarEntry(jarPath: string, innerPath: string): Promi
   return withRetry(
     async () => {
       const zip = new AdmZip(jarPath);
-      const entry = zip.getEntry(innerPath) || zip.getEntry(innerPath.replace(/\//g, '\\'));
+      const entry = zip.getEntry(innerPath) || zip.getEntry(innerPath.replace(/\//g, "\\"));
 
       if (!entry) {
-        throw enhanceError(
-          new Error(`Entry '${innerPath}' not found in JAR: ${jarPath}`),
-          { code: ErrorCode.JAR_ENTRY_NOT_FOUND }
-        );
+        throw enhanceError(new Error(`Entry '${innerPath}' not found in JAR: ${jarPath}`), {
+          code: ErrorCode.JAR_ENTRY_NOT_FOUND,
+        });
       }
 
       const cacheDir = await getCacheDir();
@@ -295,7 +299,7 @@ export async function extractJarEntry(jarPath: string, innerPath: string): Promi
       } catch (err) {
         throw enhanceError(err as Error, {
           code: ErrorCode.JAR_EXTRACTION_FAILED,
-          context: { jarPath, innerPath, extractDir }
+          context: { jarPath, innerPath, extractDir },
         });
       }
 
@@ -306,7 +310,7 @@ export async function extractJarEntry(jarPath: string, innerPath: string): Promi
       } catch (err) {
         throw enhanceError(err as Error, {
           code: ErrorCode.JAR_EXTRACTION_FAILED,
-          context: { jarPath, innerPath, targetPath }
+          context: { jarPath, innerPath, targetPath },
         });
       }
 
@@ -321,15 +325,15 @@ export async function extractJarEntry(jarPath: string, innerPath: string): Promi
       shouldRetry: (error) => {
         const code = classifyError(error);
         return code === ErrorCode.JAR_LOCKED || code === ErrorCode.JAR_EXTRACTION_FAILED;
-      }
-    }
+      },
+    },
   );
 }
 
 // @implements REQ-REVIEW-003, SCN-REVIEW-003-02
 export async function extractJarDirectory(jarPath: string, innerDir: string): Promise<string> {
   // Validation stays outside retry
-  if (innerDir.includes('..') || (innerDir && path.isAbsolute(innerDir))) {
+  if (innerDir.includes("..") || (innerDir && path.isAbsolute(innerDir))) {
     throw new Error(`Invalid inner path (path traversal rejected): ${innerDir}`);
   }
 
@@ -351,11 +355,11 @@ export async function extractJarDirectory(jarPath: string, innerDir: string): Pr
       const zip = new AdmZip(jarPath);
       const entries = zip.getEntries();
 
-      let normalizedDir = innerDir.replace(/\\/g, '/');
-      if (normalizedDir.endsWith('/')) {
+      let normalizedDir = innerDir.replace(/\\/g, "/");
+      if (normalizedDir.endsWith("/")) {
         normalizedDir = normalizedDir.slice(0, -1);
       }
-      const prefix = normalizedDir ? normalizedDir + '/' : '';
+      const prefix = normalizedDir ? normalizedDir + "/" : "";
 
       const cacheDir = await getCacheDir();
       const extractDir = path.join(cacheDir, cacheKey);
@@ -366,26 +370,28 @@ export async function extractJarDirectory(jarPath: string, innerDir: string): Pr
       } catch (err) {
         throw enhanceError(err as Error, {
           code: ErrorCode.JAR_EXTRACTION_FAILED,
-          context: { jarPath, innerDir, extractDir }
+          context: { jarPath, innerDir, extractDir },
         });
       }
 
       for (const entry of entries) {
         if (entry.isDirectory) continue;
 
-        const entryPath = entry.entryName.replace(/\\/g, '/');
+        const entryPath = entry.entryName.replace(/\\/g, "/");
         if (prefix && !entryPath.startsWith(prefix)) continue;
 
         const relativePath = prefix ? entryPath.slice(prefix.length) : entryPath;
 
-        if (relativePath.includes('..')) continue;
+        if (relativePath.includes("..")) continue;
 
         const targetPath = path.join(extractDir, relativePath);
 
         // Zip-slip protection: ensure resolved path stays within extractDir
         const resolvedTarget = path.resolve(targetPath);
-        if (!resolvedTarget.startsWith(path.resolve(extractDir) + path.sep) &&
-            resolvedTarget !== path.resolve(extractDir)) {
+        if (
+          !resolvedTarget.startsWith(path.resolve(extractDir) + path.sep) &&
+          resolvedTarget !== path.resolve(extractDir)
+        ) {
           continue;
         }
         const targetDir = path.dirname(targetPath);
@@ -396,7 +402,7 @@ export async function extractJarDirectory(jarPath: string, innerDir: string): Pr
         } catch (err) {
           throw enhanceError(err as Error, {
             code: ErrorCode.JAR_EXTRACTION_FAILED,
-            context: { jarPath, innerDir, targetDir }
+            context: { jarPath, innerDir, targetDir },
           });
         }
 
@@ -406,7 +412,7 @@ export async function extractJarDirectory(jarPath: string, innerDir: string): Pr
         } catch (err) {
           throw enhanceError(err as Error, {
             code: ErrorCode.JAR_EXTRACTION_FAILED,
-            context: { jarPath, innerDir, targetPath }
+            context: { jarPath, innerDir, targetPath },
           });
         }
       }
@@ -422,8 +428,8 @@ export async function extractJarDirectory(jarPath: string, innerDir: string): Pr
       shouldRetry: (error) => {
         const code = classifyError(error);
         return code === ErrorCode.JAR_LOCKED || code === ErrorCode.JAR_EXTRACTION_FAILED;
-      }
-    }
+      },
+    },
   );
 }
 
@@ -435,10 +441,10 @@ export async function resolveJarfilePath(uri: string): Promise<string> {
     throw new Error(`Cannot resolve jarfile URI without inner path: ${uri}`);
   }
 
-  const innerDir = path.dirname(innerPath).replace(/\\/g, '/');
+  const innerDir = path.dirname(innerPath).replace(/\\/g, "/");
   const fileName = path.basename(innerPath);
 
-  const normalizedDir = innerDir === '.' ? '' : innerDir;
+  const normalizedDir = innerDir === "." ? "" : innerDir;
   const extractedDir = await extractJarDirectory(jarPath, normalizedDir);
 
   return path.join(extractedDir, fileName);
