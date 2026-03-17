@@ -1,31 +1,30 @@
-import { TLAPlusMCPServer } from '../server';
-import { ServerConfig } from '../types';
-import { MINIMAL_CONFIG, HTTP_CONFIG, FULL_CONFIG } from './fixtures/config-samples';
+import { TLAPlusMCPServer } from "../server";
+import { MINIMAL_CONFIG, HTTP_CONFIG, FULL_CONFIG } from "./fixtures/config-samples";
 
 // Mock MCP SDK
-jest.mock('@modelcontextprotocol/sdk/server/mcp.js');
-jest.mock('@modelcontextprotocol/sdk/server/stdio.js');
-jest.mock('@modelcontextprotocol/sdk/server/streamableHttp.js');
+jest.mock("@modelcontextprotocol/sdk/server/mcp.js");
+jest.mock("@modelcontextprotocol/sdk/server/stdio.js");
+jest.mock("@modelcontextprotocol/sdk/server/streamableHttp.js");
 
 // Mock tool registration functions
-jest.mock('../tools/sany');
-jest.mock('../tools/tlc');
-jest.mock('../tools/knowledge');
-jest.mock('../tools/animation');
+jest.mock("../tools/sany");
+jest.mock("../tools/tlc");
+jest.mock("../tools/knowledge");
+jest.mock("../tools/animation");
 
 // Mock express
-jest.mock('express');
+jest.mock("express");
 
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import { registerSanyTools } from '../tools/sany';
-import { registerTlcTools } from '../tools/tlc';
-import { registerKnowledgeBaseResources } from '../tools/knowledge';
-import { registerAnimationTools } from '../tools/animation';
-import express, { Express, Request, Response } from 'express';
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { registerSanyTools } from "../tools/sany";
+import { registerTlcTools } from "../tools/tlc";
+import { registerKnowledgeBaseResources } from "../tools/knowledge";
+import { registerAnimationTools } from "../tools/animation";
+import express from "express";
 
-describe('TLAPlusMCPServer', () => {
+describe("TLAPlusMCPServer", () => {
   let mockMcpServer: any;
   let mockStdioTransport: any;
   let mockHttpTransport: any;
@@ -38,7 +37,7 @@ describe('TLAPlusMCPServer', () => {
     // Mock McpServer
     mockMcpServer = {
       connect: jest.fn().mockResolvedValue(undefined),
-      close: jest.fn().mockResolvedValue(undefined)
+      close: jest.fn().mockResolvedValue(undefined),
     };
     (McpServer as jest.Mock).mockImplementation(() => mockMcpServer);
 
@@ -49,7 +48,7 @@ describe('TLAPlusMCPServer', () => {
     // Mock StreamableHTTPServerTransport
     mockHttpTransport = {
       handleRequest: jest.fn().mockResolvedValue(undefined),
-      close: jest.fn()
+      close: jest.fn(),
     };
     (StreamableHTTPServerTransport as jest.Mock).mockImplementation(() => mockHttpTransport);
 
@@ -61,7 +60,7 @@ describe('TLAPlusMCPServer', () => {
       }),
       on: jest.fn(),
       removeListener: jest.fn(),
-      address: jest.fn(() => ({ port: 3000 }))
+      address: jest.fn(() => ({ port: 3000 })),
     };
 
     mockExpressApp = {
@@ -72,7 +71,7 @@ describe('TLAPlusMCPServer', () => {
       listen: jest.fn((port, callback) => {
         setImmediate(() => callback());
         return mockHttpServer;
-      })
+      }),
     };
     (express as unknown as jest.Mock).mockReturnValue(mockExpressApp);
     (express.json as jest.Mock) = jest.fn();
@@ -84,74 +83,71 @@ describe('TLAPlusMCPServer', () => {
     (registerAnimationTools as jest.Mock).mockResolvedValue(undefined);
   });
 
-  describe('Constructor', () => {
-    it('creates server with minimal config', () => {
+  describe("Constructor", () => {
+    it("creates server with minimal config", () => {
       const server = new TLAPlusMCPServer(MINIMAL_CONFIG);
       expect(server).toBeInstanceOf(TLAPlusMCPServer);
     });
 
-    it('creates server with full config', () => {
+    it("creates server with full config", () => {
       const server = new TLAPlusMCPServer(FULL_CONFIG);
       expect(server).toBeInstanceOf(TLAPlusMCPServer);
     });
 
-    it('creates server with HTTP config', () => {
+    it("creates server with HTTP config", () => {
       const server = new TLAPlusMCPServer(HTTP_CONFIG);
       expect(server).toBeInstanceOf(TLAPlusMCPServer);
     });
   });
 
-  describe('Server Initialization', () => {
-    it('creates MCP server with correct metadata', async () => {
+  describe("Server Initialization", () => {
+    it("creates MCP server with correct metadata", async () => {
       const server = new TLAPlusMCPServer(MINIMAL_CONFIG);
       await server.start();
 
       expect(McpServer).toHaveBeenCalledWith(
         {
-          name: 'TLA+ MCP Tools',
+          name: "TLA+ MCP Tools",
           // @implements REQ-REVIEW-011: version read from package.json
-          version: expect.any(String)
+          version: expect.any(String),
         },
         {
           capabilities: {
-            resources: {}
-          }
-        }
+            resources: {},
+          },
+        },
       );
     });
 
-    it('registers SANY tools', async () => {
+    it("registers SANY tools", async () => {
       const server = new TLAPlusMCPServer(MINIMAL_CONFIG);
       await server.start();
 
       expect(registerSanyTools).toHaveBeenCalledWith(mockMcpServer, MINIMAL_CONFIG);
     });
 
-    it('registers TLC tools', async () => {
+    it("registers TLC tools", async () => {
       const server = new TLAPlusMCPServer(MINIMAL_CONFIG);
       await server.start();
 
       expect(registerTlcTools).toHaveBeenCalledWith(mockMcpServer, MINIMAL_CONFIG);
     });
 
-    it('registers animation tools', async () => {
+    it("registers animation tools", async () => {
       const server = new TLAPlusMCPServer(MINIMAL_CONFIG);
       await server.start();
 
       expect(registerAnimationTools).toHaveBeenCalledWith(mockMcpServer, MINIMAL_CONFIG);
     });
 
-    it('registers knowledge base resources when kbDir provided', async () => {
+    it("registers knowledge base resources when kbDir provided", async () => {
       const server = new TLAPlusMCPServer(FULL_CONFIG);
       await server.start();
 
-      expect(registerKnowledgeBaseResources).toHaveBeenCalledWith(
-        mockMcpServer,
-        FULL_CONFIG.kbDir
-      );
+      expect(registerKnowledgeBaseResources).toHaveBeenCalledWith(mockMcpServer, FULL_CONFIG.kbDir);
     });
 
-    it('skips knowledge base registration when kbDir not provided', async () => {
+    it("skips knowledge base registration when kbDir not provided", async () => {
       const server = new TLAPlusMCPServer(MINIMAL_CONFIG);
       await server.start();
 
@@ -159,8 +155,8 @@ describe('TLAPlusMCPServer', () => {
     });
   });
 
-  describe('Stdio Mode', () => {
-    it('starts server in stdio mode by default', async () => {
+  describe("Stdio Mode", () => {
+    it("starts server in stdio mode by default", async () => {
       const server = new TLAPlusMCPServer(MINIMAL_CONFIG);
       await server.start();
 
@@ -168,14 +164,14 @@ describe('TLAPlusMCPServer', () => {
       expect(mockMcpServer.connect).toHaveBeenCalledWith(mockStdioTransport);
     });
 
-    it('does not start HTTP server in stdio mode', async () => {
+    it("does not start HTTP server in stdio mode", async () => {
       const server = new TLAPlusMCPServer(MINIMAL_CONFIG);
       await server.start();
 
       expect(express).not.toHaveBeenCalled();
     });
 
-    it('connects transport to MCP server', async () => {
+    it("connects transport to MCP server", async () => {
       const server = new TLAPlusMCPServer(MINIMAL_CONFIG);
       await server.start();
 
@@ -184,56 +180,53 @@ describe('TLAPlusMCPServer', () => {
     });
   });
 
-  describe('HTTP Mode', () => {
-    it('starts server in HTTP mode when configured', async () => {
+  describe("HTTP Mode", () => {
+    it("starts server in HTTP mode when configured", async () => {
       const server = new TLAPlusMCPServer(HTTP_CONFIG);
       await server.start();
 
       expect(express).toHaveBeenCalledTimes(1);
       expect(mockExpressApp.use).toHaveBeenCalledWith(express.json());
-      expect(mockExpressApp.listen).toHaveBeenCalledWith(
-        HTTP_CONFIG.port,
-        expect.any(Function)
-      );
+      expect(mockExpressApp.listen).toHaveBeenCalledWith(HTTP_CONFIG.port, expect.any(Function));
     });
 
-    it('does not create stdio transport in HTTP mode', async () => {
+    it("does not create stdio transport in HTTP mode", async () => {
       const server = new TLAPlusMCPServer(HTTP_CONFIG);
       await server.start();
 
       expect(StdioServerTransport).not.toHaveBeenCalled();
     });
 
-    it('registers POST /mcp endpoint', async () => {
+    it("registers POST /mcp endpoint", async () => {
       const server = new TLAPlusMCPServer(HTTP_CONFIG);
       await server.start();
 
-      expect(mockExpressApp.post).toHaveBeenCalledWith('/mcp', expect.any(Function));
+      expect(mockExpressApp.post).toHaveBeenCalledWith("/mcp", expect.any(Function));
     });
 
-    it('registers GET /mcp endpoint', async () => {
+    it("registers GET /mcp endpoint", async () => {
       const server = new TLAPlusMCPServer(HTTP_CONFIG);
       await server.start();
 
-      expect(mockExpressApp.get).toHaveBeenCalledWith('/mcp', expect.any(Function));
+      expect(mockExpressApp.get).toHaveBeenCalledWith("/mcp", expect.any(Function));
     });
 
-    it('registers DELETE /mcp endpoint', async () => {
+    it("registers DELETE /mcp endpoint", async () => {
       const server = new TLAPlusMCPServer(HTTP_CONFIG);
       await server.start();
 
-      expect(mockExpressApp.delete).toHaveBeenCalledWith('/mcp', expect.any(Function));
+      expect(mockExpressApp.delete).toHaveBeenCalledWith("/mcp", expect.any(Function));
     });
 
-    it('registers error handler for server', async () => {
+    it("registers error handler for server", async () => {
       const server = new TLAPlusMCPServer(HTTP_CONFIG);
       await server.start();
 
-      expect(mockHttpServer.on).toHaveBeenCalledWith('error', expect.any(Function));
+      expect(mockHttpServer.on).toHaveBeenCalledWith("error", expect.any(Function));
     });
 
     // Finding 2: Error handlers must be defined before app.listen() to avoid TDZ
-    it('listen callback can reference error handlers via removeListener and on', async () => {
+    it("listen callback can reference error handlers via removeListener and on", async () => {
       // Verify that after the listen callback fires, both startupErrorHandler
       // (removed) and operationalErrorHandler (added) are properly referenced.
       // Before the TDZ fix, these were const-declared AFTER the app.listen() call,
@@ -244,17 +237,17 @@ describe('TLAPlusMCPServer', () => {
       // The listen callback should have called removeListener('error', startupErrorHandler)
       // and then on('error', operationalErrorHandler). If handlers were in TDZ,
       // this would have thrown before reaching these calls.
-      expect(mockHttpServer.removeListener).toHaveBeenCalledWith('error', expect.any(Function));
+      expect(mockHttpServer.removeListener).toHaveBeenCalledWith("error", expect.any(Function));
 
       // Verify operational handler was attached (second 'error' listener)
       const errorCalls = (mockHttpServer.on as jest.Mock).mock.calls.filter(
-        (call: any[]) => call[0] === 'error'
+        (call: any[]) => call[0] === "error",
       );
       // Should have at least 2 error listeners: startup (before listen) + operational (in callback)
       expect(errorCalls.length).toBeGreaterThanOrEqual(2);
     });
 
-    describe('POST /mcp endpoint', () => {
+    describe("POST /mcp endpoint", () => {
       let postHandler: (req: any, res: any) => Promise<void>;
 
       beforeEach(async () => {
@@ -263,22 +256,22 @@ describe('TLAPlusMCPServer', () => {
 
         // Extract the POST handler
         const postCall = (mockExpressApp.post as jest.Mock).mock.calls.find(
-          call => call[0] === '/mcp'
+          (call) => call[0] === "/mcp",
         );
         postHandler = postCall[1];
       });
 
-      it('creates new MCP server instance per request', async () => {
+      it("creates new MCP server instance per request", async () => {
         const mockReq = {
           headers: {},
           body: {},
-          on: jest.fn()
+          on: jest.fn(),
         };
         const mockRes = {
           on: jest.fn(),
           headersSent: false,
           status: jest.fn().mockReturnThis(),
-          json: jest.fn()
+          json: jest.fn(),
         };
 
         await postHandler(mockReq, mockRes);
@@ -287,65 +280,63 @@ describe('TLAPlusMCPServer', () => {
         expect(StreamableHTTPServerTransport).toHaveBeenCalled();
       });
 
-      it('handles duplicate protocol version headers', async () => {
+      it("handles duplicate protocol version headers", async () => {
         const mockReq = {
           headers: {
-            'mcp-protocol-version': '1.0, 1.0'
+            "mcp-protocol-version": "1.0, 1.0",
           },
           body: {},
-          on: jest.fn()
+          on: jest.fn(),
         };
         const mockRes = {
           on: jest.fn(),
           headersSent: false,
           status: jest.fn().mockReturnThis(),
-          json: jest.fn()
+          json: jest.fn(),
         };
 
         await postHandler(mockReq, mockRes);
 
-        expect(mockReq.headers['mcp-protocol-version']).toBe('1.0');
+        expect(mockReq.headers["mcp-protocol-version"]).toBe("1.0");
       });
 
-      it('connects transport to server and handles request', async () => {
+      it("connects transport to server and handles request", async () => {
         const mockReq = {
           headers: {},
-          body: { test: 'data' },
-          on: jest.fn()
+          body: { test: "data" },
+          on: jest.fn(),
         };
         const mockRes = {
           on: jest.fn(),
           headersSent: false,
           status: jest.fn().mockReturnThis(),
-          json: jest.fn()
+          json: jest.fn(),
         };
 
         await postHandler(mockReq, mockRes);
 
         expect(mockMcpServer.connect).toHaveBeenCalledWith(mockHttpTransport);
-        expect(mockHttpTransport.handleRequest).toHaveBeenCalledWith(
-          mockReq,
-          mockRes,
-          { test: 'data' }
-        );
+        expect(mockHttpTransport.handleRequest).toHaveBeenCalledWith(mockReq, mockRes, {
+          test: "data",
+        });
       });
 
-      it('cleans up transport and server on response close', async () => {
+      it("cleans up transport and server on response close", async () => {
         let closeCallback: (() => void) | undefined;
         const mockReq = {
           headers: {},
           body: {},
-          on: jest.fn()
+          on: jest.fn(),
         };
         const mockRes = {
           on: jest.fn((event, callback) => {
-            if (event === 'close') {
+            if (event === "close") {
               closeCallback = callback;
             }
           }),
           headersSent: false,
           status: jest.fn().mockReturnThis(),
-          json: jest.fn()
+          json: jest.fn(),
         };
 
         await postHandler(mockReq, mockRes);
@@ -357,47 +348,47 @@ describe('TLAPlusMCPServer', () => {
         expect(mockMcpServer.close).toHaveBeenCalled();
       });
 
-      it('returns 500 on error', async () => {
-        mockMcpServer.connect.mockRejectedValue(new Error('Connection failed'));
+      it("returns 500 on error", async () => {
+        mockMcpServer.connect.mockRejectedValue(new Error("Connection failed"));
 
         const mockReq = {
           headers: {},
           body: {},
-          on: jest.fn()
+          on: jest.fn(),
         };
         const mockRes = {
           on: jest.fn(),
           headersSent: false,
           status: jest.fn().mockReturnThis(),
-          json: jest.fn()
+          json: jest.fn(),
         };
 
         await postHandler(mockReq, mockRes);
 
         expect(mockRes.status).toHaveBeenCalledWith(500);
         expect(mockRes.json).toHaveBeenCalledWith({
-          jsonrpc: '2.0',
+          jsonrpc: "2.0",
           error: {
             code: -32603,
-            message: 'Internal server error'
+            message: "Internal server error",
           },
-          id: null
+          id: null,
         });
       });
 
-      it('does not send response if headers already sent', async () => {
-        mockMcpServer.connect.mockRejectedValue(new Error('Connection failed'));
+      it("does not send response if headers already sent", async () => {
+        mockMcpServer.connect.mockRejectedValue(new Error("Connection failed"));
 
         const mockReq = {
           headers: {},
           body: {},
-          on: jest.fn()
+          on: jest.fn(),
         };
         const mockRes = {
           on: jest.fn(),
           headersSent: true,
           status: jest.fn().mockReturnThis(),
-          json: jest.fn()
+          json: jest.fn(),
         };
 
         await postHandler(mockReq, mockRes);
@@ -407,60 +398,60 @@ describe('TLAPlusMCPServer', () => {
       });
     });
 
-    describe('GET /mcp endpoint', () => {
-      it('returns 405 Method Not Allowed', async () => {
+    describe("GET /mcp endpoint", () => {
+      it("returns 405 Method Not Allowed", async () => {
         const server = new TLAPlusMCPServer(HTTP_CONFIG);
         await server.start();
 
         const getCall = (mockExpressApp.get as jest.Mock).mock.calls.find(
-          call => call[0] === '/mcp'
+          (call) => call[0] === "/mcp",
         );
         const getHandler = getCall[1];
 
         const mockRes = {
           status: jest.fn().mockReturnThis(),
-          json: jest.fn()
+          json: jest.fn(),
         };
 
         getHandler({}, mockRes);
 
         expect(mockRes.status).toHaveBeenCalledWith(405);
         expect(mockRes.json).toHaveBeenCalledWith({
-          jsonrpc: '2.0',
+          jsonrpc: "2.0",
           error: {
             code: -32000,
-            message: 'Method not allowed. This server operates in stateless mode.'
+            message: "Method not allowed. This server operates in stateless mode.",
           },
-          id: null
+          id: null,
         });
       });
     });
 
-    describe('DELETE /mcp endpoint', () => {
-      it('returns 405 Method Not Allowed', async () => {
+    describe("DELETE /mcp endpoint", () => {
+      it("returns 405 Method Not Allowed", async () => {
         const server = new TLAPlusMCPServer(HTTP_CONFIG);
         await server.start();
 
         const deleteCall = (mockExpressApp.delete as jest.Mock).mock.calls.find(
-          call => call[0] === '/mcp'
+          (call) => call[0] === "/mcp",
         );
         const deleteHandler = deleteCall[1];
 
         const mockRes = {
           status: jest.fn().mockReturnThis(),
-          json: jest.fn()
+          json: jest.fn(),
         };
 
         deleteHandler({}, mockRes);
 
         expect(mockRes.status).toHaveBeenCalledWith(405);
         expect(mockRes.json).toHaveBeenCalledWith({
-          jsonrpc: '2.0',
+          jsonrpc: "2.0",
           error: {
             code: -32000,
-            message: 'Method not allowed. This server operates in stateless mode.'
+            message: "Method not allowed. This server operates in stateless mode.",
           },
-          id: null
+          id: null,
         });
       });
     });
