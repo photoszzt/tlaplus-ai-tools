@@ -7,7 +7,7 @@ description: A comprehensive guide to functions in TLA+, including how to define
 
 In TLA+, **functions** are fundamental data structures that map values from a **domain** to a **codomain** (also called range). If you come from a programming background, think of functions as **maps**, **dictionaries**, or **associative arrays**.
 
-> 🧠 Unlike operators, functions are *first-class values* in TLA+—they can be stored in variables, passed as arguments, and quantified over.
+> 🧠 Unlike operators, functions are _first-class values_ in TLA+—they can be stored in variables, passed as arguments, and quantified over.
 
 ---
 
@@ -20,7 +20,7 @@ A function is defined using the **mapsto** syntax: `[x \in S |-> expr]`
 double == [n \in Nat |-> 2 * n]
 
 \* A function mapping people to their ages
-ages == [p \in {"Alice", "Bob", "Carol"} |-> 
+ages == [p \in {"Alice", "Bob", "Carol"} |->
             IF p = "Alice" THEN 30
             ELSE IF p = "Bob" THEN 25
             ELSE 28]
@@ -49,7 +49,7 @@ TLA+ provides syntax to define the **set of all functions** from domain `A` to c
 [A -> B]
 ```
 
-This is the set of *all possible* functions that map every element of `A` to some element of `B`.
+This is the set of _all possible_ functions that map every element of `A` to some element of `B`.
 
 #### Example
 
@@ -74,7 +74,7 @@ Since TLA+ is mathematical, you don't "mutate" a function. Instead, you create a
 
 ```tla
 \* Original function
-ages == [p \in {"Alice", "Bob"} |-> 
+ages == [p \in {"Alice", "Bob"} |->
             IF p = "Alice" THEN 30 ELSE 25]
 
 \* New function with Bob's age updated
@@ -114,7 +114,7 @@ company == [dept \in {"Engineering", "Sales"} |->
 company2 == [company EXCEPT !["Engineering"]["Alice"] = 75000]
 ```
 
-> ⚠️ **Performance Note:** TLA+ is mathematics, not a programming language. Using `EXCEPT` does not "efficiently update" a function—it defines an entirely new function. There is no computational advantage to using `EXCEPT` over defining a fresh function. However, `EXCEPT` is often *clearer* and more concise.
+> ⚠️ **Performance Note:** TLA+ is mathematics, not a programming language. Using `EXCEPT` does not "efficiently update" a function—it defines an entirely new function. There is no computational advantage to using `EXCEPT` over defining a fresh function. However, `EXCEPT` is often _clearer_ and more concise.
 
 ---
 
@@ -126,7 +126,7 @@ TLA+ allows defining functions that refer to themselves using the **recursive fu
 f[x \in S] == expr   \* where expr may reference f
 ```
 
-This is distinct from recursive *operators* (which use the `RECURSIVE` keyword). A recursive function definition creates a function value that can reference itself.
+This is distinct from recursive _operators_ (which use the `RECURSIVE` keyword). A recursive function definition creates a function value that can reference itself.
 
 #### Example: Factorial
 
@@ -148,8 +148,8 @@ fib[n \in Nat] == IF n <= 1 THEN n ELSE fib[n - 1] + fib[n - 2]
 EXTENDS Sequences, Naturals
 
 \* Sum elements of a sequence (using indices)
-sum[s \in Seq(Nat)] == 
-    IF s = <<>> THEN 0 
+sum[s \in Seq(Nat)] ==
+    IF s = <<>> THEN 0
     ELSE Head(s) + sum[Tail(s)]
 
 \* sum[<<1, 2, 3>>] evaluates to 6
@@ -161,7 +161,7 @@ For functions with multiple parameters, use a tuple or record as the domain:
 
 ```tla
 \* Power function using a tuple domain
-power[pair \in Nat \X Nat] == 
+power[pair \in Nat \X Nat] ==
     LET base == pair[1]
         exp  == pair[2]
     IN IF exp = 0 THEN 1 ELSE base * power[<<base, exp - 1>>]
@@ -186,7 +186,7 @@ EXTENDS Sequences
 colors == <<"red", "green", "blue">>
 
 \* Equivalent to:
-colors == [i \in 1..3 |-> 
+colors == [i \in 1..3 |->
               IF i = 1 THEN "red"
               ELSE IF i = 2 THEN "green"
               ELSE "blue"]
@@ -213,7 +213,7 @@ Seq(S)
 Seq({0, 1})        \* Contains <<>>, <<0>>, <<1>>, <<0,0>>, <<0,1>>, ...
 ```
 
-> Note: `Seq(S)` is an *infinite* set (for non-empty `S`), so TLC cannot enumerate it directly. Use bounded versions like `BoundedSeq(S, n)` from SequencesExt.
+> Note: `Seq(S)` is an _infinite_ set (for non-empty `S`), so TLC cannot enumerate it directly. Use bounded versions like `BoundedSeq(S, n)` from SequencesExt.
 
 ---
 
@@ -228,7 +228,7 @@ Seq({0, 1})        \* Contains <<>>, <<0>>, <<1>>, <<0,0>>, <<0,1>>, ...
 person == [name |-> "Alice", age |-> 30]
 
 \* Equivalent to:
-person == [f \in {"name", "age"} |-> 
+person == [f \in {"name", "age"} |->
               IF f = "name" THEN "Alice" ELSE 30]
 ```
 
@@ -269,12 +269,12 @@ person2 == [person EXCEPT !["age"] = 31]
 
 TLA+ provides operations for functions and sequences across several modules:
 
-| Module | Description |
-|--------|-------------|
-| `Sequences` | Standard module with basic sequence operations (`Len`, `Head`, `Tail`, `Append`, `SubSeq`, `\o`) |
-| `Functions` | Community module with function utilities (`Range`, `Restrict`, `Inverse`, injections, surjections, bijections) |
+| Module         | Description                                                                                                     |
+| -------------- | --------------------------------------------------------------------------------------------------------------- |
+| `Sequences`    | Standard module with basic sequence operations (`Len`, `Head`, `Tail`, `Append`, `SubSeq`, `\o`)                |
+| `Functions`    | Community module with function utilities (`Range`, `Restrict`, `Inverse`, injections, surjections, bijections)  |
 | `SequencesExt` | Community module with extended sequence operations (`ToSet`, `SetToSeq`, `Reverse`, `FlattenSeq`, `BoundedSeq`) |
-| `Folds` | Community module with fold operations over sequences and sets (`FoldSeq`, `FoldSet`) |
+| `Folds`        | Community module with fold operations over sequences and sets (`FoldSeq`, `FoldSet`)                            |
 
 #### How to Explore Module Contents
 
@@ -292,16 +292,16 @@ EXTENDS Sequences, Functions, SequencesExt
 
 ### 🧠 Summary
 
-| Concept | Domain | Syntax | Access |
-|---------|--------|--------|--------|
-| **Function** | Any set | `[x \in S \|-> expr]` | `f[x]` |
-| **Sequence** | `1..n` | `<<e1, e2, ...>>` | `s[i]` (1-indexed) |
-| **Record** | Strings | `[field1 \|-> v1, ...]` | `r.field` or `r["field"]` |
+| Concept      | Domain  | Syntax                  | Access                    |
+| ------------ | ------- | ----------------------- | ------------------------- |
+| **Function** | Any set | `[x \in S \|-> expr]`   | `f[x]`                    |
+| **Sequence** | `1..n`  | `<<e1, e2, ...>>`       | `s[i]` (1-indexed)        |
+| **Record**   | Strings | `[field1 \|-> v1, ...]` | `r.field` or `r["field"]` |
 
-| Set of... | Syntax |
-|-----------|--------|
-| All functions A → B | `[A -> B]` |
-| All sequences | `Seq(S)` |
-| All records | `[field1: S1, field2: S2, ...]` |
+| Set of...           | Syntax                          |
+| ------------------- | ------------------------------- |
+| All functions A → B | `[A -> B]`                      |
+| All sequences       | `Seq(S)`                        |
+| All records         | `[field1: S1, field2: S2, ...]` |
 
 > 🎯 **Key Insight:** Records and sequences are not special types—they're just functions with specific domains. This unification is a hallmark of TLA+'s elegant mathematical foundation.

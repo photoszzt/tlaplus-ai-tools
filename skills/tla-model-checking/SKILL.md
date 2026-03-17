@@ -22,6 +22,7 @@ This skill provides comprehensive guidance for model checking TLA+ specification
 ### 1. Prepare Specification
 
 Ensure specification is ready:
+
 - Parse successfully with SANY (`/tla-parse`)
 - All symbols defined
 - Init and Next properly structured
@@ -32,6 +33,7 @@ Ensure specification is ready:
 Generate or write `.cfg` file with `/tla-symbols` command.
 
 **Configuration sections**:
+
 - Constants (assign values)
 - Specification (INIT/NEXT or SPEC)
 - Invariants (safety properties)
@@ -43,6 +45,7 @@ See `references/config-guide.md` for complete configuration syntax.
 ### 3. Start with Small Constants
 
 Use small values initially:
+
 - Sets: 2-3 elements
 - Numbers: 3-10
 - Sequences: length 3-5
@@ -52,17 +55,21 @@ Use small values initially:
 ### 4. Run Smoke Test First
 
 Quick validation before full check:
+
 ```
 /tla-smoke @Spec.tla
 ```
+
 Finds obvious bugs in seconds.
 
 ### 5. Run Full Model Check
 
 Exhaustive verification:
+
 ```
 /tla-check @Spec.tla
 ```
+
 Explores all reachable states.
 
 ### 6. Interpret Results
@@ -101,6 +108,7 @@ PROPERTY
 ### Constants Section
 
 **Ordinary values**:
+
 ```
 CONSTANT
     N = 5
@@ -109,6 +117,7 @@ CONSTANT
 ```
 
 **Sets of model values**:
+
 ```
 CONSTANT
     Servers = {s1, s2, s3}
@@ -116,6 +125,7 @@ CONSTANT
 ```
 
 **Sets of numbers**:
+
 ```
 CONSTANT
     Clients = 1..3
@@ -123,6 +133,7 @@ CONSTANT
 ```
 
 **Symmetric sets** (reduces state space):
+
 ```
 SYMMETRY Servers
 SYMMETRY Clients
@@ -131,19 +142,24 @@ SYMMETRY Clients
 ### Specification Section
 
 **Option 1: Use Spec formula**:
+
 ```
 SPECIFICATION Spec
 ```
+
 Use when spec has temporal formula defined.
 
 **Option 2: Separate Init/Next**:
+
 ```
 INIT Init
 NEXT Next
 ```
+
 Use when no Spec formula or need custom temporal formula.
 
 **With fairness**:
+
 ```
 SPECIFICATION Init /\ [][Next]_vars /\ WF_vars(Action)
 ```
@@ -212,21 +228,25 @@ Reduces state space by treating equivalent states as identical.
 ### Using Commands
 
 **Quick test**:
+
 ```
 /tla-smoke @Spec.tla
 ```
 
 **Full check**:
+
 ```
 /tla-check @Spec.tla
 ```
 
 **With custom config**:
+
 ```
 /tla-check @Spec.tla MyConfig.cfg
 ```
 
 **With options**:
+
 ```
 /tla-check @Spec.tla --workers 8
 ```
@@ -235,20 +255,20 @@ Reduces state space by treating equivalent states as identical.
 
 ```javascript
 // Parse first
-mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse({ fileName: "/path/to/Spec.tla" })
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse({ fileName: "/path/to/Spec.tla" });
 
 // Model check
 mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check({
   fileName: "/path/to/Spec.tla",
   cfgFile: "/path/to/Config.cfg",
   extraOpts: ["-workers", "4"],
-  extraJavaOpts: ["-Xmx4096m"]
-})
+  extraJavaOpts: ["-Xmx4096m"],
+});
 
 // Smoke test
 mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke({
-  fileName: "/path/to/Spec.tla"
-})
+  fileName: "/path/to/Spec.tla",
+});
 ```
 
 ## Interpreting Results
@@ -265,6 +285,7 @@ Time: 2.5 seconds
 **Means**: All invariants hold, all properties satisfied (within model bounds).
 
 **Next steps**:
+
 - Increase constants to check larger models
 - Add more properties
 - Add liveness checking
@@ -286,6 +307,7 @@ State trace (length 5):
 **Means**: Found state where invariant false.
 
 **Next steps**:
+
 1. Analyze trace with trace-analyzer agent
 2. Identify which action caused violation
 3. Fix the bug (strengthen guard, fix logic)
@@ -304,6 +326,7 @@ Behavior shows stuttering at state:
 **Means**: Liveness property can fail.
 
 **Common causes**:
+
 - Missing fairness (add WF or SF)
 - Deadlock (no enabled actions)
 - Incorrect formula (review temporal logic)
@@ -320,6 +343,7 @@ After 1 hour:
 **Means**: State space too large to check completely.
 
 **Solutions**:
+
 - Reduce constants
 - Add state constraints
 - Use symmetry sets
@@ -331,11 +355,13 @@ After 1 hour:
 ### Worker Threads
 
 Use multiple cores:
+
 ```
 /tla-check @Spec.tla --workers 8
 ```
 
 **Guidelines**:
+
 - Use number of CPU cores
 - Diminishing returns beyond 8-12
 - Monitor CPU usage
@@ -343,6 +369,7 @@ Use multiple cores:
 ### Java Heap Size
 
 Increase memory for large state spaces:
+
 ```
 Add to config or use extraJavaOpts:
 -Xmx8192m   (8 GB heap)
@@ -350,6 +377,7 @@ Add to config or use extraJavaOpts:
 ```
 
 **Guidelines**:
+
 - Start with 4 GB
 - Increase if "OutOfMemoryError"
 - Leave room for OS
@@ -357,6 +385,7 @@ Add to config or use extraJavaOpts:
 ### State Constraints
 
 Limit exploration:
+
 ```
 CONSTRAINT
     depth <= 20
@@ -364,6 +393,7 @@ CONSTRAINT
 ```
 
 **Use when**:
+
 - Infinite state space
 - Very large finite space
 - Focused testing
@@ -371,12 +401,14 @@ CONSTRAINT
 ### Symmetry Sets
 
 Reduce states by symmetry:
+
 ```
 CONSTANT Servers = {s1, s2, s3}
 SYMMETRY Servers
 ```
 
 **Effective when**:
+
 - Processes/servers interchangeable
 - Order doesn't matter
 - Can reduce space exponentially
@@ -384,11 +416,13 @@ SYMMETRY Servers
 ### View Definitions
 
 Abstract away irrelevant details:
+
 ```
 View == <<count, status>>  \* Ignore timestamp
 ```
 
 **Use when**:
+
 - Some variables don't affect correctness
 - Can define equivalence classes
 
@@ -407,6 +441,7 @@ You can also use the trace-analyzer agent to get explanations of what failed, wh
 - Basic config
 
 Then add:
+
 - More invariants
 - Larger constants
 - Temporal properties
@@ -415,6 +450,7 @@ Then add:
 ### Check Incrementally
 
 After each spec change:
+
 ```
 1. Parse
 2. Smoke test
@@ -425,6 +461,7 @@ After each spec change:
 ### Use Version Control
 
 Commit working configs:
+
 ```
 Spec-Small.cfg   (quick testing)
 Spec-Medium.cfg  (thorough testing)
@@ -434,6 +471,7 @@ Spec-Large.cfg   (comprehensive)
 ### Document Configuration
 
 Add comments to `.cfg`:
+
 ```
 \* These constants chosen because...
 \* This constraint needed to avoid...
@@ -443,6 +481,7 @@ Add comments to `.cfg`:
 ### Monitor Progress
 
 For long checks:
+
 - Watch state count
 - Check memory usage
 - Estimate completion time

@@ -1,7 +1,7 @@
 // @implements REQ-REVIEW-009, SCN-REVIEW-009-02
-import { execFileSync } from 'child_process';
-import * as fs from 'fs';
-import * as path from 'path';
+import { execFileSync } from "child_process";
+import * as fs from "fs";
+import * as path from "path";
 
 /**
  * Resolve a file path and optionally validate its containment within the working directory.
@@ -14,10 +14,7 @@ import * as path from 'path';
  * @returns Absolute path to the file
  * @throws Error if path is outside workingDir (when workingDir is set)
  */
-export function resolveAndValidatePath(
-  filePath: string,
-  workingDir: string | null
-): string {
+export function resolveAndValidatePath(filePath: string, workingDir: string | null): string {
   const absolute = path.isAbsolute(filePath)
     ? filePath
     : path.resolve(workingDir || process.cwd(), filePath);
@@ -32,20 +29,20 @@ export function resolveAndValidatePath(
     const realWorkingDir = fs.realpathSync(workingDir);
     const relative = path.relative(realWorkingDir, realAbsolute);
 
-    if (relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) {
+    if (relative === ".." || relative.startsWith(".." + path.sep) || path.isAbsolute(relative)) {
       throw new Error(
-        `Access denied: Path ${filePath} resolves to ${realAbsolute} which is outside the working directory ${realWorkingDir}`
+        `Access denied: Path ${filePath} resolves to ${realAbsolute} which is outside the working directory ${realWorkingDir}`,
       );
     }
 
     return absolute;
   } catch (err) {
     // If realpathSync fails because the file doesn't exist yet, fall back to lexical check
-    if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
       const relative = path.relative(workingDir, absolute);
-      if (relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) {
+      if (relative === ".." || relative.startsWith(".." + path.sep) || path.isAbsolute(relative)) {
         throw new Error(
-          `Access denied: Path ${filePath} is outside the working directory ${workingDir}`
+          `Access denied: Path ${filePath} is outside the working directory ${workingDir}`,
         );
       }
       return absolute;
@@ -63,21 +60,19 @@ export function resolveAndValidatePath(
  */
 export async function autoDetectToolsDir(): Promise<string | null> {
   // Get package directory (two levels up from dist/utils/)
-  const packageDir = path.join(__dirname, '..', '..');
+  const packageDir = path.join(__dirname, "..", "..");
 
   // Try relative paths from package directory
   const candidates = [
-    path.join(packageDir, 'tools'),               // tools (standalone repo)
-    path.join(packageDir, '..', 'tools'),         // ../tools
+    path.join(packageDir, "tools"), // tools (standalone repo)
+    path.join(packageDir, "..", "tools"), // ../tools
   ];
 
   // Add npm global fallback
   // @implements REQ-REVIEW-009, SCN-REVIEW-009-01, SCN-REVIEW-009-02
   try {
-    const npmRoot = execFileSync('npm', ['root', '-g'], { encoding: 'utf8', timeout: 5000 }).trim();
-    candidates.push(
-      path.join(npmRoot, 'tlaplus-ai-tools', 'tools')
-    );
+    const npmRoot = execFileSync("npm", ["root", "-g"], { encoding: "utf8", timeout: 5000 }).trim();
+    candidates.push(path.join(npmRoot, "tlaplus-ai-tools", "tools"));
   } catch {
     // npm not available or timed out, skip
   }
@@ -87,7 +82,7 @@ export async function autoDetectToolsDir(): Promise<string | null> {
       const stat = await fs.promises.stat(candidate);
       if (stat.isDirectory()) {
         // Check if it contains tla2tools.jar
-        const tlaToolsJar = path.join(candidate, 'tla2tools.jar');
+        const tlaToolsJar = path.join(candidate, "tla2tools.jar");
         try {
           await fs.promises.access(tlaToolsJar);
           return candidate;
@@ -113,21 +108,19 @@ export async function autoDetectToolsDir(): Promise<string | null> {
  */
 export async function autoDetectKbDir(): Promise<string | null> {
   // Get package directory (two levels up from dist/utils/)
-  const packageDir = path.join(__dirname, '..', '..');
+  const packageDir = path.join(__dirname, "..", "..");
 
   // Try relative paths from package directory
   const candidates = [
-    path.join(packageDir, 'resources', 'knowledgebase'),               // resources/knowledgebase (standalone repo)
-    path.join(packageDir, '..', 'resources', 'knowledgebase'),         // ../resources/knowledgebase
+    path.join(packageDir, "resources", "knowledgebase"), // resources/knowledgebase (standalone repo)
+    path.join(packageDir, "..", "resources", "knowledgebase"), // ../resources/knowledgebase
   ];
 
   // Add npm global fallback
   // @implements REQ-REVIEW-009, SCN-REVIEW-009-01, SCN-REVIEW-009-02
   try {
-    const npmRoot = execFileSync('npm', ['root', '-g'], { encoding: 'utf8', timeout: 5000 }).trim();
-    candidates.push(
-      path.join(npmRoot, 'tlaplus-ai-tools', 'resources', 'knowledgebase')
-    );
+    const npmRoot = execFileSync("npm", ["root", "-g"], { encoding: "utf8", timeout: 5000 }).trim();
+    candidates.push(path.join(npmRoot, "tlaplus-ai-tools", "resources", "knowledgebase"));
   } catch {
     // npm not available or timed out, skip
   }
@@ -138,7 +131,7 @@ export async function autoDetectKbDir(): Promise<string | null> {
       if (stat.isDirectory()) {
         // Check if it contains any .md files
         const files = await fs.promises.readdir(candidate);
-        if (files.some(f => f.endsWith('.md'))) {
+        if (files.some((f) => f.endsWith(".md"))) {
           return candidate;
         }
       }
@@ -158,22 +151,17 @@ export async function autoDetectKbDir(): Promise<string | null> {
  * @param name - Human-readable name for error messages
  * @throws Error if directory doesn't exist or is not a directory
  */
-export async function validateDirectory(
-  dirPath: string,
-  name: string
-): Promise<void> {
+export async function validateDirectory(dirPath: string, name: string): Promise<void> {
   try {
     const stat = await fs.promises.stat(dirPath);
     if (!stat.isDirectory()) {
-      throw new Error(
-        `${name} path exists but is not a directory: ${dirPath}`
-      );
+      throw new Error(`${name} path exists but is not a directory: ${dirPath}`);
     }
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       throw new Error(
         `${name} directory not found: ${dirPath}\n\n` +
-        `Please ensure the directory exists or specify a different path.`
+          `Please ensure the directory exists or specify a different path.`,
       );
     }
     throw error;

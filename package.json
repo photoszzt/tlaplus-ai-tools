@@ -2,22 +2,27 @@
   "name": "tlaplus-ai-tools",
   "version": "1.0.0",
   "description": "TLA+ formal specification and model checking tools with AI assistance for Claude Code",
-  "main": "dist/index.js",
+  "keywords": [
+    "ai-assistant",
+    "claude-code",
+    "formal-methods",
+    "formal-verification",
+    "mcp",
+    "model-checking",
+    "tla+",
+    "tlaplus"
+  ],
+  "author": {
+    "name": "Zhiting Zhu",
+    "email": "zhitingzzt@gmail.com",
+    "url": "https://github.com/photoszzt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/photoszzt/tlaplus-ai-tools.git"
+  },
   "bin": {
     "tlaplus-ai-tools": "dist/index.js"
-  },
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run build",
-    "postinstall": "node scripts/postinstall.js",
-    "setup": "node scripts/setup.js",
-    "verify": "bash scripts/verify.sh",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --maxWorkers=2"
   },
   "files": [
     "dist/",
@@ -35,24 +40,23 @@
     "README.md",
     "LICENSE"
   ],
-  "keywords": [
-    "tla+",
-    "tlaplus",
-    "mcp",
-    "model-checking",
-    "formal-methods",
-    "formal-verification",
-    "claude-code",
-    "ai-assistant"
-  ],
-  "author": {
-    "name": "Zhiting Zhu",
-    "email": "zhitingzzt@gmail.com",
-    "url": "https://github.com/photoszzt"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/photoszzt/tlaplus-ai-tools.git"
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsgo",
+    "dev": "tsgo --watch",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build",
+    "postinstall": "node scripts/postinstall.js",
+    "setup": "node scripts/setup.js",
+    "verify": "bash scripts/verify.sh",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --maxWorkers=2",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.2",
@@ -62,25 +66,28 @@
     "tsx": "^4.21.0",
     "zod": "^3.24.4"
   },
-  "optionalDependencies": {
-    "@napi-rs/canvas": "^0.1.65"
-  },
-  "_optionalDependencyNotes": {
-    "@napi-rs/canvas": "~50MB native binary used only for animation rendering. Safe to omit if animation features are not needed."
-  },
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",
     "@types/express": "^5.0.2",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.0.0",
+    "@typescript/native-preview": "^7.0.0-dev.20260317.1",
     "jest": "^30.2.0",
+    "oxfmt": "^0.41.0",
+    "oxlint": "^1.56.0",
     "ts-jest": "^29.1.1",
-    "typescript": "^5.7.2"
+    "typescript": "^5.9.3"
+  },
+  "optionalDependencies": {
+    "@napi-rs/canvas": "^0.1.65"
+  },
+  "overrides": {
+    "test-exclude": "7.0.1"
   },
   "engines": {
     "node": ">=18.14.0"
   },
-  "overrides": {
-    "test-exclude": "7.0.1"
+  "_optionalDependencyNotes": {
+    "@napi-rs/canvas": "~50MB native binary used only for animation rendering. Safe to omit if animation features are not needed."
   }
 }

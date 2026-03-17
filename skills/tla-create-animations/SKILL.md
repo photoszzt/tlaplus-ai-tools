@@ -64,36 +64,42 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore --fileName MySpecAnim.tla -
 ## SVG Element Reference
 
 ### Rectangle
+
 ```tla
-[shape |-> "rect", x |-> 100, y |-> 100, width |-> 50, height |-> 50, 
+[shape |-> "rect", x |-> 100, y |-> 100, width |-> 50, height |-> 50,
  fill |-> "blue", stroke |-> "black", strokeWidth |-> 2]
 ```
 
 ### Circle
+
 ```tla
-[shape |-> "circle", cx |-> 200, cy |-> 200, r |-> 30, 
+[shape |-> "circle", cx |-> 200, cy |-> 200, r |-> 30,
  fill |-> "red", opacity |-> 0.8]
 ```
 
 ### Text
+
 ```tla
-[shape |-> "text", x |-> 150, y |-> 150, text |-> "Hello", 
+[shape |-> "text", x |-> 150, y |-> 150, text |-> "Hello",
  fontSize |-> 16, fill |-> "black", fontFamily |-> "Arial"]
 ```
 
 ### Line
+
 ```tla
 [shape |-> "line", x1 |-> 0, y1 |-> 0, x2 |-> 100, y2 |-> 100,
  stroke |-> "black", strokeWidth |-> 2]
 ```
 
 ### Path
+
 ```tla
 [shape |-> "path", d |-> "M 10 10 L 90 90 L 10 90 Z",
  fill |-> "yellow", stroke |-> "black"]
 ```
 
 ### Group
+
 ```tla
 [shape |-> "g", elements |-> <<
     [shape |-> "rect", ...],
@@ -104,6 +110,7 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore --fileName MySpecAnim.tla -
 ## Animation Patterns
 
 ### Conditional Visibility
+
 ```tla
 IF condition THEN
     [shape |-> "circle", cx |-> 100, cy |-> 100, r |-> 20, fill |-> "green"]
@@ -112,15 +119,17 @@ ELSE
 ```
 
 ### Dynamic Positioning
+
 ```tla
-[shape |-> "rect", 
+[shape |-> "rect",
  x |-> position * 50,  \* Position based on variable
- y |-> 100, 
- width |-> 40, 
+ y |-> 100,
+ width |-> 40,
  height |-> 40]
 ```
 
 ### Sequence Visualization
+
 ```tla
 LET Elements == {
     [shape |-> "circle", cx |-> i * 60, cy |-> 200, r |-> 20, fill |-> "blue"]
@@ -141,16 +150,19 @@ IN [shape |-> "g", elements |-> SetToSeq(Elements)]
 ## Common Issues
 
 ### Animation not showing
+
 - Check that AnimAlias is defined correctly
 - Verify EXTENDS includes TLC, SVG, IOUtils
 - Ensure AnimView has required fields (frame, elements)
 
 ### Elements not visible
+
 - Check x, y coordinates are within width/height bounds
 - Verify fill/stroke colors are valid
 - Check opacity is not 0
 
 ### Performance issues
+
 - Limit number of elements (< 100 for smooth animation)
 - Use simpler shapes when possible
 - Avoid complex path calculations in hot loops
@@ -164,6 +176,7 @@ IN [shape |-> "g", elements |-> SetToSeq(Elements)]
 ## Complete Example
 
 See the knowledge base article `tla-animations.md` for complete examples including:
+
 - BatteryRelay: Simple state machine
 - BlockingQueue: Producer-consumer pattern
 - DiningPhilosophers: Concurrency visualization
@@ -207,16 +220,16 @@ When you call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_detect`, it re
 
 ### Field Reference
 
-| Field | Type | Meaning |
-|-------|------|---------|
-| `protocol` | `"kitty"` or `"iterm2"` or `"none"` | The graphics protocol your terminal supports. `"none"` means no graphics protocol was detected. |
-| `multiplexer` | `"tmux"` or `"screen"` or `"none"` | Whether a terminal multiplexer is in use. Multiplexers can block graphics protocols unless passthrough is enabled. |
-| `passthroughEnabled` | `boolean` | Whether graphics passthrough is enabled in the detected multiplexer. When `multiplexer` is `"none"`, this is `true` (no multiplexer means no passthrough needed). When `multiplexer` is `"tmux"`, this reflects the `allow-passthrough` setting. |
-| `passthroughVerified` | `boolean` | Whether passthrough was verified via active probe. Always `false` in v1 (reserved for future use). |
-| `fallbackAvailable` | `["ascii", "browser"]` | The fallback options that are always available regardless of terminal. |
-| `detectionMethod` | `"env"` or `"query"` or `"probe"` | How detection was performed. `"env"` means environment variables were checked. `"query"` means terminal was queried. `"probe"` means an active probe was sent. |
-| `confidence` | `"high"` or `"medium"` or `"low"` | Confidence in the detection result. `"high"` means a definitive indicator was found (e.g., `KITTY_WINDOW_ID` is set). `"low"` means no positive identification was made. |
-| `environment` | object | Raw environment variables captured during detection, for diagnostics. Contains `TERM`, `TERM_PROGRAM`, `KITTY_WINDOW_ID`, `TMUX`, `STY`, and `LC_TERMINAL` if they are set. |
+| Field                 | Type                                | Meaning                                                                                                                                                                                                                                          |
+| --------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `protocol`            | `"kitty"` or `"iterm2"` or `"none"` | The graphics protocol your terminal supports. `"none"` means no graphics protocol was detected.                                                                                                                                                  |
+| `multiplexer`         | `"tmux"` or `"screen"` or `"none"`  | Whether a terminal multiplexer is in use. Multiplexers can block graphics protocols unless passthrough is enabled.                                                                                                                               |
+| `passthroughEnabled`  | `boolean`                           | Whether graphics passthrough is enabled in the detected multiplexer. When `multiplexer` is `"none"`, this is `true` (no multiplexer means no passthrough needed). When `multiplexer` is `"tmux"`, this reflects the `allow-passthrough` setting. |
+| `passthroughVerified` | `boolean`                           | Whether passthrough was verified via active probe. Always `false` in v1 (reserved for future use).                                                                                                                                               |
+| `fallbackAvailable`   | `["ascii", "browser"]`              | The fallback options that are always available regardless of terminal.                                                                                                                                                                           |
+| `detectionMethod`     | `"env"` or `"query"` or `"probe"`   | How detection was performed. `"env"` means environment variables were checked. `"query"` means terminal was queried. `"probe"` means an active probe was sent.                                                                                   |
+| `confidence`          | `"high"` or `"medium"` or `"low"`   | Confidence in the detection result. `"high"` means a definitive indicator was found (e.g., `KITTY_WINDOW_ID` is set). `"low"` means no positive identification was made.                                                                         |
+| `environment`         | object                              | Raw environment variables captured during detection, for diagnostics. Contains `TERM`, `TERM_PROGRAM`, `KITTY_WINDOW_ID`, `TMUX`, `STY`, and `LC_TERMINAL` if they are set.                                                                      |
 
 ### Protocol Selection Logic
 
@@ -261,6 +274,7 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_frameCount
 ```
 
 This returns:
+
 ```json
 {
   "count": 5,
@@ -348,6 +362,7 @@ Then reload: `tmux source-file ~/.tmux.conf`
 **Cause**: The relevant environment variables (`KITTY_WINDOW_ID`, `TERM_PROGRAM`) may not be propagated. This often happens when connecting via SSH or when the terminal does not set expected variables.
 
 **Fix**:
+
 - Verify the environment variable is set: run `echo $KITTY_WINDOW_ID` (for Kitty) or `echo $TERM_PROGRAM` (for iTerm2) in your shell.
 - If connecting via SSH, ensure your SSH client forwards the relevant environment variables, or use `SendEnv`/`AcceptEnv` configuration.
 - As a workaround, you can explicitly specify the protocol when calling render, bypassing detection:
@@ -364,6 +379,7 @@ Then reload: `tmux source-file ~/.tmux.conf`
 **Cause**: The terminal may set unusual or non-standard environment variables.
 
 **Fix**:
+
 - Check the `environment` field in the detection result to see what variables were found.
 - If the wrong protocol is detected, override it by specifying the protocol explicitly when calling render.
 - Report the issue with the detection result so detection logic can be improved.
@@ -375,6 +391,7 @@ Then reload: `tmux source-file ~/.tmux.conf`
 **Cause**: The rendered PNG exceeds the 1MB frame size limit. This typically happens with very large canvas dimensions (e.g., 4000x3000).
 
 **Fix**:
+
 - Reduce the `width` and `height` of your AnimView. For terminal rendering, 800x600 or smaller is recommended.
 - Reduce the number of elements in the animation.
 - Use the ASCII fallback, which is not subject to the PNG size limit.
@@ -386,6 +403,7 @@ Then reload: `tmux source-file ~/.tmux.conf`
 **Cause**: Terminal detection exceeded the 500ms time limit. This can happen if a tmux passthrough configuration query hangs.
 
 **Fix**:
+
 - Try running detection again. Transient delays may resolve.
 - If in tmux, ensure `allow-passthrough` is configured (even setting it to `off` explicitly is faster than having tmux hang on the query).
 - Use ASCII or browser fallback directly by calling render with `protocol: "ascii"` without detection.
@@ -396,51 +414,51 @@ Then reload: `tmux source-file ~/.tmux.conf`
 
 ### Environment Variables
 
-| Variable | Effect |
-|----------|--------|
+| Variable                     | Effect                                                                                                                                                                             |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `TLAPLUS_ANIMATION_FALLBACK` | Sets the default fallback preference when no graphics protocol is available. Values: `ascii`, `browser`. When set, the tool uses this fallback automatically instead of prompting. |
-| `KITTY_WINDOW_ID` | Presence indicates Kitty terminal. Checked during detection. |
-| `TERM_PROGRAM` | Checked for `iTerm.app` during detection. |
-| `LC_TERMINAL` | Checked for `iTerm2` during detection. |
-| `TMUX` | Presence indicates tmux multiplexer. Format: `/path/to/socket,pid,index`. |
-| `STY` | Presence indicates GNU Screen multiplexer. |
-| `TERM` | General terminal type. Checked for `xterm-kitty` during detection. |
+| `KITTY_WINDOW_ID`            | Presence indicates Kitty terminal. Checked during detection.                                                                                                                       |
+| `TERM_PROGRAM`               | Checked for `iTerm.app` during detection.                                                                                                                                          |
+| `LC_TERMINAL`                | Checked for `iTerm2` during detection.                                                                                                                                             |
+| `TMUX`                       | Presence indicates tmux multiplexer. Format: `/path/to/socket,pid,index`.                                                                                                          |
+| `STY`                        | Presence indicates GNU Screen multiplexer.                                                                                                                                         |
+| `TERM`                       | General terminal type. Checked for `xterm-kitty` during detection.                                                                                                                 |
 
 ### Tool Parameters: `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_detect`
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `timeout` | number (optional) | 500 | Detection timeout in milliseconds. |
+| Parameter | Type              | Default | Description                        |
+| --------- | ----------------- | ------- | ---------------------------------- |
+| `timeout` | number (optional) | 500     | Detection timeout in milliseconds. |
 
 ### Tool Parameters: `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render`
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `protocol` | `"kitty"`, `"iterm2"`, `"ascii"`, `"browser"` | Yes | Target rendering protocol. |
-| `useCase` | `"live"`, `"static"`, `"trace"` | Yes | Context for the render: `live` for TLC exploration, `static` for a single frame, `trace` for saved trace files. |
-| `frameIndex` | number (>= 0) | Yes | Frame index for navigation tracking. |
-| `animView` | object | One of three | AnimView record with `frame`, `title`, `width`, `height`, `elements`. |
-| `svgContent` | string | One of three | Raw SVG markup string. |
-| `svgFilePath` | string | One of three | Absolute path to an SVG file on disk. |
-| `asciiConfig` | object (optional) | No | ASCII rendering configuration (see below). |
-| `fallbackPreference` | `"ascii"`, `"browser"`, `"prompt"`, `"none"` | No | Preferred fallback when graphics are unavailable. |
+| Parameter            | Type                                          | Required     | Description                                                                                                     |
+| -------------------- | --------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------- |
+| `protocol`           | `"kitty"`, `"iterm2"`, `"ascii"`, `"browser"` | Yes          | Target rendering protocol.                                                                                      |
+| `useCase`            | `"live"`, `"static"`, `"trace"`               | Yes          | Context for the render: `live` for TLC exploration, `static` for a single frame, `trace` for saved trace files. |
+| `frameIndex`         | number (>= 0)                                 | Yes          | Frame index for navigation tracking.                                                                            |
+| `animView`           | object                                        | One of three | AnimView record with `frame`, `title`, `width`, `height`, `elements`.                                           |
+| `svgContent`         | string                                        | One of three | Raw SVG markup string.                                                                                          |
+| `svgFilePath`        | string                                        | One of three | Absolute path to an SVG file on disk.                                                                           |
+| `asciiConfig`        | object (optional)                             | No           | ASCII rendering configuration (see below).                                                                      |
+| `fallbackPreference` | `"ascii"`, `"browser"`, `"prompt"`, `"none"`  | No           | Preferred fallback when graphics are unavailable.                                                               |
 
 Exactly one of `animView`, `svgContent`, or `svgFilePath` must be provided. Providing zero or more than one causes a validation error.
 
 **ASCII Config Sub-Parameters**:
 
-| Parameter | Type | Default | Min | Max | Description |
-|-----------|------|---------|-----|-----|-------------|
-| `columns` | number | 80 | 40 | 200 | Canvas width in characters. |
-| `rows` | number | 24 | 20 | 60 | Canvas height in characters. |
-| `colorEnabled` | boolean | true | -- | -- | Whether to include ANSI color codes in output. |
+| Parameter      | Type    | Default | Min | Max | Description                                    |
+| -------------- | ------- | ------- | --- | --- | ---------------------------------------------- |
+| `columns`      | number  | 80      | 40  | 200 | Canvas width in characters.                    |
+| `rows`         | number  | 24      | 20  | 60  | Canvas height in characters.                   |
+| `colorEnabled` | boolean | true    | --  | --  | Whether to include ANSI color codes in output. |
 
 ### Tool Parameters: `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_frameCount`
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `traceDirectory` | string | Yes | Absolute path to the directory containing trace SVG files. |
-| `filePattern` | string | No | Glob pattern for matching trace files. Default: `*_anim_*.svg`. |
+| Parameter        | Type   | Required | Description                                                     |
+| ---------------- | ------ | -------- | --------------------------------------------------------------- |
+| `traceDirectory` | string | Yes      | Absolute path to the directory containing trace SVG files.      |
+| `filePattern`    | string | No       | Glob pattern for matching trace files. Default: `*_anim_*.svg`. |
 
 ### Protocol Override
 
@@ -461,6 +479,7 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_detect
 ```
 
 Expected result:
+
 ```json
 {
   "protocol": "kitty",
@@ -509,6 +528,7 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
 ```
 
 The tool rasterizes the AnimView to a PNG, encodes it with the Kitty graphics protocol escape sequence, and returns:
+
 ```json
 {
   "output": "\u001b_Ga=T,f=100,m=0;iVBORw0KGgo...\u001b\\",
@@ -559,6 +579,7 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_detect
 ```
 
 Expected result (iTerm2 behind tmux with passthrough enabled):
+
 ```json
 {
   "protocol": "iterm2",
@@ -590,6 +611,7 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
 ```
 
 Result:
+
 ```json
 {
   "output": "\u001b]1337;File=inline=1;size=8432:iVBORw0KGgo...\u0007",
@@ -601,6 +623,7 @@ Result:
 **Step 3: Navigate a trace with multiple frames**
 
 First discover the frames:
+
 ```
 mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_frameCount
   traceDirectory: "/tmp/trace/"
@@ -608,6 +631,7 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_frameCount
 ```
 
 Result:
+
 ```json
 {
   "count": 3,
@@ -620,6 +644,7 @@ Result:
 ```
 
 Then render each frame:
+
 ```
 mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
   protocol: "iterm2"
@@ -629,6 +654,7 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
 ```
 
 To advance to the next frame:
+
 ```
 mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
   protocol: "iterm2"
@@ -648,6 +674,7 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_detect
 ```
 
 Expected result (plain terminal without graphics):
+
 ```json
 {
   "protocol": "none",
@@ -703,6 +730,7 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
 ```
 
 Result:
+
 ```json
 {
   "output": "\u001b[34m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502      \u2502\n\u2502  S0  \u2502\n\u2502      \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m  \u001b[31m\u25cf\u001b[0m",

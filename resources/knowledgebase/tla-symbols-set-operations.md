@@ -2,6 +2,7 @@
 title: Write Clearer TLA+: Prefer \union and \intersect
 description: Best practices for writing readable TLA+ specifications by choosing clear set operation syntax
 ---
+
 ## How to Use Union and Intersection in TLA+
 
 When writing TLA+ specifications, it's important to prioritize readability and clarity for human readers. One small but effective way to do this is by choosing the more descriptive versions of set operators.

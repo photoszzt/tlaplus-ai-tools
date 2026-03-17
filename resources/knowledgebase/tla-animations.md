@@ -64,6 +64,7 @@ AnimWatch ==
 ### 2. Validate Animation
 
 Use the MCP server to check syntax:
+
 ```
 tlaplus_mcp_sany_parse MySpec_anim.tla
 ```
@@ -71,6 +72,7 @@ tlaplus_mcp_sany_parse MySpec_anim.tla
 ### 3. Generate Animation SVGs
 
 Create configuration file and use MCP to explore states:
+
 ```
 tlaplus_mcp_tlc_explore MySpec_anim.tla -depth 10
 ```
@@ -108,19 +110,21 @@ AnimWatch == \* For TLA+ Debugger (live preview)
 
 ## Serialization Approaches: AnimAlias vs AnimWatch
 
-While `AnimView` defines *what* to visualize, you need a serialization mechanism to *output* the SVG frames. TLA+ animations support two approaches, each suited to different workflows:
+While `AnimView` defines _what_ to visualize, you need a serialization mechanism to _output_ the SVG frames. TLA+ animations support two approaches, each suited to different workflows:
 
 ### AnimAlias: For Screencasts and Animation Sequences
 
 **Use Case**: Creating animation sequences for documentation, presentations, or screencasts.
 
 **How it works**:
+
 - Add `ALIAS AnimAlias` to your TLC configuration file (`.cfg`)
 - TLC automatically evaluates `AnimAlias` at each state during counterexample generation
 - Each state generates a **unique numbered SVG file**
 - Frame numbering uses `TLCGet("level")` to create sequential files
 
 **Example**:
+
 ```tla
 AnimDoc == SVGDoc(AnimView, 0, 0, 760, 420, <<>>)
 
@@ -135,6 +139,7 @@ AnimAlias ==
 **Generated files**: `MySpec_anim_0.svg`, `MySpec_anim_1.svg`, `MySpec_anim_2.svg`, ...
 
 **Configuration file**:
+
 ```
 INIT Init
 NEXT Next
@@ -146,12 +151,14 @@ ALIAS AnimAlias
 **Use Case**: Live visualization during step-by-step debugging sessions.
 
 **How it works**:
+
 - Use as a Watch expression in the TLA+ Debugger
 - Each evaluation **overwrites the same SVG file** (frame number 0)
 - Pair with a live SVG viewer that auto-refreshes (e.g., [SVG extension](https://open-vsx.org/extension/jock/svg))
 - See animation update in real-time as you step through execution
 
 **Example**:
+
 ```tla
 AnimDoc == SVGDoc(AnimView, 0, 0, 760, 420, <<>>)
 
@@ -166,19 +173,21 @@ AnimWatch ==
 
 **Debugger usage**:
 When debugging `MySpec.tla`, add this watch expression:
+
 ```
 LET A == INSTANCE MySpec_anim IN A!AnimWatch
 ```
 
 ### Choosing Between AnimAlias and AnimWatch
 
-You don't need to choose—include *both* in your animation file! Use `AnimAlias` for documentation and `AnimWatch` for development/debugging.
+You don't need to choose—include _both_ in your animation file! Use `AnimAlias` for documentation and `AnimWatch` for development/debugging.
 
 ## Creating Your First Animation
 
 ### Step 1: Plan Your Visualization
 
 Consider what to visualize and how:
+
 - **State Variables**: Map each to visual properties (color, position, shape)
 - **Visual Language**: Choose consistent meanings (red=error, green=active)
 - **Layout**: Decide spatial arrangement (grid, circle, hierarchy)
@@ -198,7 +207,7 @@ BaseY == 50
 
 \* Convert sets to deterministic sequences
 NodeSeq == SetToSeq(Nodes)
-NodeIndex == [n \in Nodes |-> 
+NodeIndex == [n \in Nodes |->
     CHOOSE i \in 1..Len(NodeSeq) : NodeSeq[i] = n]
 
 \* Create visual elements
@@ -210,12 +219,12 @@ NodeElement(n) ==
                    [] OTHER -> "gray"
     IN Group(<<
         Circle(x, y, 25, ("fill" :> color @@ "stroke" :> "black")),
-        Text(x, y + 5, ToString(n), 
+        Text(x, y + 5, ToString(n),
             ("text-anchor" :> "middle" @@ "font-size" :> "14px"))
     >>, <<>>)
 
 \* Combine into animation view
-AnimView == Group([n \in 1..Len(NodeSeq) |-> NodeElement(NodeSeq[n])], 
+AnimView == Group([n \in 1..Len(NodeSeq) |-> NodeElement(NodeSeq[n])],
                   ("transform" :> "scale(1.2)"))
 ```
 
@@ -275,10 +284,10 @@ NodeIndex == [n \in Nodes |-> CHOOSE i \in 1..Len(NodeSeq) : NodeSeq[i] = n]
 NodeX(n) == 50 + (NodeIndex[n] - 1) * NodeSpacing
 
 \* Color based on counter value
-NodeColor(n) == 
+NodeColor(n) ==
     LET c == counter[n]
     IN CASE c = 0 -> "#e0e0e0"
-         [] c < 5 -> "#81c784" 
+         [] c < 5 -> "#81c784"
          [] c < 10 -> "#ffd54f"
          [] OTHER -> "#e57373"
 
@@ -287,38 +296,38 @@ NodeVis(n) ==
     LET x == NodeX(n)
     IN Group(<<
         \* Node circle
-        Circle(x, BaseY, NodeRadius, 
+        Circle(x, BaseY, NodeRadius,
             ("fill" :> NodeColor(n) @@ "stroke" :> "#333" @@ "stroke-width" :> "2")),
         \* Node name
-        Text(x, BaseY - 40, ToString(n), 
+        Text(x, BaseY - 40, ToString(n),
             ("text-anchor" :> "middle" @@ "font-size" :> "14px" @@ "font-weight" :> "bold")),
         \* Counter value
-        Text(x, BaseY + 5, ToString(counter[n]), 
+        Text(x, BaseY + 5, ToString(counter[n]),
             ("text-anchor" :> "middle" @@ "font-size" :> "20px" @@ "font-weight" :> "bold")),
         \* Value label
-        Text(x, BaseY + 50, "count: " \o ToString(counter[n]), 
+        Text(x, BaseY + 50, "count: " \o ToString(counter[n]),
             ("text-anchor" :> "middle" @@ "font-size" :> "12px" @@ "fill" :> "#666"))
     >>, <<>>)
 
 \* Legend
 Legend == Group(<<
-    Text(50, 30, "Counter System Animation", 
+    Text(50, 30, "Counter System Animation",
         ("font-size" :> "18px" @@ "font-weight" :> "bold")),
-    Text(50, 50, "Gray: 0, Green: 1-4, Yellow: 5-9, Red: 10+", 
+    Text(50, 50, "Gray: 0, Green: 1-4, Yellow: 5-9, Red: 10+",
         ("font-size" :> "12px" @@ "fill" :> "#666"))
 >>, <<>>)
 
 \* Step number display
-StepNumber == 
-    Text(90 + Cardinality(Nodes) * NodeSpacing, 190, 
-         "Step " \o ToString(TLCGet("level")), 
-         ("text-anchor" :> "end" @@ 
-          "font-size" :> "12px" @@ 
-          "font-family" :> "monospace" @@ 
+StepNumber ==
+    Text(90 + Cardinality(Nodes) * NodeSpacing, 190,
+         "Step " \o ToString(TLCGet("level")),
+         ("text-anchor" :> "end" @@
+          "font-size" :> "12px" @@
+          "font-family" :> "monospace" @@
           "fill" :> "#666"))
 
 \* Main animation view
-AnimView == 
+AnimView ==
     Group(<<Legend, StepNumber>> \o [i \in 1..Len(NodeSeq) |-> NodeVis(NodeSeq[i])], <<>>)
 
 \* Wrap view in document structure
@@ -359,6 +368,7 @@ tlaplus_mcp_tlc_explore CounterSystem_anim.tla -depth 20
 This will create SVG files: `CounterSystem_anim_0.svg`, `CounterSystem_anim_1.svg`, etc.
 
 This example demonstrates:
+
 - Deterministic node ordering with `SetToSeq`
 - Dynamic color mapping based on state
 - Clear visual hierarchy with title, nodes, and labels
@@ -370,30 +380,35 @@ This example demonstrates:
 ### Basic Shapes
 
 #### Circle
+
 ```tla
 Circle(cx, cy, r, attrs)
 \* Example: Circle(100, 100, 25, ("fill" :> "red" @@ "stroke" :> "black"))
 ```
 
 #### Rectangle
+
 ```tla
 Rect(x, y, width, height, attrs)
 \* Example: Rect(50, 50, 100, 60, ("fill" :> "lightblue" @@ "rx" :> "5"))
 ```
 
 #### Line
+
 ```tla
 Line(x1, y1, x2, y2, attrs)
 \* Example: Line(0, 0, 100, 100, ("stroke" :> "black" @@ "stroke-width" :> "2"))
 ```
 
 #### Text
+
 ```tla
 Text(x, y, content, attrs)
 \* Example: Text(50, 50, "Node 1", ("text-anchor" :> "middle" @@ "font-size" :> "14px"))
 ```
 
 #### Image
+
 ```tla
 Image(x, y, width, height, href, attrs)
 \* Example: Image(10, 10, 20, 20, "https://www.svgrepo.com/show/438355/car.svg", <<>>)
@@ -402,12 +417,14 @@ Image(x, y, width, height, href, attrs)
 ### Container Elements
 
 #### Group
+
 ```tla
 Group(children, attrs)
 \* Example: Group(<<circle1, text1>>, ("transform" :> "translate(50, 50)"))
 ```
 
 #### Svg
+
 ```tla
 Svg(children, attrs)
 \* SVG container element
@@ -415,6 +432,7 @@ Svg(children, attrs)
 ```
 
 #### SVGDoc
+
 ```tla
 SVGDoc(children, vbX, vbY, vbW, vbH, attrs)
 \* Creates a complete SVG document with viewBox and standard attributes
@@ -423,7 +441,7 @@ SVGDoc(children, vbX, vbY, vbW, vbH, attrs)
 \*   vbX, vbY: Top-left corner coordinates of the viewBox
 \*   vbW, vbH: Width and height of the viewBox
 \*   attrs: Additional attributes to merge
-\* 
+\*
 \* Example: SVGDoc(myElements, 0, 0, 800, 600, ("id" :> "main-svg"))
 \* Automatically includes xmlns and xmlns:xlink attributes
 ```
@@ -431,6 +449,7 @@ SVGDoc(children, vbX, vbY, vbW, vbH, attrs)
 ### Low-Level Constructor
 
 #### SVGElem
+
 ```tla
 SVGElem(name, attrs, children, innerText)
 \* Generic SVG element constructor for any element type
@@ -441,11 +460,11 @@ SVGElem(name, attrs, children, innerText)
 \*   - innerText: Text content (use "" for none)
 
 \* Example: Custom path element
-SVGElem("path", 
-    ("d" :> "M 10 10 L 90 90 L 10 90 Z" @@ 
-     "fill" :> "orange" @@ 
-     "stroke" :> "black"), 
-    <<>>, 
+SVGElem("path",
+    ("d" :> "M 10 10 L 90 90 L 10 90 Z" @@
+     "fill" :> "orange" @@
+     "stroke" :> "black"),
+    <<>>,
     "")
 
 \* Example: Custom polygon
@@ -474,7 +493,7 @@ SVGSerialize(svg, frameNamePrefix, frameNumber)
 \* Example: Save animation frame
 \* SVGSerialize(
 \*     SVGDoc(myElements, 0, 0, 800, 600, <<>>),
-\*     "animation_frame_", 
+\*     "animation_frame_",
 \*     TLCGet("level"))
 \* \* Creates: animation_frame_1.svg, animation_frame_2.svg, etc.
 ```
@@ -484,8 +503,8 @@ SVGSerialize(svg, frameNamePrefix, frameNumber)
 Use the `@@` operator to combine attributes:
 
 ```tla
-("fill" :> "blue" @@ 
- "stroke" :> "black" @@ 
+("fill" :> "blue" @@
+ "stroke" :> "black" @@
  "stroke-width" :> "2" @@
  "opacity" :> "0.8")
 ```
@@ -501,6 +520,7 @@ tlaplus_mcp_sany_parse MySpec_anim.tla
 ```
 
 This checks for:
+
 - Correct TLA+ syntax
 - Proper module extensions
 - Valid operator definitions
@@ -514,6 +534,7 @@ tlaplus_mcp_tlc_explore MySpec_anim.tla -depth 10
 ```
 
 This will:
+
 1. Explore the state space up to depth 10
 2. Generate SVG files for each state
 3. Name files as `MySpec_anim_0.svg`, `MySpec_anim_1.svg`, etc.
@@ -531,6 +552,7 @@ ALIAS AnimAlias
 ### Post-Processing SVG Files
 
 After generation, you can:
+
 - View individual SVG files in any browser
 - Create animated sequences using ImageMagick:
   ```bash
@@ -575,8 +597,8 @@ HighlightedElement(x, y, elem, changed) ==
     IF changed THEN
         Group(<<
             \* Highlight ring
-            Circle(x, y, 30, ("fill" :> "none" @@ 
-                             "stroke" :> "orange" @@ 
+            Circle(x, y, 30, ("fill" :> "none" @@
+                             "stroke" :> "orange" @@
                              "stroke-width" :> "3")),
             elem
         >>, <<>>)
@@ -584,13 +606,13 @@ HighlightedElement(x, y, elem, changed) ==
 
 \* Status indicators with icons
 StatusIcon(x, y, status) ==
-    CASE status = "running" -> 
+    CASE status = "running" ->
             Image(x-10, y-10, 20, 20, "https://www.svgrepo.com/show/532245/gear-alt.svg", <<>>)
-      [] status = "error" -> 
+      [] status = "error" ->
             Image(x-10, y-10, 20, 20, "https://www.svgrepo.com/show/497000/danger.svg", <<>>)
-      [] status = "success" -> 
+      [] status = "success" ->
             Image(x-10, y-10, 20, 20, "https://www.svgrepo.com/show/404945/check-mark.svg", <<>>)
-      [] OTHER -> 
+      [] OTHER ->
             Circle(x, y, 5, ("fill" :> "gray"))
 ```
 
@@ -601,8 +623,8 @@ Combine techniques for sophisticated animations:
 ```tla
 \* Message passing with visual trail
 MessagePath(from, to, messages) ==
-    LET path == Line(from.x, from.y, to.x, to.y, 
-                    ("stroke" :> "lightgray" @@ 
+    LET path == Line(from.x, from.y, to.x, to.y,
+                    ("stroke" :> "lightgray" @@
                      "stroke-dasharray" :> "5,5"))
         msgDots == [m \in 1..Len(messages) |->
             LET progress == messages[m].progress
@@ -618,14 +640,14 @@ TreeNode(node, level, position) ==
         children == GetChildren(node)
     IN Group(<<
         \* Node representation
-        Rect(x-25, y-15, 50, 30, 
+        Rect(x-25, y-15, 50, 30,
             ("fill" :> NodeColor(node) @@ "rx" :> "5")),
-        Text(x, y, node.label, 
+        Text(x, y, node.label,
             ("text-anchor" :> "middle" @@ "font-size" :> "12px")),
         \* Connections to children
         [c \in 1..Len(children) |->
-            Line(x, y+15, 
-                 position * 60 + (c - (Len(children)+1)/2) * 40, 
+            Line(x, y+15,
+                 position * 60 + (c - (Len(children)+1)/2) * 40,
                  (level+1) * 80 + 35,
                  ("stroke" :> "gray"))]
     >>, <<>>)
@@ -654,7 +676,7 @@ Create reusable color schemes and constants:
 \* Define once, use everywhere
 ColorScheme == [
     active |-> "#28a745",    \* Green
-    inactive |-> "#6c757d",  \* Gray  
+    inactive |-> "#6c757d",  \* Gray
     error |-> "#dc3545",     \* Red
     warning |-> "#ffc107"    \* Yellow
 ]
@@ -674,17 +696,17 @@ Create reusable visual elements:
 StatusBadge(x, y, status, count) ==
     Group(<<
         Circle(x, y, 8, ("fill" :> ColorScheme[status])),
-        Text(x, y + 3, ToString(count), 
-            ("text-anchor" :> "middle" @@ 
-             "font-size" :> "10px" @@ 
+        Text(x, y + 3, ToString(count),
+            ("text-anchor" :> "middle" @@
+             "font-size" :> "10px" @@
              "fill" :> "white"))
     >>, <<>>)
 
 \* Then use it consistently
-NodeWithStatus(n) == 
+NodeWithStatus(n) ==
     Group(<<
         NodeElement(n),
-        StatusBadge(NodePos(n).x + 15, NodePos(n).y - 15, 
+        StatusBadge(NodePos(n).x + 15, NodePos(n).y - 15,
                    state[n], messageCount[n])
     >>, <<>>)
 ```
@@ -697,12 +719,12 @@ Ensure labels are always legible:
 \* Add backgrounds to text over complex visuals
 LabelWithBackground(x, y, text) ==
     Group(<<
-        Rect(x - Len(text) * 3, y - 8, Len(text) * 6, 16, 
-            ("fill" :> "white" @@ 
-             "opacity" :> "0.9" @@ 
+        Rect(x - Len(text) * 3, y - 8, Len(text) * 6, 16,
+            ("fill" :> "white" @@
+             "opacity" :> "0.9" @@
              "rx" :> "2")),
-        Text(x, y + 3, text, 
-            ("text-anchor" :> "middle" @@ 
+        Text(x, y + 3, text,
+            ("text-anchor" :> "middle" @@
              "font-size" :> "11px"))
     >>, <<>>)
 ```
@@ -719,20 +741,21 @@ If the `viewBox` cannot be determined in advance, perform an initial pass to mea
 
 ```tla
 \* Add step number in bottom-right corner
-StepNumber == 
-    Text(viewBoxWidth - 30, viewBoxHeight - 10, 
-         "Step " \o ToString(TLCGet("level")), 
-         ("text-anchor" :> "end" @@ 
-          "font-size" :> "12px" @@ 
-          "font-family" :> "monospace" @@ 
+StepNumber ==
+    Text(viewBoxWidth - 30, viewBoxHeight - 10,
+         "Step " \o ToString(TLCGet("level")),
+         ("text-anchor" :> "end" @@
+          "font-size" :> "12px" @@
+          "font-family" :> "monospace" @@
           "fill" :> "#666"))
 
 \* Include in your AnimView
-AnimView == 
+AnimView ==
     Group(<<YourMainVisualization, StepNumber>>, <<>>)
 ```
 
 **Best practices for step numbers:**
+
 - Position consistently (typically bottom-right or top-right corner)
 - Use monospace font for alignment
 - Choose subtle color that doesn't interfere with main content
@@ -748,6 +771,7 @@ AnimView ==
 **Symptom**: MCP exploration completes but no SVG files appear
 
 **Solutions**:
+
 1. Ensure `ALIAS AnimAlias` is in your `.cfg` file
 2. Verify AnimAlias includes the `SVGSerialize` call
 3. Check file permissions in output directory
@@ -757,6 +781,7 @@ AnimView ==
 **Symptom**: `tlaplus_mcp_sany_parse` reports errors
 
 **Solutions**:
+
 1. Check all required modules are extended
 2. Verify operator syntax, especially attribute records
 3. Ensure proper use of `@@` and `:>` operators
@@ -767,11 +792,13 @@ AnimView ==
 **Symptom**: SVG files look identical across states
 
 **Solutions**:
+
 1. Verify state variables are referenced in visual elements:
+
    ```tla
    \* Good: References state
    Circle(50, 50, 20, ("fill" :> IF active[node] THEN "green" ELSE "red"))
-   
+
    \* Bad: Static color
    Circle(50, 50, 20, ("fill" :> "blue"))
    ```
@@ -785,13 +812,14 @@ AnimView ==
 Begin with minimal visualization to verify setup:
 
 ```tla
-AnimView == Text(50, 50, "State: " \o ToString(state), 
+AnimView == Text(50, 50, "State: " \o ToString(state),
                 ("font-size" :> "20px"))
 ```
 
 #### 2. Validate Generated SVG
 
 Open generated SVG files directly in a browser to check for:
+
 - Proper rendering
 - Expected visual elements
 - Correct attribute values
@@ -804,7 +832,7 @@ When an AI generates an animation at a user’s request, it should explain this 
 Include state values in your visualization:
 
 ```tla
-DebugInfo == Text(10, 10, "Step: " \o ToString(TLCGet("level")), 
+DebugInfo == Text(10, 10, "Step: " \o ToString(TLCGet("level")),
                  ("font-size" :> "10px" @@ "fill" :> "gray"))
 ```
 
@@ -814,14 +842,15 @@ For debugging or when MCP server is unavailable, you can use TLC directly:
 
 ```bash
 # Run TLC on all animation configs and convert SVGs to PNGs
-for f in $(ls *_anim.cfg); do 
+for f in $(ls *_anim.cfg); do
     tlc -note -simulate -invlevel 10 ${f%.*}
-done && for f in *.svg; do 
+done && for f in *.svg; do
     rsvg-convert -o ${f%.*}.png $f
 done
 ```
 
 This approach:
+
 - Runs TLC directly on each `*_anim.cfg` file
 - Simulates 10 levels of state exploration
 - Converts generated SVGs to PNG format for easier viewing
@@ -896,6 +925,7 @@ Create engaging visualizations:
 TLA+ animation files provide powerful visualization capabilities for understanding and debugging specifications. By following this guide and using the MCP server tools, you can create effective animations that reveal system behavior through visual representation.
 
 Key takeaways:
+
 - Start with simple visualizations and iterate
 - Use deterministic ordering for consistent results
 - Leverage the SVG module's full capabilities
@@ -926,7 +956,7 @@ EXTENDS TLC, SVG, SequencesExt, BatteryRelay
 
 iconSize == 25
 
-VehicleIcon(v) == 
+VehicleIcon(v) ==
     IF v = "Truck" THEN "assets/loaded-truck-svgrepo-com.svg"
     ELSE IF v = "Car" THEN "assets/fast-car-svgrepo-com.svg"
     ELSE IF v = "Bike" THEN "assets/motorbike-svgrepo-com.svg"
@@ -935,16 +965,16 @@ VehicleIcon(v) ==
 
 Left ==
     LET order == SetToSeq(left)
-        image(actor, o) == Image(10, o*35, iconSize, iconSize, 
-                                VehicleIcon(actor), <<>>) 
-    IN Group(SetToSeq({image(p, (CHOOSE i \in DOMAIN order : 
+        image(actor, o) == Image(10, o*35, iconSize, iconSize,
+                                VehicleIcon(actor), <<>>)
+    IN Group(SetToSeq({image(p, (CHOOSE i \in DOMAIN order :
                        order[i] = p)) : p \in left}), [i \in {} |-> {}])
 
 Right ==
     LET order == SetToSeq(right)
-        image(actor, o) == Image(130, o*35, iconSize, iconSize, 
-                                VehicleIcon(actor), <<>>) 
-    IN Group(SetToSeq({image(p, (CHOOSE i \in DOMAIN order : 
+        image(actor, o) == Image(130, o*35, iconSize, iconSize,
+                                VehicleIcon(actor), <<>>)
+    IN Group(SetToSeq({image(p, (CHOOSE i \in DOMAIN order :
                        order[i] = p)) : p \in right}), [i \in {} |-> {}])
 
 BatteryIcon ==
@@ -955,15 +985,15 @@ BatteryIcon ==
 
 Battery ==
    IF batteryLeft
-   THEN Group(<<Image(10, 5, iconSize, iconSize, BatteryIcon, <<>>), 
+   THEN Group(<<Image(10, 5, iconSize, iconSize, BatteryIcon, <<>>),
                 Text(35, 23, ToString(batteryLevel), <<>>)>>, [i \in {} |-> {}])
-   ELSE Group(<<Image(130, 5, iconSize, iconSize, BatteryIcon, <<>>), 
+   ELSE Group(<<Image(130, 5, iconSize, iconSize, BatteryIcon, <<>>),
                 Text(155, 23, ToString(batteryLevel), <<>>)>>, [i \in {} |-> {}])
 
 Chargers ==
    Group(SetToSeq({
-       Image(160, i, 30, 30, 
-             IF right = Vehicles 
+       Image(160, i, 30, 30,
+             IF right = Vehicles
              THEN "assets/ev-plug-charging-svgrepo-com.svg"
              ELSE "assets/ev-plug-error-svgrepo-com.svg", <<>>)
        : i \in {40 + (i*35) : i \in 0..Cardinality(Vehicles)-1}
@@ -974,9 +1004,9 @@ Empty ==
          IF batteryLevel < 0 THEN <<>> ELSE [hidden |-> "true"])
 
 \* Step number in bottom-right corner
-StepNumber == 
-    Text(220, 190, "Step " \o ToString(TLCGet("level")), 
-         ("text-anchor" :> "end" @@ "font-size" :> "12px" @@ 
+StepNumber ==
+    Text(220, 190, "Step " \o ToString(TLCGet("level")),
+         ("text-anchor" :> "end" @@ "font-size" :> "12px" @@
           "font-family" :> "monospace" @@ "fill" :> "#666"))
 
 AnimView == Group(<<Left, Right, Battery, Chargers, Empty, StepNumber>>, [i \in {} |-> {}])
@@ -984,8 +1014,8 @@ AnimView == Group(<<Left, Right, Battery, Chargers, Empty, StepNumber>>, [i \in 
 AnimDoc == SVGDoc(AnimView, 0, 0, 230, 200, <<>>)
 
 AnimAlias ==
-    [left |-> left, right |-> right, 
-     batteryLeft |-> batteryLeft, batteryLevel |-> batteryLevel] @@ 
+    [left |-> left, right |-> right,
+     batteryLeft |-> batteryLeft, batteryLevel |-> batteryLevel] @@
     [_anim |-> SVGSerialize(AnimDoc, "BatteryRelay_anim_", TLCGet("level"))]
 
 AnimWatch ==
@@ -994,6 +1024,7 @@ AnimWatch ==
 ```
 
 **Key Techniques:**
+
 - Dynamic icon selection based on vehicle type
 - Battery level visualization with progressive icons and numeric display
 - Spatial organization with left/right sides
@@ -1013,7 +1044,7 @@ Producer-consumer pattern with thread synchronization. Complete visualization sh
 EXTENDS TLC, SVG, SequencesExt, BlockingQueue
 
 \* Helper to get buffer element at index
-ElemAt(i) == 
+ElemAt(i) ==
     IF i > Len(buffer) THEN "" ELSE buffer[i]
 
 \* Layout constants
@@ -1025,62 +1056,62 @@ THREAD_SPACING == 70
 BASE_X == 60
 BASE_Y == 80
 
-BufferCellColor(i) == 
+BufferCellColor(i) ==
     IF ElemAt(i) = "" THEN "#f8f9fa" ELSE "#17a2b8"
 
-BufferCell(i) == 
+BufferCell(i) ==
     LET x_pos == BASE_X + 150
         y_pos == BASE_Y + (i - 1) * (BUFFER_HEIGHT + CELL_SPACING)
         cell_content == IF ElemAt(i) = "" THEN "" ELSE ToString(ElemAt(i))
         text_color == IF ElemAt(i) = "" THEN "#6c757d" ELSE "white"
-        value == Text(x_pos + 22, y_pos + 22, cell_content, 
-                     ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@ 
+        value == Text(x_pos + 22, y_pos + 22, cell_content,
+                     ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@
                       "font-size" :> "12px" @@ "fill" :> text_color))
-        rect == Rect(x_pos, y_pos, BUFFER_WIDTH, BUFFER_HEIGHT, 
-                    ("fill" :> BufferCellColor(i) @@ "stroke" :> "#495057" @@ 
+        rect == Rect(x_pos, y_pos, BUFFER_WIDTH, BUFFER_HEIGHT,
+                    ("fill" :> BufferCellColor(i) @@ "stroke" :> "#495057" @@
                      "stroke-width" :> "2" @@ "rx" :> "3"))
-        index_label == Text(x_pos - 8, y_pos + 22, ToString(i), 
-                           ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@ 
+        index_label == Text(x_pos - 8, y_pos + 22, ToString(i),
+                           ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@
                             "font-size" :> "10px" @@ "fill" :> "#6c757d"))
     IN Group(<<rect, value, index_label>>, <<>>)
 
 Buffer == [i \in 1..BufCapacity |-> BufferCell(i)]
 
 \* Buffer status indicator
-BufferStatus == 
+BufferStatus ==
     LET status_text == IF Len(buffer) = 0 THEN "EMPTY"
                       ELSE IF Len(buffer) = BufCapacity THEN "FULL"
                       ELSE ToString(Len(buffer)) \o " of " \o ToString(BufCapacity)
         x_pos == BASE_X + 150
         y_pos == BASE_Y + BufCapacity * (BUFFER_HEIGHT + CELL_SPACING) + 15
-    IN Text(x_pos + 22, y_pos, status_text, 
-           ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@ 
+    IN Text(x_pos + 22, y_pos, status_text,
+           ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@
             "font-weight" :> "bold" @@ "font-size" :> "11px" @@ "fill" :> "#495057"))
 
 \* Thread visualization helpers
-ThreadColor(t) == 
+ThreadColor(t) ==
     IF t \in waitSet THEN "#dc3545"  \* Bootstrap red for waiting
     ELSE "#28a745"  \* Bootstrap green for active
 
-ThreadStatus(t) == 
+ThreadStatus(t) ==
     IF t \in waitSet THEN "WAIT" ELSE "RUN"
 
 \* Consumer visualization
 ConsSeq == SetToSeq(Consumers)
 
-ConsumerCell(i) == 
+ConsumerCell(i) ==
     LET thread == ConsSeq[i]
         x_pos == BASE_X + 320
         y_pos == BASE_Y + (i - 1) * THREAD_SPACING
-        circle == Circle(x_pos, y_pos, THREAD_RADIUS, 
-                        ("fill" :> ThreadColor(thread) @@ "stroke" :> "#343a40" @@ 
+        circle == Circle(x_pos, y_pos, THREAD_RADIUS,
+                        ("fill" :> ThreadColor(thread) @@ "stroke" :> "#343a40" @@
                          "stroke-width" :> "2"))
-        thread_label == Text(x_pos, y_pos - 3, ToString(thread), 
-                            ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@ 
-                             "font-size" :> "11px" @@ "font-weight" :> "bold" @@ 
+        thread_label == Text(x_pos, y_pos - 3, ToString(thread),
+                            ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@
+                             "font-size" :> "11px" @@ "font-weight" :> "bold" @@
                              "fill" :> "white"))
-        status_label == Text(x_pos, y_pos + 8, ThreadStatus(thread), 
-                            ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@ 
+        status_label == Text(x_pos, y_pos + 8, ThreadStatus(thread),
+                            ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@
                              "font-size" :> "9px" @@ "fill" :> "white"))
     IN Group(<<circle, thread_label, status_label>>, <<>>)
 
@@ -1089,58 +1120,58 @@ Conss == [i \in 1..Cardinality(Consumers) |-> ConsumerCell(i)]
 \* Producer visualization
 ProdSeq == SetToSeq(Producers)
 
-ProducerCell(i) == 
+ProducerCell(i) ==
     LET thread == ProdSeq[i]
         x_pos == BASE_X
         y_pos == BASE_Y + (i - 1) * THREAD_SPACING
-        circle == Circle(x_pos, y_pos, THREAD_RADIUS, 
-                        ("fill" :> ThreadColor(thread) @@ "stroke" :> "#343a40" @@ 
+        circle == Circle(x_pos, y_pos, THREAD_RADIUS,
+                        ("fill" :> ThreadColor(thread) @@ "stroke" :> "#343a40" @@
                          "stroke-width" :> "2"))
-        thread_label == Text(x_pos, y_pos - 3, ToString(thread), 
-                            ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@ 
-                             "font-size" :> "11px" @@ "font-weight" :> "bold" @@ 
+        thread_label == Text(x_pos, y_pos - 3, ToString(thread),
+                            ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@
+                             "font-size" :> "11px" @@ "font-weight" :> "bold" @@
                              "fill" :> "white"))
-        status_label == Text(x_pos, y_pos + 8, ThreadStatus(thread), 
-                            ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@ 
+        status_label == Text(x_pos, y_pos + 8, ThreadStatus(thread),
+                            ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@
                              "font-size" :> "9px" @@ "fill" :> "white"))
     IN Group(<<circle, thread_label, status_label>>, <<>>)
 
 Prod == [i \in 1..Cardinality(Producers) |-> ProducerCell(i)]
 
 \* Section labels
-ProducerLabel == Text(BASE_X, BASE_Y - 30, "PRODUCERS", 
-                     ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@ 
-                      "font-weight" :> "bold" @@ "font-size" :> "12px" @@ 
+ProducerLabel == Text(BASE_X, BASE_Y - 30, "PRODUCERS",
+                     ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@
+                      "font-weight" :> "bold" @@ "font-size" :> "12px" @@
                       "fill" :> "#495057"))
 
-ConsumerLabel == Text(BASE_X + 320, BASE_Y - 30, "CONSUMERS", 
-                     ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@ 
-                      "font-weight" :> "bold" @@ "font-size" :> "12px" @@ 
+ConsumerLabel == Text(BASE_X + 320, BASE_Y - 30, "CONSUMERS",
+                     ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@
+                      "font-weight" :> "bold" @@ "font-size" :> "12px" @@
                       "fill" :> "#495057"))
 
-BufferLabel == Text(BASE_X + 172, BASE_Y - 30, "BUFFER", 
-                   ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@ 
-                    "font-weight" :> "bold" @@ "font-size" :> "12px" @@ 
+BufferLabel == Text(BASE_X + 172, BASE_Y - 30, "BUFFER",
+                   ("text-anchor" :> "middle" @@ "font-family" :> "monospace" @@
+                    "font-weight" :> "bold" @@ "font-size" :> "12px" @@
                     "fill" :> "#495057"))
 
 \* Flow arrows
-FlowArrows == 
-    LET arrow1 == Text(BASE_X + 105, BASE_Y + 10, "→", 
-                      ("text-anchor" :> "middle" @@ "font-size" :> "18px" @@ 
+FlowArrows ==
+    LET arrow1 == Text(BASE_X + 105, BASE_Y + 10, "→",
+                      ("text-anchor" :> "middle" @@ "font-size" :> "18px" @@
                        "fill" :> "#6c757d"))
-        arrow2 == Text(BASE_X + 245, BASE_Y + 10, "→", 
-                      ("text-anchor" :> "middle" @@ "font-size" :> "18px" @@ 
+        arrow2 == Text(BASE_X + 245, BASE_Y + 10, "→",
+                      ("text-anchor" :> "middle" @@ "font-size" :> "18px" @@
                        "fill" :> "#6c757d"))
     IN Group(<<arrow1, arrow2>>, <<>>)
 
 \* Step number in bottom-right corner
-StepNumber == 
-    Text(550, 340, "Step " \o ToString(TLCGet("level")), 
-         ("text-anchor" :> "end" @@ "font-size" :> "12px" @@ 
+StepNumber ==
+    Text(550, 340, "Step " \o ToString(TLCGet("level")),
+         ("text-anchor" :> "end" @@ "font-size" :> "12px" @@
           "font-family" :> "monospace" @@ "fill" :> "#666"))
 
-AnimView == 
-    Group(<<ProducerLabel, BufferLabel, ConsumerLabel, BufferStatus, FlowArrows, StepNumber>> \o 
+AnimView ==
+    Group(<<ProducerLabel, BufferLabel, ConsumerLabel, BufferStatus, FlowArrows, StepNumber>> \o
           Prod \o Buffer \o Conss, <<>>)
 
 AnimDoc == SVGDoc(AnimView, 0, 0, 560, 350, <<>>)
@@ -1155,6 +1186,7 @@ AnimWatch ==
 ```
 
 **Key Techniques:**
+
 - Color-coded thread states (green=running, red=waiting)
 - Buffer visualization with empty/full slots and content display
 - Professional layout with labeled sections
@@ -1187,42 +1219,42 @@ Actors == {C, G, W, F}
 ActorsOnSide(side) == {a \in Actors : a \in banks[side]}
 
 actorWidth == 25
-ActorElem(side, actor, order) == 
+ActorElem(side, actor, order) ==
     IF side = 3  \* In boat
     THEN Image(80, order*35, actorWidth, actorWidth, ActorIcon[actor], <<>>)
     ELSE Image((side-1)*140, order*35, actorWidth, actorWidth, ActorIcon[actor], <<>>)
 
 \* Display danger icon if animals are left alone in unsafe configuration
-DangerElem(side) == 
-    Image((side-1)*140, 0, 30, 30, DangerIcon, 
+DangerElem(side) ==
+    Image((side-1)*140, 0, 30, 30, DangerIcon,
           [hidden |-> IF Allowed(banks[side]) THEN "hidden" ELSE "visible"])
 
-SuccessElem(side) == 
-    Image((side-1)*145, 0, 13, 13, SuccessIcon, 
+SuccessElem(side) ==
+    Image((side-1)*145, 0, 13, 13, SuccessIcon,
           IF NotSolved THEN [hidden |-> "true"] ELSE <<>>)
 
-SideElem(side) == 
-    Group(SetToSeq({ 
-        LET order == CHOOSE f \in [ActorsOnSide(side) -> 1..Cardinality(ActorsOnSide(side))] : 
-                     IsInjective(f) 
+SideElem(side) ==
+    Group(SetToSeq({
+        LET order == CHOOSE f \in [ActorsOnSide(side) -> 1..Cardinality(ActorsOnSide(side))] :
+                     IsInjective(f)
         IN ActorElem(side, a, order[a]) : a \in ActorsOnSide(side)
     }) \o <<DangerElem(side)>>, [i \in {} |-> {}])
 
-BoatActorElems == 
+BoatActorElems ==
     Group(SetToSeq({
-        LET order == CHOOSE f \in [boat -> 1..Cardinality(boat)] : 
-                     IsInjective(f) 
+        LET order == CHOOSE f \in [boat -> 1..Cardinality(boat)] :
+                     IsInjective(f)
         IN ActorElem(3, a, order[a]) : a \in boat
     }), [i \in {} |-> {}])
-    
-BoatElem == 
+
+BoatElem ==
     Group(<<BoatActorElems>>, [i \in {} |-> {}])
 
-RiverElem == 
-    Image(55, 5, 80, 80, RiverIcon, 
+RiverElem ==
+    Image(55, 5, 80, 80, RiverIcon,
           [style |-> "opacity:0.3;transform:scale(1,1.75); /* W3C */"])
 
-AnimView == 
+AnimView ==
     Group(<<SideElem(1), SideElem(2), SuccessElem(2), RiverElem, BoatElem>>, <<>>)
 
 AnimDoc == SVGDoc(AnimView, 0, 0, 530, 420, <<>>)
@@ -1237,6 +1269,7 @@ AnimWatch ==
 ```
 
 **Key Techniques:**
+
 - Icon-based visualization using external SVG assets
 - State validation with danger indicators (red warning when goat+cabbage or goat+wolf alone)
 - Conditional visibility using hidden attribute
@@ -1272,30 +1305,30 @@ Coords ==
 F1 == "assets/fork-svgrepo-com.svg"
 F2 == "assets/fork-food-kitchen-svgrepo-com.svg"
 
-RingPhil == 
+RingPhil ==
     [n \in P |-> Group(<<
         \* Philosopher shape - square when waiting, round when eating
         Rect(Coords[n].x, Coords[n].y, 20, 20,
-            [rx |-> IF IsEating(n) THEN "0" ELSE "15", 
+            [rx |-> IF IsEating(n) THEN "0" ELSE "15",
              stroke |-> "black", opacity |-> "0.3", fill |-> "black"]),
         \* Number label (hidden when holding forks)
-        Text(Coords[n].x + 10, Coords[n].y + 15, ToString(n), 
-            ("fill" :> "black" @@ "text-anchor" :> "middle" @@ 
+        Text(Coords[n].x + 10, Coords[n].y + 15, ToString(n),
+            ("fill" :> "black" @@ "text-anchor" :> "middle" @@
              IF philosophers[n] # {} THEN [hidden |-> "true"] ELSE <<>>)),
         \* Fork icon when holding one fork
-        Image(Coords[n].x, Coords[n].y, 20, 20, F1, 
-              IF Cardinality(philosophers[n]) \in {1,2} THEN <<>> 
+        Image(Coords[n].x, Coords[n].y, 20, 20, F1,
+              IF Cardinality(philosophers[n]) \in {1,2} THEN <<>>
               ELSE [hidden |-> "true"]),
         \* Different fork icon when holding two forks (eating)
-        Image(Coords[n].x, Coords[n].y, 20, 20, F2, 
-              IF Cardinality(philosophers[n]) = 2 THEN <<>> 
+        Image(Coords[n].x, Coords[n].y, 20, 20, F2,
+              IF Cardinality(philosophers[n]) = 2 THEN <<>>
               ELSE [hidden |-> "true"])
     >>, <<>>)]
 
 \* Fork placement between philosophers
-RingFork == 
-    [n \in P |-> 
-        Image(Coords[n+5].x, Coords[n+5].y, 20, 20, F1, 
+RingFork ==
+    [n \in P |->
+        Image(Coords[n+5].x, Coords[n+5].y, 20, 20, F1,
               IF n \in forks THEN <<>> ELSE [hidden |-> "true"])]
 
 AnimView ==
@@ -1313,6 +1346,7 @@ AnimWatch ==
 ```
 
 **Key Techniques:**
+
 - Predefined coordinate mapping for circular table layout
 - Shape morphing (rounded corners when thinking, square when eating)
 - Multiple visual states: no forks, one fork, two forks (eating)
@@ -1328,7 +1362,7 @@ Distributed transaction protocol with resource managers and transaction manager.
 **Example animation**: [`TwoPhase_anim.svg`](https://github.com/will62794/spectacle/tree/master/specs/TwoPhase_anim.svg)
 
 ```tla
-------------------------------- MODULE TwoPhase_anim ----------------------------- 
+------------------------------- MODULE TwoPhase_anim -----------------------------
 EXTENDS TLC, Naturals, Sequences, Functions, FiniteSets, SVG, TwoPhase
 
 CommitColor == "green"
@@ -1340,49 +1374,49 @@ RMIdDomain == 1..Cardinality(RM)
 
 \* RM elements - circular nodes with state-based colors
 RMSpacing == 40
-RMElems == [i \in RMIdDomain |-> 
-    Circle(RMSpacing * i, 45, 10, 
-        [stroke |-> "black", fill |-> 
-            IF rmState[RMId[i]] = "prepared" THEN "steelblue" 
-            ELSE IF rmState[RMId[i]] = "committed" THEN CommitColor 
-            ELSE IF rmState[RMId[i]] = "aborted" THEN AbortColor 
+RMElems == [i \in RMIdDomain |->
+    Circle(RMSpacing * i, 45, 10,
+        [stroke |-> "black", fill |->
+            IF rmState[RMId[i]] = "prepared" THEN "steelblue"
+            ELSE IF rmState[RMId[i]] = "committed" THEN CommitColor
+            ELSE IF rmState[RMId[i]] = "aborted" THEN AbortColor
             ELSE "gray"])]
 
 \* Transaction Manager positioned at center
 TMXpos == RMSpacing * ((Cardinality(RM) + 1) \div 2)
-TMElem == Circle(TMXpos, 95, 10, 
-    [stroke |-> "black", 
-     fill |-> IF tmState = "committed" THEN CommitColor 
-              ELSE IF tmState = "init" THEN "gray" 
+TMElem == Circle(TMXpos, 95, 10,
+    [stroke |-> "black",
+     fill |-> IF tmState = "committed" THEN CommitColor
+              ELSE IF tmState = "init" THEN "gray"
               ELSE AbortColor])
 
 \* RM labels showing their names
-RMTextElems == 
+RMTextElems ==
     [i \in RMIdDomain |->
-        Text(40 * i, 30, RMId[i], 
-             ("fill" :> "black" @@ "text-anchor" :> "middle" @@ 
+        Text(40 * i, 30, RMId[i],
+             ("fill" :> "black" @@ "text-anchor" :> "middle" @@
               "font-size" :> "12"))
     ]
 
 \* TM label and prepared set display
 TMTextElems == <<
-    Text(TMXpos, 80, "TM", 
-         ("fill" :> "black" @@ "text-anchor" :> "middle" @@ 
+    Text(TMXpos, 80, "TM",
+         ("fill" :> "black" @@ "text-anchor" :> "middle" @@
           "font-size" :> "12")),
-    Text(TMXpos, 120, ToString(tmPrepared), 
-         ("fill" :> "black" @@ "text-anchor" :> "middle" @@ 
+    Text(TMXpos, 120, ToString(tmPrepared),
+         ("fill" :> "black" @@ "text-anchor" :> "middle" @@
           "font-size" :> "10"))
 >>
 
 TextElems == RMTextElems \o TMTextElems
 
-AnimView == 
+AnimView ==
     Group(RMElems \o <<TMElem>> \o TextElems, <<>>)
 
 AnimDoc == SVGDoc(AnimView, 0, 0, 180, 200, <<>>)
 
 AnimAlias ==
-    [rmState |-> rmState, tmState |-> tmState, 
+    [rmState |-> rmState, tmState |-> tmState,
      tmPrepared |-> tmPrepared, msgs |-> msgs] @@
     [_anim |-> SVGSerialize(AnimDoc, "TwoPhase_anim_", TLCGet("level"))]
 
@@ -1392,6 +1426,7 @@ AnimWatch ==
 ```
 
 **Key Techniques:**
+
 - State-based color coding (gray=working, blue=prepared, green=committed, red=aborted)
 - Dynamic positioning based on number of resource managers
 - Hierarchical layout with RMs on top, TM below
@@ -1419,110 +1454,110 @@ RMIdDomain == 1..Cardinality(Server)
 XBase == -15
 
 \* Log entry visualization with commit status highlighting
-logEntryStyle(i,ind) == 
-    IF \E c \in immediatelyCommitted : c[1] = ind /\ c[2] = log[i][ind] 
-        THEN ("fill" :> "lightgray" @@ "stroke" :> "limegreen" @@ 
+logEntryStyle(i,ind) ==
+    IF \E c \in immediatelyCommitted : c[1] = ind /\ c[2] = log[i][ind]
+        THEN ("fill" :> "lightgray" @@ "stroke" :> "limegreen" @@
               "stroke-width" :> "1.5px")
-        ELSE ("fill" :> "lightgray" @@ "stroke" :> "black" @@ 
+        ELSE ("fill" :> "lightgray" @@ "stroke" :> "black" @@
               "stroke-width" :> "1px")
 
-logEntry(i, ybase, ind) == 
-    Group(<<Rect(18 * ind + 140, ybase, 16, 16, logEntryStyle(i,ind)), 
-            Text(18 * ind + 145, ybase + 12, ToString(log[i][ind]), 
-                 ("text-anchor" :> "start" @@ "font-size" :> "10px"))>>, 
+logEntry(i, ybase, ind) ==
+    Group(<<Rect(18 * ind + 140, ybase, 16, 16, logEntryStyle(i,ind)),
+            Text(18 * ind + 145, ybase + 12, ToString(log[i][ind]),
+                 ("text-anchor" :> "start" @@ "font-size" :> "10px"))>>,
           [h \in {} |-> {}])
 
-logElem(i, ybase) == 
-    Group([ind \in DOMAIN log[i] |-> logEntry(i, ybase, ind)], 
+logElem(i, ybase) ==
+    Group([ind \in DOMAIN log[i] |-> logEntry(i, ybase, ind)],
           [h \in {} |-> {}])
 
 logElems == [i \in RMIdDomain |-> logElem(RMId[i], i * Spacing - 9)]
 
 \* Server visualization with role-based colors
-cs == [i \in RMIdDomain |-> 
+cs == [i \in RMIdDomain |->
     Group(<<
-        Circle(XBase + 20, i * Spacing, 10, 
-            [stroke |-> "black", fill |-> 
-                IF state[RMId[i]] = Primary THEN "gold" 
-                ELSE IF state[RMId[i]] = Secondary THEN "gray" 
+        Circle(XBase + 20, i * Spacing, 10,
+            [stroke |-> "black", fill |->
+                IF state[RMId[i]] = Primary THEN "gold"
+                ELSE IF state[RMId[i]] = Secondary THEN "gray"
                 ELSE "lightgray"]),
         CrownElem(XBase-10, RMId[i], i)
     >>, [h \in {} |-> {}])]
 
 \* Leader crown indicator
-CrownElem(xbase, rmid, i) == 
-    Image(xbase, i * Spacing - 6, 13, 13, CrownIcon, 
+CrownElem(xbase, rmid, i) ==
+    Image(xbase, i * Spacing - 6, 13, 13, CrownIcon,
           IF state[rmid] # Primary THEN [hidden |-> "true"] ELSE <<>>)
 
 \* Configuration and term information
 configStr(rmid) == ToString(config[rmid])
-configVersionAndTermStr(rmid) == 
-    "(" \o ToString(configVersion[rmid]) \o ", " \o 
+configVersionAndTermStr(rmid) ==
+    "(" \o ToString(configVersion[rmid]) \o ", " \o
     ToString(configTerm[rmid]) \o ")"
 
-labelText(i, rmid) == 
+labelText(i, rmid) ==
     Group(<<
-        Text(XBase + 38, i * Spacing + 5, 
-            ToString(rmid) \o "     " \o configStr(rmid), 
-            [fill |-> IF state[rmid] = Primary THEN "black" 
-                     ELSE IF state[rmid] = Secondary THEN "black" 
-                     ELSE "gray"] @@ 
+        Text(XBase + 38, i * Spacing + 5,
+            ToString(rmid) \o "     " \o configStr(rmid),
+            [fill |-> IF state[rmid] = Primary THEN "black"
+                     ELSE IF state[rmid] = Secondary THEN "black"
+                     ELSE "gray"] @@
             ("font-family" :> "monospace" @@ "font-size" :> "8px")),
-        Text(XBase + 130, i * Spacing + 5, configVersionAndTermStr(rmid), 
-            ("fill" :> "black" @@ "font-family" :> "monospace" @@ 
+        Text(XBase + 130, i * Spacing + 5, configVersionAndTermStr(rmid),
+            ("fill" :> "black" @@ "font-family" :> "monospace" @@
              "font-size" :> "6px"))
     >>, [h \in {} |-> {}])
 
 labels == [i \in RMIdDomain |-> labelText(i, RMId[i])]
 
 \* Term visualization
-termLabels == 
-    [i \in RMIdDomain |-> 
+termLabels ==
+    [i \in RMIdDomain |->
         Group(<<
-            Text(XBase + 38 + currentTerm[RMId[i]] * 11, i * Spacing + 20, 
-                ToString(currentTerm[RMId[i]]), 
-                [fill |-> IF state[RMId[i]] = Primary THEN "black" 
-                         ELSE IF state[RMId[i]] = Secondary THEN "black" 
-                         ELSE "gray"] @@ 
+            Text(XBase + 38 + currentTerm[RMId[i]] * 11, i * Spacing + 20,
+                ToString(currentTerm[RMId[i]]),
+                [fill |-> IF state[RMId[i]] = Primary THEN "black"
+                         ELSE IF state[RMId[i]] = Secondary THEN "black"
+                         ELSE "gray"] @@
                 ("font-family" :> "monospace" @@ "font-size" :> "7px")),
-            Text(XBase + 10, i * Spacing + 20, "term:", 
-                [fill |-> IF state[RMId[i]] = Primary THEN "black" 
-                         ELSE IF state[RMId[i]] = Secondary THEN "black" 
-                         ELSE "gray"] @@ 
+            Text(XBase + 10, i * Spacing + 20, "term:",
+                [fill |-> IF state[RMId[i]] = Primary THEN "black"
+                         ELSE IF state[RMId[i]] = Secondary THEN "black"
+                         ELSE "gray"] @@
                 ("font-family" :> "monospace" @@ "font-size" :> "7px")),
             Rect(XBase + 35, i * Spacing + 20, 100, 1, [fill |-> "white"])
         >>, <<>>)]
 
 \* Safety violation detection
-existsConflictingEntry(ind) == 
-    \E x,y \in immediatelyCommitted : 
+existsConflictingEntry(ind) ==
+    \E x,y \in immediatelyCommitted :
         x[1] = ind /\ (x[1] = y[1]) /\ x[2] # y[2]
 
-violationEntry(ybase, ind) == 
-    Image(16 * ind + 115, ybase + 9, 13, 13, BugIcon, 
+violationEntry(ybase, ind) ==
+    Image(16 * ind + 115, ybase + 9, 13, 13, BugIcon,
           IF existsConflictingEntry(ind) THEN <<>> ELSE [hidden |-> "true"])
 
-violationElem(ybase) == 
+violationElem(ybase) ==
     Group([ind \in 1..5 |-> violationEntry(ybase, ind)], <<>>)
 
 safetyViolationElems == <<violationElem(5)>>
 
 \* Title labels
-configVersionTermTitleLabel == 
-    <<Text(100, 20, "(version, term)", 
-           ("fill" :> "black" @@ "font-family" :> "monospace" @@ 
+configVersionTermTitleLabel ==
+    <<Text(100, 20, "(version, term)",
+           ("fill" :> "black" @@ "font-family" :> "monospace" @@
             "font-size" :> "6px"))>>
 
 \* Complete animation view
-AnimView == 
-    Group(cs \o labels \o termLabels \o logElems \o 
+AnimView ==
+    Group(cs \o labels \o termLabels \o logElems \o
           safetyViolationElems \o configVersionTermTitleLabel, <<>>)
 
 AnimDoc == SVGDoc(AnimView, 0, 0, 720, 350, <<>>)
 
 AnimAlias ==
-    [currentTerm |-> currentTerm, state |-> state, log |-> log, 
-     immediatelyCommitted |-> immediatelyCommitted, config |-> config, 
+    [currentTerm |-> currentTerm, state |-> state, log |-> log,
+     immediatelyCommitted |-> immediatelyCommitted, config |-> config,
      configVersion |-> configVersion, configTerm |-> configTerm] @@
     [_anim |-> SVGSerialize(AnimDoc, "MongoRaftReconfig_anim_", TLCGet("level"))]
 
@@ -1532,6 +1567,7 @@ AnimWatch ==
 ```
 
 **Key Techniques:**
+
 - Log replication visualization with entry-by-entry display
 - Commit status highlighting (green border for committed entries)
 - Leader election indicators (crown icon)

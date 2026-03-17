@@ -7,21 +7,17 @@
  * @module animation/FrameCountService
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import * as fs from "fs/promises";
+import * as path from "path";
 
-import {
-  FrameCountResult,
-  AnimationError,
-  FileSystemService
-} from './types';
-import { createAnimationError } from './errors';
+import { FrameCountResult, AnimationError, FileSystemService } from "./types";
+import { createAnimationError } from "./errors";
 
 /**
  * Default file pattern for trace files
  * NORMATIVE: SC-ANIM-026
  */
-const DEFAULT_FILE_PATTERN = '*_anim_*.svg';
+const DEFAULT_FILE_PATTERN = "*_anim_*.svg";
 
 /**
  * Convert simple glob pattern to regex
@@ -30,9 +26,9 @@ const DEFAULT_FILE_PATTERN = '*_anim_*.svg';
  */
 function globToRegex(pattern: string): RegExp {
   const escaped = pattern
-    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
-    .replace(/\*/g, '.*')
-    .replace(/\?/g, '.');
+    .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+    .replace(/\*/g, ".*")
+    .replace(/\?/g, ".");
   return new RegExp(`^${escaped}$`);
 }
 
@@ -71,11 +67,11 @@ function createDefaultFileSystem(): FileSystemService {
       const files = await fs.readdir(cwd);
       const regex = globToRegex(pattern);
       const matched = files
-        .filter(f => regex.test(f))
-        .map(f => path.join(cwd, f))
+        .filter((f) => regex.test(f))
+        .map((f) => path.join(cwd, f))
         .sort();
       return matched;
-    }
+    },
   };
 }
 
@@ -140,21 +136,21 @@ export class FrameCountService {
    */
   async frameCount(
     traceDirectory: string,
-    filePattern: string = DEFAULT_FILE_PATTERN
+    filePattern: string = DEFAULT_FILE_PATTERN,
   ): Promise<FrameCountResult | AnimationError> {
     // Step 1: Validate traceDirectory exists
     // Per SC-ANIM-014: FILE_NOT_FOUND error if directory doesn't exist
     const exists = await this.fileSystem.exists(traceDirectory);
     if (!exists) {
-      return createAnimationError('FILE_NOT_FOUND', { path: traceDirectory });
+      return createAnimationError("FILE_NOT_FOUND", { path: traceDirectory });
     }
 
     // Additional validation: ensure it's a directory, not a file
     const isDir = await isDirectory(traceDirectory);
     if (!isDir) {
-      return createAnimationError('FILE_NOT_FOUND', {
+      return createAnimationError("FILE_NOT_FOUND", {
         path: traceDirectory,
-        specificError: 'Path exists but is not a directory'
+        specificError: "Path exists but is not a directory",
       });
     }
 
@@ -172,13 +168,13 @@ export class FrameCountService {
       // Step 4: Return { count, files }
       return {
         count: sortedFiles.length,
-        files: sortedFiles
+        files: sortedFiles,
       };
     } catch (error) {
       // Handle any errors during file enumeration
       const message = error instanceof Error ? error.message : String(error);
-      return createAnimationError('RENDER_FAILED', {
-        specificError: `Failed to enumerate files: ${message}`
+      return createAnimationError("RENDER_FAILED", {
+        specificError: `Failed to enumerate files: ${message}`,
       });
     }
   }
@@ -190,8 +186,6 @@ export class FrameCountService {
  * @param fileSystem - File system abstraction (for testing)
  * @returns FrameCountService instance
  */
-export function createFrameCountService(
-  fileSystem?: FileSystemService
-): FrameCountService {
+export function createFrameCountService(fileSystem?: FileSystemService): FrameCountService {
   return new FrameCountService({ fileSystem });
 }

@@ -23,6 +23,7 @@ ALIAS expressions are evaluated on every step (pair of states `s -> t`) in a beh
 ### Evaluation Model
 
 An ALIAS expression is evaluated on each **transition** (pair of states) in an error trace:
+
 - **`s`**: The current state (unprimed variables)
 - **`t`**: The next state (primed variables)
 
@@ -127,6 +128,7 @@ State 6: <Increment>
 ```
 
 Notice how:
+
 - Variables appear in the order specified in the ALIAS record
 - Computed values (`isEven`) are displayed alongside state variables
 - The trace is more readable than showing raw state
@@ -134,6 +136,7 @@ Notice how:
 ## Common Use Cases
 
 **Running Example**: The following examples use a distributed termination detection specification with:
+
 - `CONSTANT N` - Number of nodes
 - `Node` - The set of nodes (e.g., `1..N` or `{n1, n2, n3}`)
 - `VARIABLE active` - Function from nodes to booleans (whether each node is active)
@@ -186,7 +189,7 @@ Alias == [
     activeCount |-> Cardinality({n \in Node : active[n]}),
     allInactive |-> \A n \in Node : ~active[n],
     messagesPending |-> Len(network) > 0,
-    totalCounter |-> LET sum[i \in 0..N] == 
+    totalCounter |-> LET sum[i \in 0..N] ==
                          IF i = 0 THEN 0 ELSE sum[i-1] + counter[i]
                      IN sum[N]
 ]
@@ -203,7 +206,7 @@ Alias == [
     \* Only show non-zero counters
     nonZeroCounters |-> [n \in {i \in Node : counter[i] # 0} |-> counter[n]],
     \* Format network messages for readability
-    messages |-> [i \in 1..Len(network) |-> 
+    messages |-> [i \in 1..Len(network) |->
                     [from |-> network[i].sender,
                      to |-> network[i].receiver,
                      val |-> network[i].value]]
@@ -248,6 +251,7 @@ Alias == [
 ```
 
 This helps answer questions like:
+
 - Why isn't the desired action ever taken?
 - Are fairness conditions being violated?
 - Is the system stuck in a cycle where certain actions are never enabled?
@@ -293,7 +297,7 @@ Alias == [
     \* Function mapping each node to its local perspective
     nodeViews |-> [n \in Node |-> LocalView(n)],
     \* Only show nodes with pending messages
-    activeInboxes |-> {n \in Node : 
+    activeInboxes |-> {n \in Node :
         Len(SelectSeq(network, LAMBDA msg: msg.receiver = n)) > 0},
     \* Global state for context
     totalMessages |-> Len(network),
@@ -302,6 +306,7 @@ Alias == [
 ```
 
 This approach is particularly useful for:
+
 - Understanding distributed algorithms by seeing what each node can observe
 - Debugging message-passing protocols by tracking per-node message queues
 - Analyzing actor-based systems where each actor has local state
@@ -334,6 +339,7 @@ FullAlias == BaseAlias @@ ComputedAlias @@ DebugAlias
 ```
 
 This is useful when you have:
+
 - A common base alias used across multiple specifications
 - Separate debug information you want to optionally include
 - Different views for different debugging scenarios
@@ -362,6 +368,7 @@ Alias == [
 ```
 
 **Benefits**:
+
 - Clean separation between specification logic and trace formatting
 - No need to modify main module imports
 - Can use different modules for different formatting needs within the same ALIAS
@@ -373,6 +380,7 @@ Alias == [
 When checking that a low-level specification refines a high-level specification under a refinement mapping, you may wish to see the values of the variables from the high-level specification alongside the low-level implementation variables. While you cannot directly access the high-level spec's variables, you can add elements to the ALIAS that show the derived values computed by the refinement mapping.
 
 This is particularly useful when:
+
 - Verifying refinement correctness without rewriting invariants for the low-level spec
 - Understanding how low-level implementation maps to high-level abstraction
 - Debugging refinement mapping errors by comparing both views side-by-side
@@ -381,8 +389,8 @@ This is particularly useful when:
 
 ```tla
 \* Define refinement mapping using INSTANCE
-TerminationDetectionNat == 
-    INSTANCE TerminationDetectionNat 
+TerminationDetectionNat ==
+    INSTANCE TerminationDetectionNat
         WITH active <- NodeId2Nat(active),
              color <- NodeId2Nat(color),
              counter <- NodeId2Nat(counter),
@@ -405,10 +413,12 @@ Alias == [
 ```
 
 **Result**: When TLC finds a counterexample (either to refinement or to an invariant), the trace displays both:
+
 - The low-level implementation state (e.g., `active` using node identifiers)
 - The corresponding high-level abstract state (e.g., `HL_active` using naturals)
 
 This makes it easy to:
+
 - Verify that the refinement mapping is computing expected values
 - Understand how implementation decisions map to abstract concepts
 - Debug refinement violations by seeing both views simultaneously
@@ -424,7 +434,7 @@ If an invariant consists of multiple conjuncts and it's not clear which are fals
 
 ```tla
 \* Suppose the invariant is:
-Inv == /\ \A n \in Node : counter[n] >= 0 
+Inv == /\ \A n \in Node : counter[n] >= 0
        /\ Len(network) < 100
        /\ terminated => (\A n \in Node : ~active[n])
 
@@ -445,6 +455,7 @@ Alias == [
 ```
 
 When TLC finds an invariant violation, the trace will show:
+
 - Which specific conjuncts (`I1`, `I2`, `I3`) are `TRUE` or `FALSE`
 - For quantified conjuncts, which specific nodes satisfy the condition (map of `node |-> TRUE/FALSE`)
 
@@ -453,6 +464,7 @@ When TLC finds an invariant violation, the trace will show:
 ### Stuttering Steps
 
 On stuttering steps (where no variables change), the ALIAS expression evaluates with `s = t`. This means:
+
 - `x' = x` for all variables
 - `x' - x = 0` for numeric variables
 - Transition-based computations may show no change
@@ -472,6 +484,7 @@ State 2: Stuttering
 ### Temporal Properties and Liveness
 
 ALIAS expressions work with all TLC modes:
+
 - Invariant violations
 - Liveness violations (temporal properties)
 - Simulation mode traces
@@ -500,6 +513,7 @@ First, run TLC to find a counterexample and examine the raw trace output.
 ### 2. Analyze Raw Trace
 
 Examine the error trace to understand what happened. Identify:
+
 - Which variables are most relevant to understanding the bug
 - What derived values would provide insight
 - Whether any variables contain too much detail
@@ -534,6 +548,7 @@ If you already have the trace saved, you can use trace loading to replay it with
 ### 5. Iterate
 
 Refine your ALIAS based on what you learn. Common iterations:
+
 - Add more derived values
 - Filter out empty collections or default values
 - Add pretty-printing for complex structures
@@ -553,6 +568,7 @@ The ALIAS feature is especially powerful when combined with TLC's trace loading 
 3. **Replay trace**: Load the trace file to see the same counterexample with your new ALIAS visualization
 
 This allows you to:
+
 - Experiment with different ALIAS expressions without re-exploring the state space
 - Add debugging information after finding a bug
 - Share trace files with customized views for different audiences
@@ -588,6 +604,7 @@ ALIAS CombinedAlias
 ### 2. Action-Level Only
 
 ALIAS expressions are action-level (Level 2). You cannot:
+
 - Use temporal operators (`[]`, `<>`, `~>`)
 - Reference multiple steps back in history (workaround below)
 - Accumulate information across states

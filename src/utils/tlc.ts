@@ -1,8 +1,8 @@
-import * as path from 'path';
-import { ProcessInfo, runJavaCommand } from './java';
-import { getClassPath, getModuleSearchPaths } from './tla-tools';
+import * as path from "path";
+import { ProcessInfo, runJavaCommand } from "./java";
+import { getClassPath, getModuleSearchPaths } from "./tla-tools";
 
-const TLC_MAIN_CLASS = 'tlc2.TLC';
+const TLC_MAIN_CLASS = "tlc2.TLC";
 
 /**
  * Run TLC model checker on a TLA+ file with configuration
@@ -21,16 +21,14 @@ export async function runTlc(
   tlcOptions: string[],
   javaOpts: string[],
   toolsDir: string,
-  javaHome?: string
+  javaHome?: string,
 ): Promise<ProcessInfo> {
   const classPath = getClassPath(toolsDir);
   const moduleSearchPaths = getModuleSearchPaths(toolsDir);
 
   // Build TLA-Library Java option from module search paths
   // Filter out jarfile: paths for now (TODO: support archive paths)
-  const libPaths = moduleSearchPaths
-    .filter(p => !p.startsWith('jarfile:'))
-    .join(path.delimiter);
+  const libPaths = moduleSearchPaths.filter((p) => !p.startsWith("jarfile:")).join(path.delimiter);
 
   const javaOptions = javaOpts.slice();
   if (libPaths) {
@@ -39,11 +37,11 @@ export async function runTlc(
 
   // Build TLC arguments: [tlaFileName] -tool -modelcheck [options]
   const tlaFileName = path.basename(tlaFilePath);
-  const args = [tlaFileName, '-tool', '-modelcheck'];
+  const args = [tlaFileName, "-tool", "-modelcheck"];
 
   // Add -config option if cfgFileName is provided
   if (cfgFileName) {
-    args.push('-config', cfgFileName);
+    args.push("-config", cfgFileName);
   }
 
   // Add user-specified TLC options
@@ -55,7 +53,7 @@ export async function runTlc(
     args,
     javaOptions,
     javaHome,
-    path.dirname(tlaFilePath)
+    path.dirname(tlaFilePath),
   );
 }
 
@@ -67,12 +65,12 @@ export async function runTlc(
  * @returns Cleaned line, or undefined if line should be skipped
  */
 export function mapTlcOutputLine(line: string): string | undefined {
-  if (line === '') {
+  if (line === "") {
     return line;
   }
 
   // Remove TLC message markers
-  const cleanLine = line.replace(/@!@!@(START|END)MSG \d+(:\d+)? @!@!@/g, '');
+  const cleanLine = line.replace(/@!@!@(START|END)MSG \d+(:\d+)? @!@!@/g, "");
 
-  return cleanLine === '' ? undefined : cleanLine;
+  return cleanLine === "" ? undefined : cleanLine;
 }

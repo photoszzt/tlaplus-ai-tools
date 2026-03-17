@@ -1,6 +1,6 @@
 // src/utils/errors/retry.ts
-import { classifyError, isRetryable } from './error-classifier';
-import { enhanceError } from './error-context';
+import { classifyError, isRetryable } from "./error-classifier";
+import { enhanceError } from "./error-context";
 
 export interface RetryConfig {
   maxAttempts: number;
@@ -18,11 +18,11 @@ export const DEFAULT_RETRY_CONFIG: RetryConfig = {
   shouldRetry: (error: Error) => {
     const errorCode = classifyError(error);
     return isRetryable(errorCode);
-  }
+  },
 };
 
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function calculateDelay(attempt: number, config: RetryConfig): number {
@@ -32,7 +32,7 @@ function calculateDelay(attempt: number, config: RetryConfig): number {
 
 export async function withRetry<T>(
   operation: () => Promise<T>,
-  config: Partial<RetryConfig> = {}
+  config: Partial<RetryConfig> = {},
 ): Promise<T> {
   const mergedConfig: RetryConfig = { ...DEFAULT_RETRY_CONFIG, ...config };
   let lastError: Error;
@@ -48,7 +48,7 @@ export async function withRetry<T>(
       if (!shouldRetry || attempt >= mergedConfig.maxAttempts) {
         throw enhanceError(lastError, {
           retryAttempt: attempt,
-          retriesExhausted: attempt >= mergedConfig.maxAttempts
+          retriesExhausted: attempt >= mergedConfig.maxAttempts,
         });
       }
 
@@ -60,4 +60,3 @@ export async function withRetry<T>(
 
   throw lastError!;
 }
-

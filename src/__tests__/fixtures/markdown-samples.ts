@@ -37,15 +37,15 @@ Content without metadata.
 
 export const MULTIPLE_MARKDOWN_FILES = [
   {
-    name: 'article1.md',
-    content: MARKDOWN_WITH_FRONTMATTER
+    name: "article1.md",
+    content: MARKDOWN_WITH_FRONTMATTER,
   },
   {
-    name: 'article2.md',
-    content: MARKDOWN_WITHOUT_FRONTMATTER
+    name: "article2.md",
+    content: MARKDOWN_WITHOUT_FRONTMATTER,
   },
   {
-    name: 'article3.md',
-    content: MARKDOWN_EMPTY_FRONTMATTER
-  }
+    name: "article3.md",
+    content: MARKDOWN_EMPTY_FRONTMATTER,
+  },
 ];

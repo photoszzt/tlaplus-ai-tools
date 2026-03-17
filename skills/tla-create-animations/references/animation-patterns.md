@@ -7,6 +7,7 @@ Common patterns and techniques for creating effective TLA+ animations.
 ### Counter/Progress Bar
 
 Visualize numeric progress:
+
 ```tla
 AnimElements ==
     LET
@@ -34,6 +35,7 @@ AnimElements ==
 ### State Machine
 
 Visualize state transitions:
+
 ```tla
 AnimElements ==
     LET
@@ -71,6 +73,7 @@ AnimElements ==
 ### Collection Visualization
 
 Visualize sets or sequences:
+
 ```tla
 AnimElements ==
     LET
@@ -106,6 +109,7 @@ AnimElements ==
 ### Queue/Buffer
 
 Visualize FIFO queue:
+
 ```tla
 AnimElements ==
     LET
@@ -157,6 +161,7 @@ AnimElements ==
 ### Actor Network
 
 Visualize communicating processes:
+
 ```tla
 AnimElements ==
     LET
@@ -200,6 +205,7 @@ AnimElements ==
 ### Timeline
 
 Visualize events over time:
+
 ```tla
 AnimElements ==
     LET

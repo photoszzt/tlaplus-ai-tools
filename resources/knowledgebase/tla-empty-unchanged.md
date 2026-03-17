@@ -39,19 +39,18 @@ Since `<< >>` is the empty tuple, it contains no declared variables. By definiti
 
 ## Why this matters
 
-* `UNCHANGED <<>>` has no semantic effect and can be omitted without changing the meaning of the specification.
-* If it appears in your spec, it is usually a byproduct of:
-
-  * Copy–pasting a template that lists variables in `UNCHANGED` and forgetting to fill them in.
-  * Generating code from a tool that doesn’t check for empty tuples.
-  * Removing variables from a conjunct without cleaning up the `UNCHANGED`.
+- `UNCHANGED <<>>` has no semantic effect and can be omitted without changing the meaning of the specification.
+- If it appears in your spec, it is usually a byproduct of:
+  - Copy–pasting a template that lists variables in `UNCHANGED` and forgetting to fill them in.
+  - Generating code from a tool that doesn’t check for empty tuples.
+  - Removing variables from a conjunct without cleaning up the `UNCHANGED`.
 
 ---
 
 ## Best practice
 
-* **Avoid leaving `UNCHANGED <<>>` in your spec.** It adds no information and can distract readers.
-* If you need a placeholder in a definition where you may later add variables, it is clearer to use `TRUE` explicitly:
+- **Avoid leaving `UNCHANGED <<>>` in your spec.** It adds no information and can distract readers.
+- If you need a placeholder in a definition where you may later add variables, it is clearer to use `TRUE` explicitly:
 
 ```tla
 Next == \/ Action1
@@ -73,12 +72,12 @@ Next ==
   \/ UNCHANGED << >>
 ```
 
-Here, the second disjunct (`UNCHANGED <<>>`) is equivalent to `TRUE`. Thus, `Next` allows *any state* (since the `TRUE` disjunct always holds), which is almost certainly not the intended behavior. Removing it clarifies the specification.
+Here, the second disjunct (`UNCHANGED <<>>`) is equivalent to `TRUE`. Thus, `Next` allows _any state_ (since the `TRUE` disjunct always holds), which is almost certainly not the intended behavior. Removing it clarifies the specification.
 
 ---
 
 ## Summary
 
-* `UNCHANGED <<>>` = `TRUE`
-* It expresses nothing about the system and should be removed.
-* If you encounter it, check whether it was meant to constrain variables but was left empty by mistake.
+- `UNCHANGED <<>>` = `TRUE`
+- It expresses nothing about the system and should be removed.
+- If you encounter it, check whether it was meant to constrain variables but was left empty by mistake.

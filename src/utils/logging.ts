@@ -4,14 +4,14 @@
 export class Logger {
   constructor(
     private verbose: boolean,
-    private useStderr: boolean
+    private useStderr: boolean,
   ) {}
 
   /**
    * Log an informational message
    */
   info(message: string): void {
-    const formatted = this.formatMessage('INFO', message);
+    const formatted = this.formatMessage("INFO", message);
     if (this.useStderr) {
       console.error(formatted);
     } else {
@@ -26,7 +26,7 @@ export class Logger {
     if (!this.verbose) {
       return;
     }
-    const formatted = this.formatMessage('DEBUG', message);
+    const formatted = this.formatMessage("DEBUG", message);
     if (this.useStderr) {
       console.error(formatted);
     } else {
@@ -40,7 +40,7 @@ export class Logger {
    * @implements REQ-REVIEW-005, REQ-REVIEW-006
    */
   warn(message: string, error?: unknown): void {
-    const formatted = this.formatMessage('WARN', message);
+    const formatted = this.formatMessage("WARN", message);
     console.error(formatted);
 
     if (!error) {
@@ -58,7 +58,7 @@ export class Logger {
       return;
     }
 
-    if (typeof error === 'object') {
+    if (typeof error === "object") {
       try {
         console.error(JSON.stringify(error));
       } catch {
@@ -73,7 +73,7 @@ export class Logger {
    * Log an error message (always to stderr)
    */
   error(message: string, error?: Error): void {
-    const formatted = this.formatMessage('ERROR', message);
+    const formatted = this.formatMessage("ERROR", message);
     console.error(formatted);
     if (error && error.stack) {
       console.error(error.stack);

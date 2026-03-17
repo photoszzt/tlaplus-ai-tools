@@ -1,12 +1,12 @@
-import { z } from 'zod';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import * as fs from 'fs';
-import * as path from 'path';
-import { ServerConfig } from '../types';
-import { resolveAndValidatePath } from '../utils/paths';
-import { getSpecFiles, runTlcAndWait } from '../utils/tlc-helpers';
-import { formatErrorResponse } from './shared/error-formatting';
-import { registerTool } from './shared/tool-registration';
+import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import * as fs from "fs";
+import * as path from "path";
+import { ServerConfig } from "../types";
+import { resolveAndValidatePath } from "../utils/paths";
+import { getSpecFiles, runTlcAndWait } from "../utils/tlc-helpers";
+import { formatErrorResponse } from "./shared/error-formatting";
+import { registerTool } from "./shared/tool-registration";
 
 const DEFAULT_SMOKE_TIMEOUT_MS = 120000;
 const DEFAULT_EXPLORE_TIMEOUT_MS = 600000;
@@ -34,7 +34,7 @@ async function sendProgress(
   context: ToolContext | undefined,
   progress: number,
   total?: number,
-  message?: string
+  message?: string,
 ): Promise<void> {
   const progressToken = getProgressToken(context);
   if (!progressToken || !context?.sendNotification) {
@@ -42,21 +42,21 @@ async function sendProgress(
   }
 
   await context.sendNotification({
-    method: 'notifications/progress',
+    method: "notifications/progress",
     params: {
       progressToken,
       progress,
       total,
-      message
-    }
+      message,
+    },
   });
 }
 
 function parseTimeoutMs(value: unknown): number | undefined {
-  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
     return Math.floor(value);
   }
-  if (typeof value === 'string' && value.trim() !== '') {
+  if (typeof value === "string" && value.trim() !== "") {
     const parsed = Number(value);
     if (Number.isFinite(parsed) && parsed > 0) {
       return Math.floor(parsed);
@@ -91,21 +91,24 @@ function resolveTimeoutMs(value: unknown, envKey: string, fallback: number): num
  * - trace: Load and replay TLC trace files
  */
 // @implements REQ-REVIEW-002, SCN-REVIEW-002-01
-export async function registerTlcTools(
-  server: McpServer,
-  config: ServerConfig
-): Promise<void> {
+export async function registerTlcTools(server: McpServer, config: ServerConfig): Promise<void> {
   // Tool 1: Model check
-  registerTool(server,
-    'tlaplus_mcp_tlc_check',
-    'Perform an exhaustive model check of the TLA+ module provided as an input file using TLC. Model checking is a formal verification method that systematically explores all reachable states of a system to verify its correctness. This includes checking both safety and liveness properties, and identifying any counterexamples that violate the specified properties. Please note that TLC requires the fully qualified file path to the TLA+ module. Be aware that, due to the potential for state-space explosion, exhaustive model checking may be computationally intensive and time-consuming. In some cases, it may be infeasible to check very large models exhaustively. For guidance on TLC configuration files, see the tlc-config-files.md knowledgebase article.',
+  registerTool(
+    server,
+    "tlaplus_mcp_tlc_check",
+    "Perform an exhaustive model check of the TLA+ module provided as an input file using TLC. Model checking is a formal verification method that systematically explores all reachable states of a system to verify its correctness. This includes checking both safety and liveness properties, and identifying any counterexamples that violate the specified properties. Please note that TLC requires the fully qualified file path to the TLA+ module. Be aware that, due to the potential for state-space explosion, exhaustive model checking may be computationally intensive and time-consuming. In some cases, it may be infeasible to check very large models exhaustively. For guidance on TLC configuration files, see the tlc-config-files.md knowledgebase article.",
     {
       fileName: z.string(),
       cfgFile: z.string().optional(),
       extraOpts: z.array(z.string()).optional(),
-      extraJavaOpts: z.array(z.string()).optional()
+      extraJavaOpts: z.array(z.string()).optional(),
     },
-    async ({ fileName, cfgFile, extraOpts, extraJavaOpts }: {
+    async ({
+      fileName,
+      cfgFile,
+      extraOpts,
+      extraJavaOpts,
+    }: {
       fileName: string;
       cfgFile?: string;
       extraOpts?: string[];
@@ -118,20 +121,24 @@ export async function registerTlcTools(
         // Check if file exists
         if (!fs.existsSync(absolutePath)) {
           return {
-            content: [{
-              type: 'text',
-              text: `File ${absolutePath} does not exist on disk.`
-            }]
+            content: [
+              {
+                type: "text",
+                text: `File ${absolutePath} does not exist on disk.`,
+              },
+            ],
           };
         }
 
         // Ensure tools directory is configured
         if (!config.toolsDir) {
           return {
-            content: [{
-              type: 'text',
-              text: 'TLA+ tools directory not configured. Use --tools-dir to specify the location.'
-            }]
+            content: [
+              {
+                type: "text",
+                text: "TLA+ tools directory not configured. Use --tools-dir to specify the location.",
+              },
+            ],
           };
         }
 
@@ -140,11 +147,14 @@ export async function registerTlcTools(
         if (!specFiles) {
           const specName = path.basename(absolutePath, path.extname(absolutePath));
           return {
-            content: [{
-              type: 'text',
-              text: `No ${specName}.cfg or MC${specName}.tla/MC${specName}.cfg files found for ${absolutePath}. ` +
-                `Please create an MC${specName}.tla and MC${specName}.cfg file according to the provided TLC guidelines.`
-            }]
+            content: [
+              {
+                type: "text",
+                text:
+                  `No ${specName}.cfg or MC${specName}.tla/MC${specName}.cfg files found for ${absolutePath}. ` +
+                  `Please create an MC${specName}.tla and MC${specName}.cfg file according to the provided TLC guidelines.`,
+              },
+            ],
           };
         }
 
@@ -155,10 +165,12 @@ export async function registerTlcTools(
           const resolvedCfgPath = resolveAndValidatePath(cfgFile, config.workingDir);
           if (!fs.existsSync(resolvedCfgPath)) {
             return {
-              content: [{
-                type: 'text',
-                text: `Config file ${resolvedCfgPath} does not exist on disk.`
-              }]
+              content: [
+                {
+                  type: "text",
+                  text: `Config file ${resolvedCfgPath} does not exist on disk.`,
+                },
+              ],
             };
           }
           // @implements REQ-CODEX-002, SCN-CODEX-002-01
@@ -166,7 +178,7 @@ export async function registerTlcTools(
         }
 
         // Build TLC options: -cleanup -modelcheck [extraOpts]
-        const tlcOptions = ['-cleanup', '-modelcheck', ...(extraOpts || [])];
+        const tlcOptions = ["-cleanup", "-modelcheck", ...(extraOpts || [])];
         const javaOpts = extraJavaOpts || [];
 
         // Run TLC and wait for completion
@@ -176,45 +188,60 @@ export async function registerTlcTools(
           tlcOptions,
           javaOpts,
           config.toolsDir,
-          config.javaHome || undefined
+          config.javaHome || undefined,
         );
 
         return {
-          content: [{
-            type: 'text',
-            text: `Model check completed with exit code ${result.exitCode}.\n\n` +
-              `Output:\n${result.output.join('\n')}`
-          }]
+          content: [
+            {
+              type: "text",
+              text:
+                `Model check completed with exit code ${result.exitCode}.\n\n` +
+                `Output:\n${result.output.join("\n")}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: formatErrorResponse(error as Error)
-          }]
+          content: [
+            {
+              type: "text",
+              text: formatErrorResponse(error as Error),
+            },
+          ],
         };
       }
-    }
+    },
   );
 
   // Tool 2: Smoke test
-  registerTool(server,
-    'tlaplus_mcp_tlc_smoke',
-    'Smoke test the TLA+ module using TLC with the provided input file. Smoke testing is a lightweight verification technique that runs TLC in simulation mode to randomly explore as many behaviors as possible within a specified time limit. This method does not attempt to exhaustively explore the entire state space. If no counterexample is found, it does not imply that the module is correct—only that no violations were observed within the constraints of the test. If a counterexample is found, it demonstrates that the module violates at least one of its specified properties. Note that any counterexample produced may not be minimal due to the non-exhaustive nature of the search. TLC expects the fully qualified file path to the input module.',
+  registerTool(
+    server,
+    "tlaplus_mcp_tlc_smoke",
+    "Smoke test the TLA+ module using TLC with the provided input file. Smoke testing is a lightweight verification technique that runs TLC in simulation mode to randomly explore as many behaviors as possible within a specified time limit. This method does not attempt to exhaustively explore the entire state space. If no counterexample is found, it does not imply that the module is correct—only that no violations were observed within the constraints of the test. If a counterexample is found, it demonstrates that the module violates at least one of its specified properties. Note that any counterexample produced may not be minimal due to the non-exhaustive nature of the search. TLC expects the fully qualified file path to the input module.",
     {
       fileName: z.string(),
       cfgFile: z.string().optional(),
       extraOpts: z.array(z.string()).optional(),
       extraJavaOpts: z.array(z.string()).optional(),
-      timeoutMs: z.number().int().positive().optional()
+      timeoutMs: z.number().int().positive().optional(),
     },
-    async ({ fileName, cfgFile, extraOpts, extraJavaOpts, timeoutMs }: {
-      fileName: string;
-      cfgFile?: string;
-      extraOpts?: string[];
-      extraJavaOpts?: string[];
-      timeoutMs?: number;
-    }, context?: ToolContext) => {
+    async (
+      {
+        fileName,
+        cfgFile,
+        extraOpts,
+        extraJavaOpts,
+        timeoutMs,
+      }: {
+        fileName: string;
+        cfgFile?: string;
+        extraOpts?: string[];
+        extraJavaOpts?: string[];
+        timeoutMs?: number;
+      },
+      context?: ToolContext,
+    ) => {
       try {
         // Resolve and validate file path
         const absolutePath = resolveAndValidatePath(fileName, config.workingDir);
@@ -222,20 +249,24 @@ export async function registerTlcTools(
         // Check if file exists
         if (!fs.existsSync(absolutePath)) {
           return {
-            content: [{
-              type: 'text',
-              text: `File ${absolutePath} does not exist on disk.`
-            }]
+            content: [
+              {
+                type: "text",
+                text: `File ${absolutePath} does not exist on disk.`,
+              },
+            ],
           };
         }
 
         // Ensure tools directory is configured
         if (!config.toolsDir) {
           return {
-            content: [{
-              type: 'text',
-              text: 'TLA+ tools directory not configured. Use --tools-dir to specify the location.'
-            }]
+            content: [
+              {
+                type: "text",
+                text: "TLA+ tools directory not configured. Use --tools-dir to specify the location.",
+              },
+            ],
           };
         }
 
@@ -244,11 +275,14 @@ export async function registerTlcTools(
         if (!specFiles) {
           const specName = path.basename(absolutePath, path.extname(absolutePath));
           return {
-            content: [{
-              type: 'text',
-              text: `No ${specName}.cfg or MC${specName}.tla/MC${specName}.cfg files found for ${absolutePath}. ` +
-                `Please create an MC${specName}.tla and MC${specName}.cfg file according to the provided TLC guidelines.`
-            }]
+            content: [
+              {
+                type: "text",
+                text:
+                  `No ${specName}.cfg or MC${specName}.tla/MC${specName}.cfg files found for ${absolutePath}. ` +
+                  `Please create an MC${specName}.tla and MC${specName}.cfg file according to the provided TLC guidelines.`,
+              },
+            ],
           };
         }
 
@@ -259,10 +293,12 @@ export async function registerTlcTools(
           const resolvedCfgPath = resolveAndValidatePath(cfgFile, config.workingDir);
           if (!fs.existsSync(resolvedCfgPath)) {
             return {
-              content: [{
-                type: 'text',
-                text: `Config file ${resolvedCfgPath} does not exist on disk.`
-              }]
+              content: [
+                {
+                  type: "text",
+                  text: `Config file ${resolvedCfgPath} does not exist on disk.`,
+                },
+              ],
             };
           }
           // @implements REQ-CODEX-002, SCN-CODEX-002-01
@@ -270,12 +306,16 @@ export async function registerTlcTools(
         }
 
         // Build TLC options: -cleanup -simulate [extraOpts]
-        const tlcOptions = ['-cleanup', '-simulate', ...(extraOpts || [])];
+        const tlcOptions = ["-cleanup", "-simulate", ...(extraOpts || [])];
         // Add stopAfter for smoke test (3 seconds)
-        const javaOpts = ['-Dtlc2.TLC.stopAfter=3', ...(extraJavaOpts || [])];
+        const javaOpts = ["-Dtlc2.TLC.stopAfter=3", ...(extraJavaOpts || [])];
 
         // Run TLC and wait for completion
-        const timeoutMsResolved = resolveTimeoutMs(timeoutMs, 'TLC_SMOKE_TIMEOUT_MS', DEFAULT_SMOKE_TIMEOUT_MS);
+        const timeoutMsResolved = resolveTimeoutMs(
+          timeoutMs,
+          "TLC_SMOKE_TIMEOUT_MS",
+          DEFAULT_SMOKE_TIMEOUT_MS,
+        );
         const signal = getAbortSignal(context);
         const result = await runTlcAndWait(
           specFiles.tlaFilePath,
@@ -287,48 +327,66 @@ export async function registerTlcTools(
           timeoutMsResolved,
           signal,
           (progress) => {
-            sendProgress(context, progress.progress, progress.total, progress.message).catch(() => {});
-          }
+            sendProgress(context, progress.progress, progress.total, progress.message).catch(
+              () => {},
+            );
+          },
         );
 
         return {
-          content: [{
-            type: 'text',
-            text: `Smoke test completed with exit code ${result.exitCode}.\n\n` +
-              `Output:\n${result.output.join('\n')}`
-          }]
+          content: [
+            {
+              type: "text",
+              text:
+                `Smoke test completed with exit code ${result.exitCode}.\n\n` +
+                `Output:\n${result.output.join("\n")}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: formatErrorResponse(error as Error)
-          }]
+          content: [
+            {
+              type: "text",
+              text: formatErrorResponse(error as Error),
+            },
+          ],
         };
       }
-    }
+    },
   );
 
   // Tool 3: Explore behaviors
-  registerTool(server,
-    'tlaplus_mcp_tlc_explore',
-    'Explore the given TLA+ module by using TLC to randomly generate and print a behavior—a sequence of states, where each state represents an assignment of values to the module\'s variables. Choose a meaningful value for the behavior length N that is neither too small nor too large, based on your estimate of what constitutes an interesting behavior for this particular module.',
+  registerTool(
+    server,
+    "tlaplus_mcp_tlc_explore",
+    "Explore the given TLA+ module by using TLC to randomly generate and print a behavior—a sequence of states, where each state represents an assignment of values to the module's variables. Choose a meaningful value for the behavior length N that is neither too small nor too large, based on your estimate of what constitutes an interesting behavior for this particular module.",
     {
       fileName: z.string(),
       behaviorLength: z.number().min(1),
       cfgFile: z.string().optional(),
       extraOpts: z.array(z.string()).optional(),
       extraJavaOpts: z.array(z.string()).optional(),
-      timeoutMs: z.number().int().positive().optional()
+      timeoutMs: z.number().int().positive().optional(),
     },
-    async ({ fileName, behaviorLength, cfgFile, extraOpts, extraJavaOpts, timeoutMs }: {
-      fileName: string;
-      behaviorLength: number;
-      cfgFile?: string;
-      extraOpts?: string[];
-      extraJavaOpts?: string[];
-      timeoutMs?: number;
-    }, context?: ToolContext) => {
+    async (
+      {
+        fileName,
+        behaviorLength,
+        cfgFile,
+        extraOpts,
+        extraJavaOpts,
+        timeoutMs,
+      }: {
+        fileName: string;
+        behaviorLength: number;
+        cfgFile?: string;
+        extraOpts?: string[];
+        extraJavaOpts?: string[];
+        timeoutMs?: number;
+      },
+      context?: ToolContext,
+    ) => {
       try {
         // Resolve and validate file path
         const absolutePath = resolveAndValidatePath(fileName, config.workingDir);
@@ -336,20 +394,24 @@ export async function registerTlcTools(
         // Check if file exists
         if (!fs.existsSync(absolutePath)) {
           return {
-            content: [{
-              type: 'text',
-              text: `File ${absolutePath} does not exist on disk.`
-            }]
+            content: [
+              {
+                type: "text",
+                text: `File ${absolutePath} does not exist on disk.`,
+              },
+            ],
           };
         }
 
         // Ensure tools directory is configured
         if (!config.toolsDir) {
           return {
-            content: [{
-              type: 'text',
-              text: 'TLA+ tools directory not configured. Use --tools-dir to specify the location.'
-            }]
+            content: [
+              {
+                type: "text",
+                text: "TLA+ tools directory not configured. Use --tools-dir to specify the location.",
+              },
+            ],
           };
         }
 
@@ -358,11 +420,14 @@ export async function registerTlcTools(
         if (!specFiles) {
           const specName = path.basename(absolutePath, path.extname(absolutePath));
           return {
-            content: [{
-              type: 'text',
-              text: `No ${specName}.cfg or MC${specName}.tla/MC${specName}.cfg files found for ${absolutePath}. ` +
-                `Please create an MC${specName}.tla and MC${specName}.cfg file according to the provided TLC guidelines.`
-            }]
+            content: [
+              {
+                type: "text",
+                text:
+                  `No ${specName}.cfg or MC${specName}.tla/MC${specName}.cfg files found for ${absolutePath}. ` +
+                  `Please create an MC${specName}.tla and MC${specName}.cfg file according to the provided TLC guidelines.`,
+              },
+            ],
           };
         }
 
@@ -373,10 +438,12 @@ export async function registerTlcTools(
           const resolvedCfgPath = resolveAndValidatePath(cfgFile, config.workingDir);
           if (!fs.existsSync(resolvedCfgPath)) {
             return {
-              content: [{
-                type: 'text',
-                text: `Config file ${resolvedCfgPath} does not exist on disk.`
-              }]
+              content: [
+                {
+                  type: "text",
+                  text: `Config file ${resolvedCfgPath} does not exist on disk.`,
+                },
+              ],
             };
           }
           // @implements REQ-CODEX-002, SCN-CODEX-002-01
@@ -385,17 +452,21 @@ export async function registerTlcTools(
 
         // Build TLC options: -cleanup -simulate -invlevel <behaviorLength> [extraOpts]
         const tlcOptions = [
-          '-cleanup',
-          '-simulate',
-          '-invlevel',
+          "-cleanup",
+          "-simulate",
+          "-invlevel",
           behaviorLength.toString(),
-          ...(extraOpts || [])
+          ...(extraOpts || []),
         ];
         // Add stopAfter for exploration (3 seconds)
-        const javaOpts = ['-Dtlc2.TLC.stopAfter=3', ...(extraJavaOpts || [])];
+        const javaOpts = ["-Dtlc2.TLC.stopAfter=3", ...(extraJavaOpts || [])];
 
         // Run TLC and wait for completion
-        const timeoutMsResolved = resolveTimeoutMs(timeoutMs, 'TLC_EXPLORE_TIMEOUT_MS', DEFAULT_EXPLORE_TIMEOUT_MS);
+        const timeoutMsResolved = resolveTimeoutMs(
+          timeoutMs,
+          "TLC_EXPLORE_TIMEOUT_MS",
+          DEFAULT_EXPLORE_TIMEOUT_MS,
+        );
         const signal = getAbortSignal(context);
         const result = await runTlcAndWait(
           specFiles.tlaFilePath,
@@ -407,64 +478,85 @@ export async function registerTlcTools(
           timeoutMsResolved,
           signal,
           (progress) => {
-            sendProgress(context, progress.progress, progress.total, progress.message).catch(() => {});
-          }
+            sendProgress(context, progress.progress, progress.total, progress.message).catch(
+              () => {},
+            );
+          },
         );
 
         return {
-          content: [{
-            type: 'text',
-            text: `Behavior exploration completed with exit code ${result.exitCode}.\n\n` +
-              `Output:\n${result.output.join('\n')}`
-          }]
+          content: [
+            {
+              type: "text",
+              text:
+                `Behavior exploration completed with exit code ${result.exitCode}.\n\n` +
+                `Output:\n${result.output.join("\n")}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: formatErrorResponse(error as Error)
-          }]
+          content: [
+            {
+              type: "text",
+              text: formatErrorResponse(error as Error),
+            },
+          ],
         };
       }
-    }
+    },
   );
 
   // Tool 4: Trace replay
-  registerTool(server,
-    'tlaplus_mcp_tlc_trace',
-    'Load and replay a previously generated TLC trace file. This tool is particularly useful after tlaplus_mcp_tlc_check finds a counterexample and automatically generates a trace file. Trace files are .tlc files stored in the .vscode/tlc/ directory with the naming pattern: {specName}_trace_T{timestamp}_F{fp}_W{workers}_M{mode}.tlc. By rerunning TLC with -loadtrace, you can add or modify ALIAS expressions in the configuration file to derive compound values, rename variables, filter out variables, or create custom animations of the trace for better analysis. The ALIAS feature allows you to evaluate expressions on pairs of states (s -> t) in the error trace and display custom formatted output instead of raw state dumps. For comprehensive guidance on ALIAS expressions, see resource tlaplus://knowledge/tlc-alias-expressions.md.',
+  registerTool(
+    server,
+    "tlaplus_mcp_tlc_trace",
+    "Load and replay a previously generated TLC trace file. This tool is particularly useful after tlaplus_mcp_tlc_check finds a counterexample and automatically generates a trace file. Trace files are .tlc files stored in the .vscode/tlc/ directory with the naming pattern: {specName}_trace_T{timestamp}_F{fp}_W{workers}_M{mode}.tlc. By rerunning TLC with -loadtrace, you can add or modify ALIAS expressions in the configuration file to derive compound values, rename variables, filter out variables, or create custom animations of the trace for better analysis. The ALIAS feature allows you to evaluate expressions on pairs of states (s -> t) in the error trace and display custom formatted output instead of raw state dumps. For comprehensive guidance on ALIAS expressions, see resource tlaplus://knowledge/tlc-alias-expressions.md.",
     {
       fileName: z.string(),
       traceFile: z.string(),
       cfgFile: z.string().optional(),
       extraOpts: z.array(z.string()).optional(),
-      extraJavaOpts: z.array(z.string()).optional()
+      extraJavaOpts: z.array(z.string()).optional(),
     },
-    async ({ fileName, traceFile, cfgFile, extraOpts, extraJavaOpts }: {
-      fileName: string;
-      traceFile: string;
-      cfgFile?: string;
-      extraOpts?: string[];
-      extraJavaOpts?: string[];
-    }, context?: ToolContext) => {
+    async (
+      {
+        fileName,
+        traceFile,
+        cfgFile,
+        extraOpts,
+        extraJavaOpts,
+      }: {
+        fileName: string;
+        traceFile: string;
+        cfgFile?: string;
+        extraOpts?: string[];
+        extraJavaOpts?: string[];
+      },
+      context?: ToolContext,
+    ) => {
       try {
         const absolutePath = resolveAndValidatePath(fileName, config.workingDir);
 
         if (!fs.existsSync(absolutePath)) {
           return {
-            content: [{
-              type: 'text',
-              text: `File ${absolutePath} does not exist on disk.`
-            }]
+            content: [
+              {
+                type: "text",
+                text: `File ${absolutePath} does not exist on disk.`,
+              },
+            ],
           };
         }
 
         if (!config.toolsDir) {
           return {
-            content: [{
-              type: 'text',
-              text: 'TLA+ tools directory not configured. Use --tools-dir to specify the location.'
-            }]
+            content: [
+              {
+                type: "text",
+                text: "TLA+ tools directory not configured. Use --tools-dir to specify the location.",
+              },
+            ],
           };
         }
 
@@ -472,11 +564,14 @@ export async function registerTlcTools(
         if (!specFiles) {
           const specName = path.basename(absolutePath, path.extname(absolutePath));
           return {
-            content: [{
-              type: 'text',
-              text: `No ${specName}.cfg or MC${specName}.tla/MC${specName}.cfg files found for ${absolutePath}. ` +
-                `Please create an MC${specName}.tla and MC${specName}.cfg file according to the provided TLC guidelines.`
-            }]
+            content: [
+              {
+                type: "text",
+                text:
+                  `No ${specName}.cfg or MC${specName}.tla/MC${specName}.cfg files found for ${absolutePath}. ` +
+                  `Please create an MC${specName}.tla and MC${specName}.cfg file according to the provided TLC guidelines.`,
+              },
+            ],
           };
         }
 
@@ -486,10 +581,12 @@ export async function registerTlcTools(
           const resolvedCfgPath = resolveAndValidatePath(cfgFile, config.workingDir);
           if (!fs.existsSync(resolvedCfgPath)) {
             return {
-              content: [{
-                type: 'text',
-                text: `Config file ${resolvedCfgPath} does not exist on disk.`
-              }]
+              content: [
+                {
+                  type: "text",
+                  text: `Config file ${resolvedCfgPath} does not exist on disk.`,
+                },
+              ],
             };
           }
           // @implements REQ-CODEX-002, SCN-CODEX-002-01
@@ -499,21 +596,28 @@ export async function registerTlcTools(
         const absoluteTracePath = resolveAndValidatePath(traceFile, config.workingDir);
         if (!fs.existsSync(absoluteTracePath)) {
           return {
-            content: [{
-              type: 'text',
-              text: `Trace file ${absoluteTracePath} does not exist on disk.`
-            }]
+            content: [
+              {
+                type: "text",
+                text: `Trace file ${absoluteTracePath} does not exist on disk.`,
+              },
+            ],
           };
         }
 
         const fpValue = extractFingerprintFromTrace(absoluteTracePath);
-        const baseOptions = fpValue === undefined
-          ? ['-cleanup', '-loadtrace', 'tlc', absoluteTracePath]
-          : ['-cleanup', '-fp', String(fpValue), '-loadtrace', 'tlc', absoluteTracePath];
+        const baseOptions =
+          fpValue === undefined
+            ? ["-cleanup", "-loadtrace", "tlc", absoluteTracePath]
+            : ["-cleanup", "-fp", String(fpValue), "-loadtrace", "tlc", absoluteTracePath];
         const tlcOptions = baseOptions.concat(extraOpts || []);
         const javaOpts = extraJavaOpts || [];
 
-        const timeoutMsResolved = resolveTimeoutMs(undefined, 'TLC_TRACE_TIMEOUT_MS', DEFAULT_TRACE_TIMEOUT_MS);
+        const timeoutMsResolved = resolveTimeoutMs(
+          undefined,
+          "TLC_TRACE_TIMEOUT_MS",
+          DEFAULT_TRACE_TIMEOUT_MS,
+        );
         const signal = getAbortSignal(context);
         const result = await runTlcAndWait(
           specFiles.tlaFilePath,
@@ -525,25 +629,32 @@ export async function registerTlcTools(
           timeoutMsResolved,
           signal,
           (progress) => {
-            sendProgress(context, progress.progress, progress.total, progress.message).catch(() => {});
-          }
+            sendProgress(context, progress.progress, progress.total, progress.message).catch(
+              () => {},
+            );
+          },
         );
 
         return {
-          content: [{
-            type: 'text',
-            text: `Trace replay completed with exit code ${result.exitCode}.\n\n` +
-              `Output:\n${result.output.join('\n')}`
-          }]
+          content: [
+            {
+              type: "text",
+              text:
+                `Trace replay completed with exit code ${result.exitCode}.\n\n` +
+                `Output:\n${result.output.join("\n")}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: formatErrorResponse(error as Error)
-          }]
+          content: [
+            {
+              type: "text",
+              text: formatErrorResponse(error as Error),
+            },
+          ],
         };
       }
-    }
+    },
   );
 }

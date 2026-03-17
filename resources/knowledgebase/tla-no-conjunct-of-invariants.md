@@ -2,6 +2,7 @@
 title: Avoid Combining Invariants in TLA+ for Clearer TLC Error Reporting
 description: When writing TLA+ specifications, avoid grouping multiple invariants into a single conjunctive expression. TLC will only report the composite failure, making it unclear which condition was violated. Instead, list each invariant separately in your TLC configuration so that errors are reported precisely, simplifying debugging and analysis.
 ---
+
 ### ⚠️ **Avoid Combining Invariants in TLA+**
 
 When writing TLA+ specifications, **do not combine multiple invariants into a single conjunctive (`/\`) expression** and then refer to that composite in your TLC configuration. If you do, **TLC will only report that the combined invariant was violated**, without indicating which specific component failed.

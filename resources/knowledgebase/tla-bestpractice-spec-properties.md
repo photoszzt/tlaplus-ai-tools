@@ -79,14 +79,14 @@ Let's break down the structure:
 ]_vars
 ```
 
-| Component | Meaning |
-|-----------|---------|
-| `[][...]_vars` | This is a temporal property over all transitions |
-| `\A p, q \in Procs: p # q` | For all pairs of distinct processes |
-| `state[p] # state'[p]` | Process p's local state changes in this step |
-| `=> UNCHANGED ...` | Implies that q's state must not change |
+| Component                  | Meaning                                          |
+| -------------------------- | ------------------------------------------------ |
+| `[][...]_vars`             | This is a temporal property over all transitions |
+| `\A p, q \in Procs: p # q` | For all pairs of distinct processes              |
+| `state[p] # state'[p]`     | Process p's local state changes in this step     |
+| `=> UNCHANGED ...`         | Implies that q's state must not change           |
 
-> ⚠️ **Note:** Locality properties only prevent *writing* to another process's state. They do not prevent *reading* it.
+> ⚠️ **Note:** Locality properties only prevent _writing_ to another process's state. They do not prevent _reading_ it.
 
 ---
 
