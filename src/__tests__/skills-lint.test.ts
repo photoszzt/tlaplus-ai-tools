@@ -24,6 +24,7 @@ const EXPECTED_SKILLS = [
   "tla-check",
   "tla-review",
   "tla-setup",
+  "tla-explore",
 ];
 
 // MCP tool requirements per skill (using full MCP tool names)
@@ -44,6 +45,7 @@ const REQUIRED_MCP_TOOLS: Record<string, string[]> = {
     "mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_modules",
     "mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse",
   ],
+  "tla-explore": ["mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore"],
 };
 
 /**
@@ -190,7 +192,7 @@ describe("Operational Skills Lint Tests", () => {
 
         it("should have allowed-tools key", () => {
           expect(content).toMatch(/^allowed-tools:\s*/m);
-          expect(content).toMatch(/allowed-tools:[\s\S]*?\[[\s\S]*?\]/);
+          expect(content).toMatch(/allowed-tools:\s*\n(\s+-\s+.+\n?)+/);
         });
       });
     });
@@ -255,6 +257,7 @@ describe("Operational Skills Lint Tests", () => {
       "tla-check": ["Spec path:", "CFG used:"],
       "tla-review": ["Spec path:", "TLA+ SPECIFICATION REVIEW"],
       "tla-setup": ["TLA+ TOOLS SETUP & VERIFICATION"],
+      "tla-explore": ["Spec path:", "CFG used:"],
     };
 
     EXPECTED_SKILLS.forEach((skillName) => {

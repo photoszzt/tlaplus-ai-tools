@@ -1,8 +1,15 @@
 ---
 name: tla-check
-description: Run exhaustive model checking on TLA+ specification with TLC
+description: >-
+  Use when the user asks to "check my spec", "run TLC",
+  "verify my TLA+ spec", "find invariant violations", "exhaustive model checking",
+  "check for bugs in my spec", "model check", "exhaustive check", or "verify all states".
 version: 1.0.0
-allowed-tools: [Read, Grep, Write, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check]
+allowed-tools:
+  - Read
+  - Grep
+  - Write
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check
 ---
 
 # TLC Model Checking
@@ -20,7 +27,7 @@ Run exhaustive model checking to verify all reachable states of your TLA+ specif
 /tla-check test-specs/Counter.tla test-specs/Counter.cfg --depth 100
 ```
 
-**Note:** If you typed `@path.tla` as the first argument, this skill strips the leading `@` and validates the file exists.
+Both forms work identically --- the @ is optional and stripped during path normalization.
 
 ## What This Does
 
@@ -55,67 +62,9 @@ Extract flags from the argument:
 
 Parse the second token from the argument (split by space, take second). If it ends with `.cfg`, treat it as the CFG_ARG.
 
-**Step 5: Apply CFG Selection Algorithm (Phase 1)**
+**Steps 5-6: Apply CFG Selection Algorithm**
 
-Extract spec name and directory from the spec path:
-
-```
-SPEC_DIR = dirname(SPEC_PATH)
-SPEC_NAME = basename(SPEC_PATH, .tla)
-```
-
-Check preconditions in order:
-
-1. If `SPEC_DIR/SPEC_NAME.cfg` exists:
-   - Print `Phase 1: Spec.cfg exists`
-   - Precondition satisfied
-
-2. Else if `SPEC_DIR/MC<SPEC_NAME>.tla` AND `SPEC_DIR/MC<SPEC_NAME>.cfg` both exist:
-   - Print `Phase 1: MC pair exists (MC<SPEC_NAME>.tla + MC<SPEC_NAME>.cfg)`
-   - Precondition satisfied
-   - **IMPORTANT:** Do NOT create `Spec.cfg` in this case
-
-3. Else if `CFG_ARG` is non-empty and exists:
-   - Copy `CFG_ARG` to `SPEC_DIR/SPEC_NAME.cfg` (non-clobbering)
-   - Print `Phase 1: Copied cfgArg to SPEC_NAME.cfg`
-   - Precondition satisfied
-
-4. Else if `SPEC_DIR/SPEC_NAME.generated.cfg` exists:
-   - Copy it to `SPEC_DIR/SPEC_NAME.cfg` (non-clobbering)
-   - Print `Phase 1: Copied SPEC_NAME.generated.cfg to SPEC_NAME.cfg`
-   - Precondition satisfied
-
-5. Else:
-   - Print `Error: No config file found. Run: /tla-symbols <SPEC_PATH>`
-   - Exit
-
-**Step 6: Apply CFG Selection Algorithm (Phase 2)**
-
-Determine which cfg to pass to TLC:
-
-1. If `CFG_ARG` is non-empty:
-   - Resolve `CFG_ARG` to absolute path
-   - If `dirname(CFG_ARG) == dirname(SPEC_PATH)`:
-     - Use `CFG_ARG` directly
-     - Print `Phase 2: Using explicit cfgArg: <CFG_ARG>`
-   - Else:
-     - Find first available name: `SPEC_DIR/SPEC_NAME.override.cfg`, `.override.1.cfg`, `.override.2.cfg`, ...
-     - Copy `CFG_ARG` to that path
-     - Use the copied cfg
-     - Print `Phase 2: Copied cfgArg to SPEC_NAME.override.cfg`
-
-2. Else:
-   - If `SPEC_DIR/SPEC_NAME.cfg` exists:
-     - Use `SPEC_DIR/SPEC_NAME.cfg`
-     - Print `Phase 2: Using default Spec.cfg`
-   - Else if `SPEC_DIR/MC<SPEC_NAME>.cfg` exists:
-     - Use `SPEC_DIR/MC<SPEC_NAME>.cfg`
-     - Print `Phase 2: Using default MC<SPEC_NAME>.cfg`
-   - Else:
-     - Print `Error: Unreachable state (Phase 1 should have ensured cfg exists)`
-     - Exit
-
-Store final cfg path in `FINAL_CFG`.
+Apply the CFG Selection Algorithm documented in `skills/shared/cfg-selection-algorithm.md`.
 
 **Step 7: Build MCP Tool Arguments**
 

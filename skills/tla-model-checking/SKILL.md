@@ -1,13 +1,26 @@
 ---
 name: tla-model-checking
-description: This skill should be used when the user asks to "model check", "run TLC", "verify specification", "check invariants", "configure TLC", "write config file", or mentions model checking workflow and TLC configuration.
-version: 2.0.0
-allowed-tools: [Read, Agent]
+description: >-
+  Use when the user asks to "model check", "run TLC",
+  "verify specification", "check invariants", "configure TLC", "write config file",
+  "full verification workflow", "end-to-end TLC",
+  or mentions model checking workflow and TLC configuration.
+version: 3.0.0
+allowed-tools:
+  - Read
+  - Write
+  - Grep
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check
 ---
 
-# TLA+ Model Checking Orchestrator
+# TLA+ Model Checking Workflow
 
-This skill orchestrates the full model checking workflow by spawning a sub-agent for each step. Each agent gets its own context window with only the tools it needs.
+Orchestrate the full model checking workflow: parse, configure, smoke test, and exhaustive check.
+
+**IMPORTANT: Always use the MCP tools listed above. Never fall back to running Java or TLC commands via Bash.**
 
 **Reference**: For detailed educational content on TLC configuration syntax, performance tuning, debugging, and best practices, read `skills/tla-model-checking/reference.md` on demand.
 
@@ -17,6 +30,8 @@ This skill orchestrates the full model checking workflow by spawning a sub-agent
 /tla-model-checking @Counter.tla
 /tla-model-checking specs/MySpec.tla
 ```
+
+Both forms work identically --- the @ is optional and stripped during path normalization.
 
 ## Implementation
 
@@ -28,23 +43,24 @@ Strip any leading `@` from the argument to get `SPEC_PATH`. Print `Spec: <SPEC_P
 
 **Step 2: Parse with SANY**
 
-Spawn an Agent with this prompt:
+Read the file first to confirm it exists and ends with `.tla`.
 
-> Parse the TLA+ specification at `<SPEC_PATH>` using the MCP tool `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse` with `fileName` set to `<SPEC_PATH>`. Read the file first to confirm it exists and ends with `.tla`. Report whether parsing succeeded or failed, and include any error messages. IMPORTANT: Use ONLY the MCP tool, never run Java or TLC commands via Bash.
+Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse` with `fileName` set to `SPEC_PATH`.
 
-- If the agent reports parse failure: print the errors to the user and **stop**. Do not proceed.
-- If the agent reports success: print `Parse: OK` and continue.
+- If parsing fails: print the errors to the user and **stop**. Do not proceed.
+- If parsing succeeds: print `Parse: OK` and continue.
 
 **Step 3: Check for Config File**
 
-Use Read to check if a `.cfg` file exists for the spec:
+Derive `CFG_PATH` by replacing `.tla` with `.cfg` in `SPEC_PATH`.
 
-- Derive `CFG_PATH` by replacing `.tla` with `.cfg` in `SPEC_PATH`
-- Try to read `CFG_PATH`
+Use Read to check if `CFG_PATH` exists.
 
-If the `.cfg` file does NOT exist, spawn an Agent with this prompt:
+If the `.cfg` file does NOT exist:
 
-> Extract symbols from the TLA+ specification at `<SPEC_PATH>` and generate a TLC configuration file. Use the MCP tool `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol` with `fileName` set to `<SPEC_PATH>`. Then generate a `.cfg` file based on the extracted symbols (init, next, spec, invariants, properties, constants). Write the config to `<CFG_PATH>`. Use the bestGuess fields from the symbol result to populate SPECIFICATION/INIT/NEXT, INVARIANT, and PROPERTY sections. Add commented stubs for any constants that need values. IMPORTANT: Use ONLY the MCP tool, never run Java or TLC commands via Bash.
+Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol` with `fileName` set to `SPEC_PATH` and `includeExtendedModules` set to `false`.
+
+Generate a `.cfg` file based on the extracted symbols (init, next, spec, invariants, properties, constants). Use the bestGuess fields from the symbol result to populate SPECIFICATION/INIT/NEXT, INVARIANT, and PROPERTY sections. Add commented stubs for any constants that need values. Write the config to `CFG_PATH` using the Write tool.
 
 - Print `Config: Generated <CFG_PATH>` and tell the user to review and edit constant values before proceeding.
 - Ask the user: "Config file generated. Please review it and confirm to proceed, or edit it first."
@@ -52,22 +68,33 @@ If the `.cfg` file does NOT exist, spawn an Agent with this prompt:
 
 If the `.cfg` file already exists: print `Config: Found <CFG_PATH>` and continue.
 
-**Step 4: Smoke Test**
+**Step 4: Apply CFG Selection Algorithm**
 
-Spawn an Agent with this prompt:
+Apply the CFG Selection Algorithm documented in `skills/shared/cfg-selection-algorithm.md`.
 
-> Run a TLC smoke test on the TLA+ specification at `<SPEC_PATH>` with config `<CFG_PATH>`. Use the MCP tool `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke` with `fileName` set to `<SPEC_PATH>` and `cfgFile` set to `<CFG_PATH>`. Report: number of states explored, any violations found (include full counterexample trace if present), and whether the smoke test passed. IMPORTANT: Use ONLY the MCP tool, never run Java or TLC commands via Bash.
+Store the final cfg path in `FINAL_CFG`.
+
+**Step 5: Smoke Test**
+
+Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke` with:
+
+- `fileName` set to `SPEC_PATH`
+- `cfgFile` set to `FINAL_CFG`
+- `extraJavaOpts` set to `["-Dtlc2.TLC.stopAfter=3"]`
 
 - If violations found: report them to the user and ask "Smoke test found violations. Would you like to proceed to full model check anyway, or fix the issues first?"
 - If no violations: print `Smoke test: Passed` and continue.
 
-**Step 5: Full Model Check**
+**Step 6: Full Model Check**
 
-Spawn an Agent with this prompt:
+Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check` with:
 
-> Run exhaustive TLC model checking on the TLA+ specification at `<SPEC_PATH>` with config `<CFG_PATH>`. Use the MCP tool `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check` with `fileName` set to `<SPEC_PATH>` and `cfgFile` set to `<CFG_PATH>`. Report: total states explored, distinct states, diameter, any violations (include full counterexample traces), and final result (pass/fail). IMPORTANT: Use ONLY the MCP tool, never run Java or TLC commands via Bash.
+- `fileName` set to `SPEC_PATH`
+- `cfgFile` set to `FINAL_CFG`
 
-**Step 6: Report Results**
+Report: total states explored, distinct states, diameter, any violations (include full counterexample traces), and final result (pass/fail).
+
+**Step 7: Report Results**
 
 Summarize the full workflow:
 
