@@ -10,12 +10,11 @@
 
 ## Overview
 
-TLA+ AI Tools is a comprehensive plugin that brings the power of TLA+ formal methods to AI coding assistants. It combines an MCP server for TLA+ tools with AI skills, commands, agents, and hooks to provide intelligent assistance throughout the entire TLA+ workflow.
+TLA+ AI Tools is a comprehensive plugin that brings the power of TLA+ formal methods to AI coding assistants. It combines an MCP server for TLA+ tools with AI skills and hooks to provide intelligent assistance throughout the entire TLA+ workflow.
 
 **Key Capabilities:**
 
-- 🤖 **AI Skills** - Learn TLA+, model checking, refinement, and debugging
-- 🎯 **Autonomous Agents** - Automated animation creation and trace analysis
+- 🤖 **AI Skills** - Learn TLA+, model checking, refinement, debugging, animation creation, and trace analysis
 - 🛠️ **MCP Integration** - Full access to SANY parser and TLC model checker
 - 📚 **Knowledge Base** - 20+ articles on TLA+ best practices
 
@@ -39,11 +38,6 @@ TLA+ AI Tools is a comprehensive plugin that brings the power of TLA+ formal met
 - **tla-symbols** - Extract symbols and generate TLC config
 - **tla-review** - Comprehensive spec review with validation
 - **tla-setup** - Interactive setup and verification
-
-### Autonomous Agents (2)
-
-- **animation-creator** - Create visualization animations
-- **trace-analyzer** - Analyze and explain counterexamples
 
 ### MCP Tools
 
@@ -173,7 +167,7 @@ Follow the guidance to create a simple counter specification.
 
 ```
 1. TLC reports violation
-2. Use trace-analyzer agent
+2. Use /tla-debug-violations skill
 3. Understand counterexample
 4. Fix based on suggestions
 5. Re-run /tla-check
@@ -183,7 +177,7 @@ Follow the guidance to create a simple counter specification.
 
 ```
 1. Ask: "create animation for my spec"
-2. animation-creator agent generates anim spec
+2. /tla-create-animations skill generates anim spec
 3. /tla-check @SpecAnim.tla
 4. View animated state transitions
 ```
@@ -257,7 +251,6 @@ More examples in `skills/*/examples/` directories.
 ```
 tlaplus-ai-tools/
 ├── skills/          # AI skills (educational + operational)
-├── agents/          # Autonomous agents for automation
 ├── src/             # MCP server source code
 ├── dist/            # Compiled MCP server
 ├── tools/           # TLA+ tools (downloaded)
