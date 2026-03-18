@@ -3,7 +3,6 @@ import {
   SymbolLocation,
   CandidateGroups,
   BestGuessItem,
-
   SymbolExtractionResult,
   MatchType,
 } from "../types";
