@@ -5,11 +5,7 @@ import {
   expectMcpErrorResponse,
   expectToolRegistered,
 } from "../../__tests__/helpers/assertions";
-import {
-  mockTlcSuccess,
-  mockTlcNoConfig,
-  mockTlcError,
-} from "../../__tests__/helpers/mock-utils";
+import { mockTlcSuccess, mockTlcNoConfig, mockTlcError } from "../../__tests__/helpers/mock-utils";
 import { MINIMAL_CONFIG, NO_TOOLS_CONFIG } from "../../__tests__/fixtures/config-samples";
 import { TLC_SUCCESS_OUTPUT, TLC_VIOLATION_OUTPUT } from "../../__tests__/fixtures/sample-modules";
 
