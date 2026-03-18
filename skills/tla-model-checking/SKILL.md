@@ -1,565 +1,87 @@
 ---
 name: tla-model-checking
 description: This skill should be used when the user asks to "model check", "run TLC", "verify specification", "check invariants", "configure TLC", "write config file", or mentions model checking workflow and TLC configuration.
-version: 1.0.0
+version: 2.0.0
+allowed-tools: [Read, Agent]
 ---
 
-# TLA+ Model Checking with TLC
+# TLA+ Model Checking Orchestrator
 
-This skill provides comprehensive guidance for model checking TLA+ specifications using the TLC model checker.
+This skill orchestrates the full model checking workflow by spawning a sub-agent for each step. Each agent gets its own context window with only the tools it needs.
 
-## When to Use
+**Reference**: For detailed educational content on TLC configuration syntax, performance tuning, debugging, and best practices, read `skills/tla-model-checking/reference.md` on demand.
 
-- Setting up model checking for a specification
-- Writing or updating TLC configuration files
-- Running exhaustive model checking
-- Interpreting TLC output and results
-- Tuning performance for large state spaces
-- Troubleshooting model checking issues
+## Usage
 
-## Model Checking Workflow
-
-### 1. Prepare Specification
-
-Ensure specification is ready:
-
-- Parse successfully with SANY (`/tla-parse`)
-- All symbols defined
-- Init and Next properly structured
-- Invariants defined
-
-### 2. Create Configuration File
-
-Generate or write `.cfg` file with `/tla-symbols` command.
-
-**Configuration sections**:
-
-- Constants (assign values)
-- Specification (INIT/NEXT or SPEC)
-- Invariants (safety properties)
-- Properties (temporal formulas)
-- Constraints (optional limits)
-
-See `references/config-guide.md` for complete configuration syntax.
-
-### 3. Start with Small Constants
-
-Use small values initially:
-
-- Sets: 2-3 elements
-- Numbers: 3-10
-- Sequences: length 3-5
-
-**Why**: Easier debugging, faster checking, catch bugs early.
-
-### 4. Run Smoke Test First
-
-Quick validation before full check:
-
-```
-/tla-smoke @Spec.tla
-```
-
-Finds obvious bugs in seconds.
-
-### 5. Run Full Model Check
-
-Exhaustive verification:
-
-```
-/tla-check @Spec.tla
-```
-
-Explores all reachable states.
-
-### 6. Interpret Results
-
-**Success**: Specification correct (within model bounds)
-**Violation**: Counterexample shows bug - use trace-analyzer agent
-
-### 7. Iterate
-
-- Fix bugs
-- Increase constants
-- Add more properties
-- Re-check
-
-## TLC Configuration Files
-
-### Basic Structure
-
-```
-\* Configuration for SpecName
-
-CONSTANT
-    MaxValue = 10
-    NumProcesses = 3
-
-SPECIFICATION Spec
-
-INVARIANT
-    TypeInvariant
-    SafetyProperty
-
-PROPERTY
-    LivenessProperty
-```
-
-### Constants Section
-
-**Ordinary values**:
-
-```
-CONSTANT
-    N = 5
-    MaxRetries = 3
-    Timeout = 100
-```
-
-**Sets of model values**:
-
-```
-CONSTANT
-    Servers = {s1, s2, s3}
-    MessageTypes = {req, resp, ack}
-```
-
-**Sets of numbers**:
-
-```
-CONSTANT
-    Clients = 1..3
-    Priorities = {1, 2, 3}
-```
-
-**Symmetric sets** (reduces state space):
-
-```
-SYMMETRY Servers
-SYMMETRY Clients
-```
-
-### Specification Section
-
-**Option 1: Use Spec formula**:
-
-```
-SPECIFICATION Spec
-```
-
-Use when spec has temporal formula defined.
-
-**Option 2: Separate Init/Next**:
-
-```
-INIT Init
-NEXT Next
-```
-
-Use when no Spec formula or need custom temporal formula.
-
-**With fairness**:
-
-```
-SPECIFICATION Init /\ [][Next]_vars /\ WF_vars(Action)
-```
-
-### Invariants
-
-Properties that must hold in every reachable state:
-
-```
-INVARIANT
-    TypeInvariant     \* Check types
-    SafetyProperty    \* Check safety
-    BoundInvariant    \* Check bounds
-```
-
-**No primed variables** in invariants - they check current state only.
-
-### Temporal Properties
-
-Liveness and other temporal formulas:
-
-```
-PROPERTY
-    EventuallyCompletes    \* <>P - eventually P
-    AlwaysResponds         \* [](Request => <>Response)
-    StableState            \* <>[]P - eventually always P
-```
-
-Require fairness conditions to hold.
-
-### State Constraints
-
-Limit state space exploration:
-
-```
-CONSTRAINT
-    queueSize <= 10
-    numMessages <= 50
-```
-
-Useful for large/infinite state spaces.
-
-### Action Constraints
-
-Restrict which actions can execute:
-
-```
-ACTION_CONSTRAINT
-    AllowedActions
-```
-
-Explores subset of behaviors.
-
-### View Definitions
-
-Define state equivalence:
-
-```
-VIEW ViewFunction
-```
-
-Reduces state space by treating equivalent states as identical.
-
-## Running Model Checking
-
-### Using Commands
-
-**Quick test**:
-
-```
-/tla-smoke @Spec.tla
-```
-
-**Full check**:
-
-```
-/tla-check @Spec.tla
-```
-
-**With custom config**:
-
-```
-/tla-check @Spec.tla MyConfig.cfg
-```
-
-**With options**:
-
-```
-/tla-check @Spec.tla --workers 8
-```
-
-### Using MCP Tools Directly
-
-```javascript
-// Parse first
-mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse({ fileName: "/path/to/Spec.tla" });
-
-// Model check
-mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check({
-  fileName: "/path/to/Spec.tla",
-  cfgFile: "/path/to/Config.cfg",
-  extraOpts: ["-workers", "4"],
-  extraJavaOpts: ["-Xmx4096m"],
-});
-
-// Smoke test
-mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke({
-  fileName: "/path/to/Spec.tla",
-});
-```
-
-## Interpreting Results
-
-### Successful Check
-
-```
-Model checking completed. No errors found.
-States examined: 1,247
-Distinct states: 892
-Time: 2.5 seconds
-```
-
-**Means**: All invariants hold, all properties satisfied (within model bounds).
-
-**Next steps**:
-
-- Increase constants to check larger models
-- Add more properties
-- Add liveness checking
-
-### Invariant Violation
-
-```
-Invariant BoundInvariant is violated.
-
-State trace (length 5):
-  State 1: <Initial>
-  State 2: <Action: Increment>
-  State 3: <Action: Increment>
-  State 4: <Action: Increment>
-  State 5: <Action: Increment>
-    count = 11  <- Invariant violated
-```
-
-**Means**: Found state where invariant false.
-
-**Next steps**:
-
-1. Analyze trace with trace-analyzer agent
-2. Identify which action caused violation
-3. Fix the bug (strengthen guard, fix logic)
-4. Re-check
-
-### Property Violation
-
-```
-Temporal property LivenessProperty is violated.
-
-Behavior shows stuttering at state:
-  count = 10
-  status = "done"
-```
-
-**Means**: Liveness property can fail.
-
-**Common causes**:
-
-- Missing fairness (add WF or SF)
-- Deadlock (no enabled actions)
-- Incorrect formula (review temporal logic)
-
-### State Space Explosion
-
-```
-After 1 hour:
-  States examined: 15,234,891
-  Queue size: 8,423,112
-  Memory: 3.8 GB
-```
-
-**Means**: State space too large to check completely.
-
-**Solutions**:
-
-- Reduce constants
-- Add state constraints
-- Use symmetry sets
-- Increase memory
-- Consider different modeling approach
-
-## Performance Tuning
-
-### Worker Threads
-
-Use multiple cores:
-
-```
-/tla-check @Spec.tla --workers 8
 ```
-
-**Guidelines**:
-
-- Use number of CPU cores
-- Diminishing returns beyond 8-12
-- Monitor CPU usage
-
-### Java Heap Size
-
-Increase memory for large state spaces:
-
-```
-Add to config or use extraJavaOpts:
--Xmx8192m   (8 GB heap)
--Xmx16384m  (16 GB heap)
-```
-
-**Guidelines**:
-
-- Start with 4 GB
-- Increase if "OutOfMemoryError"
-- Leave room for OS
-
-### State Constraints
-
-Limit exploration:
-
-```
-CONSTRAINT
-    depth <= 20
-    queueSize <= 100
+/tla-model-checking @Counter.tla
+/tla-model-checking specs/MySpec.tla
 ```
 
-**Use when**:
+## Implementation
 
-- Infinite state space
-- Very large finite space
-- Focused testing
+**Step 1: Validate Argument**
 
-### Symmetry Sets
+If no spec file path argument is provided, print `Error: No file path provided. Usage: /tla-model-checking <path.tla>` and stop.
 
-Reduce states by symmetry:
+Strip any leading `@` from the argument to get `SPEC_PATH`. Print `Spec: <SPEC_PATH>`.
 
-```
-CONSTANT Servers = {s1, s2, s3}
-SYMMETRY Servers
-```
-
-**Effective when**:
+**Step 2: Parse with SANY**
 
-- Processes/servers interchangeable
-- Order doesn't matter
-- Can reduce space exponentially
+Spawn an Agent with this prompt:
 
-### View Definitions
+> Parse the TLA+ specification at `<SPEC_PATH>` using the MCP tool `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse` with `fileName` set to `<SPEC_PATH>`. Read the file first to confirm it exists and ends with `.tla`. Report whether parsing succeeded or failed, and include any error messages. IMPORTANT: Use ONLY the MCP tool, never run Java or TLC commands via Bash.
 
-Abstract away irrelevant details:
+- If the agent reports parse failure: print the errors to the user and **stop**. Do not proceed.
+- If the agent reports success: print `Parse: OK` and continue.
 
-```
-View == <<count, status>>  \* Ignore timestamp
-```
+**Step 3: Check for Config File**
 
-**Use when**:
+Use Read to check if a `.cfg` file exists for the spec:
 
-- Some variables don't affect correctness
-- Can define equivalence classes
+- Derive `CFG_PATH` by replacing `.tla` with `.cfg` in `SPEC_PATH`
+- Try to read `CFG_PATH`
 
-## Debugging Failed Checks
+If the `.cfg` file does NOT exist, spawn an Agent with this prompt:
 
-For a systematic approach to debugging invariant and property violations, use `/tla-debug-violations`. It provides a step-by-step workflow for minimizing configurations, isolating failures, and analyzing counterexample traces.
+> Extract symbols from the TLA+ specification at `<SPEC_PATH>` and generate a TLC configuration file. Use the MCP tool `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol` with `fileName` set to `<SPEC_PATH>`. Then generate a `.cfg` file based on the extracted symbols (init, next, spec, invariants, properties, constants). Write the config to `<CFG_PATH>`. Use the bestGuess fields from the symbol result to populate SPECIFICATION/INIT/NEXT, INVARIANT, and PROPERTY sections. Add commented stubs for any constants that need values. IMPORTANT: Use ONLY the MCP tool, never run Java or TLC commands via Bash.
 
-You can also use the trace-analyzer agent to get explanations of what failed, why, and how to fix it.
+- Print `Config: Generated <CFG_PATH>` and tell the user to review and edit constant values before proceeding.
+- Ask the user: "Config file generated. Please review it and confirm to proceed, or edit it first."
+- Wait for user confirmation before continuing.
 
-## Best Practices
+If the `.cfg` file already exists: print `Config: Found <CFG_PATH>` and continue.
 
-### Start Simple
+**Step 4: Smoke Test**
 
-- Small constants
-- Type invariants only
-- Basic config
+Spawn an Agent with this prompt:
 
-Then add:
+> Run a TLC smoke test on the TLA+ specification at `<SPEC_PATH>` with config `<CFG_PATH>`. Use the MCP tool `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke` with `fileName` set to `<SPEC_PATH>` and `cfgFile` set to `<CFG_PATH>`. Report: number of states explored, any violations found (include full counterexample trace if present), and whether the smoke test passed. IMPORTANT: Use ONLY the MCP tool, never run Java or TLC commands via Bash.
 
-- More invariants
-- Larger constants
-- Temporal properties
-- Fairness conditions
+- If violations found: report them to the user and ask "Smoke test found violations. Would you like to proceed to full model check anyway, or fix the issues first?"
+- If no violations: print `Smoke test: Passed` and continue.
 
-### Check Incrementally
+**Step 5: Full Model Check**
 
-After each spec change:
+Spawn an Agent with this prompt:
 
-```
-1. Parse
-2. Smoke test
-3. Full check (small model)
-4. Full check (larger model)
-```
+> Run exhaustive TLC model checking on the TLA+ specification at `<SPEC_PATH>` with config `<CFG_PATH>`. Use the MCP tool `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check` with `fileName` set to `<SPEC_PATH>` and `cfgFile` set to `<CFG_PATH>`. Report: total states explored, distinct states, diameter, any violations (include full counterexample traces), and final result (pass/fail). IMPORTANT: Use ONLY the MCP tool, never run Java or TLC commands via Bash.
 
-### Use Version Control
+**Step 6: Report Results**
 
-Commit working configs:
+Summarize the full workflow:
 
 ```
-Spec-Small.cfg   (quick testing)
-Spec-Medium.cfg  (thorough testing)
-Spec-Large.cfg   (comprehensive)
-```
-
-### Document Configuration
+Model Checking Summary for <SPEC_PATH>
+  Parse:      OK
+  Config:     <CFG_PATH>
+  Smoke test: <passed/violations found>
+  Full check: <passed/violations found>
 
-Add comments to `.cfg`:
-
-```
-\* These constants chosen because...
-\* This constraint needed to avoid...
-\* Known limitation: doesn't check...
+  States explored: <N>
+  Distinct states: <N>
 ```
-
-### Monitor Progress
-
-For long checks:
 
-- Watch state count
-- Check memory usage
-- Estimate completion time
-
-## Common Issues
-
-### "No behavior satisfies Init"
-
-**Problem**: Init predicate is unsatisfiable or constants make it impossible.
-
-**Fix**: Check constant values, verify Init logic.
-
-### "Deadlock reached"
-
-**Problem**: Reached state with no enabled actions (if not intended).
-
-**Fix**: Add termination action or check guards.
-
-### "Java heap space"
-
-**Problem**: Out of memory.
-
-**Fix**: Increase -Xmx, reduce constants, add constraints.
-
-### "Config file not found"
-
-**Problem**: Missing `.cfg` file.
-
-**Fix**: Run `/tla-symbols` to generate one.
-
-## Additional Resources
-
-### Reference Files
-
-- **`references/config-guide.md`** - Complete configuration syntax
-- **`references/performance-tuning.md`** - Optimization strategies
-- **`references/temporal-logic.md`** - Temporal formula patterns
-
-### Example Configs
-
-- **`examples/Counter.cfg`** - Simple configuration
-- **`examples/Advanced.cfg`** - Complex configuration with all options
-
-### Related Skills
-
-- `tla-getting-started` - TLA+ basics
-- `tla-debug-violations` - Debug counterexamples
-- `/tla-parse` - Syntax check
-- `/tla-symbols` - Generate config
-- `/tla-smoke` - Quick test
-- `/tla-check` - Full check
-- `/tla-review` - Comprehensive review
-
-### Related Agents
-
-- `trace-analyzer` - Analyze violations
-
-## Quick Reference
-
-```
-# Workflow
-1. /tla-parse @Spec.tla          # Check syntax
-2. /tla-symbols @Spec.tla         # Generate config
-3. Edit Spec.cfg                  # Set constants
-4. /tla-smoke @Spec.tla           # Quick test
-5. /tla-check @Spec.tla           # Full check
-
-# Config sections
-CONSTANT ...      # Set values
-SPECIFICATION ... # What to check
-INVARIANT ...     # Safety properties
-PROPERTY ...      # Temporal properties
-CONSTRAINT ...    # Limit states
-SYMMETRY ...      # Reduce states
-
-# Common options
---workers N       # Parallel checking
--Xmx4096m        # Memory limit
-```
+If violations were found, suggest: "Use `/tla-debug-violations` or the trace-analyzer agent to understand the counterexample."
 
-Model checking is iterative - start small, check often, and grow confidence incrementally.
+If all passed, suggest: "Consider increasing constant values or adding more properties to strengthen verification."

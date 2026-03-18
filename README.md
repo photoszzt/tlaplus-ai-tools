@@ -10,12 +10,12 @@
 
 ## Overview
 
-TLA+ AI Tools is a comprehensive plugin that brings the power of TLA+ formal methods to AI coding assistants. It combines an MCP server for TLA+ tools with AI skills and hooks to provide intelligent assistance throughout the entire TLA+ workflow.
+TLA+ AI Tools is a comprehensive plugin that brings the power of TLA+ formal methods to AI coding assistants. It combines an MCP server for TLA+ tools with AI skills to provide intelligent assistance throughout the entire TLA+ workflow.
 
 **Key Capabilities:**
 
-- 🤖 **AI Skills** - Learn TLA+, model checking, refinement, debugging, animation creation, and trace analysis
-- 🛠️ **MCP Integration** - Full access to SANY parser and TLC model checker
+- 🤖 **AI Skills** - Learn TLA+, model checking, refinement, debugging, and animation creation
+- 🛠️ **MCP Integration** - Full access to SANY parser, TLC model checker, and animation tools
 - 📚 **Knowledge Base** - 20+ articles on TLA+ best practices
 
 ## Features
@@ -39,16 +39,28 @@ TLA+ AI Tools is a comprehensive plugin that brings the power of TLA+ formal met
 - **tla-review** - Comprehensive spec review with validation
 - **tla-setup** - Interactive setup and verification
 
-### MCP Tools
+### MCP Tools (10)
 
 Full integration with TLA+ toolchain:
 
-- **SANY Parser** - Syntax and semantic validation
-- **TLC Model Checker** - Exhaustive state space exploration
-- **Smoke Testing** - Fast random simulation
-- **Behavior Exploration** - Generate execution traces
-- **Symbol Extraction** - Analyze spec structure
-- **Knowledge Base** - Access TLA+ documentation
+**SANY Parser Tools (3):**
+
+- **sany_parse** - Syntax and semantic validation
+- **sany_symbol** - Analyze spec structure and extract symbols
+- **sany_modules** - List available TLA+ modules
+
+**TLC Model Checker Tools (4):**
+
+- **tlc_check** - Exhaustive state space exploration
+- **tlc_smoke** - Fast random simulation
+- **tlc_explore** - Generate execution traces
+- **tlc_trace** - Parse and analyze TLC counterexample traces
+
+**Animation Tools (3):**
+
+- **animation_detect** - Detect animation elements in specs
+- **animation_render** - Render animation frames as SVG
+- **animation_frameCount** - Count animation frames
 
 ## Installation
 
@@ -132,10 +144,9 @@ Follow the guidance to create a simple counter specification.
 
 ```
 1. Write spec in editor
-2. Auto-parse on save (hook)
-3. /tla-symbols to generate config
-4. /tla-smoke for quick test
-5. /tla-check for full verification
+2. /tla-symbols to generate config
+3. /tla-smoke for quick test
+4. /tla-check for full verification
 ```
 
 ### Debugging Violations
@@ -177,9 +188,6 @@ toolsDir: /custom/path/to/tools
 tlcDefaults:
   workers: 8
   heapSize: 8192
-hooks:
-  autoParseOnSave: true
-  suggestConfigGeneration: true
 ---
 ```
 
