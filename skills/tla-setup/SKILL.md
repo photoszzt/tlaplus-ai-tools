@@ -1,16 +1,17 @@
 ---
 name: tla-setup
-description: Verify TLA+ tools installation and fix common issues
+description: >-
+  Use when the user asks to "setup TLA+", "install TLA+",
+  "TLA+ not working", "tools missing", "java not found", "verify TLA+ installation",
+  "check TLA+ tools", or "TLA+ prerequisites".
 version: 1.0.0
 allowed-tools:
-  [
-    Bash,
-    Read,
-    Write,
-    Grep,
-    mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_modules,
-    mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse,
-  ]
+  - Bash
+  - Read
+  - Write
+  - Grep
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_modules
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse
 ---
 
 # TLA+ Tools Setup
@@ -230,7 +231,7 @@ Common issues:
   - TLA+ tools missing -> Run: npm run setup
   - MCP server not running -> Rebuild and restart
 
-Need help? Check INSTALLATION.md or ask for assistance.
+Need help? Check https://github.com/tlaplus/tlaplus or ask for assistance.
 <endif>
 
 ═══════════════════════════════════════════════════════════

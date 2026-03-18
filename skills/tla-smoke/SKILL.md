@@ -1,8 +1,15 @@
 ---
 name: tla-smoke
-description: Run quick smoke test using random simulation (3 seconds)
+description: >-
+  Use when the user asks for a "quick test", "fast check",
+  "test my spec", "try out my spec", "smoke test", "simulate my spec",
+  "random simulation", or "quick check".
 version: 1.0.0
-allowed-tools: [Read, Grep, Write, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke]
+allowed-tools:
+  - Read
+  - Grep
+  - Write
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke
 ---
 
 # TLC Smoke Test
@@ -19,7 +26,7 @@ Run a quick 3-second random simulation to catch obvious bugs in your TLA+ specif
 /tla-smoke test-specs/Counter.tla --seconds 10
 ```
 
-**Note:** If you typed `@path.tla` as the first argument, this skill strips the leading `@` and validates the file exists.
+Both forms work identically --- the @ is optional and stripped during path normalization.
 
 ## What This Does
 
@@ -54,67 +61,9 @@ Extract `--seconds <N>` from the argument:
 
 Parse the second token from the argument (split by space, take second). If it ends with `.cfg`, treat it as the CFG_ARG.
 
-**Step 5: Apply CFG Selection Algorithm (Phase 1)**
+**Steps 5-6: Apply CFG Selection Algorithm**
 
-Extract spec name and directory from the spec path:
-
-```
-SPEC_DIR = dirname(SPEC_PATH)
-SPEC_NAME = basename(SPEC_PATH, .tla)
-```
-
-Check preconditions in order:
-
-1. If `SPEC_DIR/SPEC_NAME.cfg` exists:
-   - Print `Phase 1: Spec.cfg exists`
-   - Precondition satisfied
-
-2. Else if `SPEC_DIR/MC<SPEC_NAME>.tla` AND `SPEC_DIR/MC<SPEC_NAME>.cfg` both exist:
-   - Print `Phase 1: MC pair exists (MC<SPEC_NAME>.tla + MC<SPEC_NAME>.cfg)`
-   - Precondition satisfied
-   - **IMPORTANT:** Do NOT create `Spec.cfg` in this case
-
-3. Else if `CFG_ARG` is non-empty and exists:
-   - Copy `CFG_ARG` to `SPEC_DIR/SPEC_NAME.cfg` (non-clobbering)
-   - Print `Phase 1: Copied cfgArg to SPEC_NAME.cfg`
-   - Precondition satisfied
-
-4. Else if `SPEC_DIR/SPEC_NAME.generated.cfg` exists:
-   - Copy it to `SPEC_DIR/SPEC_NAME.cfg` (non-clobbering)
-   - Print `Phase 1: Copied SPEC_NAME.generated.cfg to SPEC_NAME.cfg`
-   - Precondition satisfied
-
-5. Else:
-   - Print `Error: No config file found. Run: /tla-symbols <SPEC_PATH>`
-   - Exit
-
-**Step 6: Apply CFG Selection Algorithm (Phase 2)**
-
-Determine which cfg to pass to TLC:
-
-1. If `CFG_ARG` is non-empty:
-   - Resolve `CFG_ARG` to absolute path
-   - If `dirname(CFG_ARG) == dirname(SPEC_PATH)`:
-     - Use `CFG_ARG` directly
-     - Print `Phase 2: Using explicit cfgArg: <CFG_ARG>`
-   - Else:
-     - Find first available name: `SPEC_DIR/SPEC_NAME.override.cfg`, `.override.1.cfg`, `.override.2.cfg`, ...
-     - Copy `CFG_ARG` to that path
-     - Use the copied cfg
-     - Print `Phase 2: Copied cfgArg to SPEC_NAME.override.cfg`
-
-2. Else:
-   - If `SPEC_DIR/SPEC_NAME.cfg` exists:
-     - Use `SPEC_DIR/SPEC_NAME.cfg`
-     - Print `Phase 2: Using default Spec.cfg`
-   - Else if `SPEC_DIR/MC<SPEC_NAME>.cfg` exists:
-     - Use `SPEC_DIR/MC<SPEC_NAME>.cfg`
-     - Print `Phase 2: Using default MC<SPEC_NAME>.cfg`
-   - Else:
-     - Print `Error: Unreachable state (Phase 1 should have ensured cfg exists)`
-     - Exit
-
-Store final cfg path in `FINAL_CFG`.
+Apply the CFG Selection Algorithm documented in `skills/shared/cfg-selection-algorithm.md`.
 
 **Step 7: Call MCP Tool**
 
@@ -129,9 +78,7 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke
 
 **Note on `--seconds` flag:**
 
-- The MCP tool always includes `-Dtlc2.TLC.stopAfter=3` by default
-- Adding another `-D` flag should override, but this is **best-effort**
-- If runtime still appears ~3s with `--seconds 10`, document that TLC may not honor the override
+The MCP tool sets `-Dtlc2.TLC.stopAfter=3` by default for a 3-second simulation. When you pass `--seconds N`, an additional `-Dtlc2.TLC.stopAfter=N` is appended to `extraJavaOpts` to override this default. If the override does not take effect (runtime still ~3s), use `/tla-check` instead for thorough checking.
 
 **Step 8: Report Results**
 

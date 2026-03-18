@@ -1,6 +1,16 @@
 ---
 name: tla-debug-violations
-description: Use when debugging TLA+ invariant or property violations. Provides systematic workflow to isolate and diagnose issues.
+description: >-
+  Use when the user mentions "invariant violated", "TLC found a bug",
+  "counterexample", "property failed", "violation trace", "debugging TLA+ violations",
+  "error trace", or "why did TLC fail".
+version: 1.0.0
+allowed-tools:
+  - Read
+  - Grep
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse
 ---
 
 # Debugging TLA+ Property Violations
@@ -35,7 +45,7 @@ Edit your `.cfg` file and temporarily remove all `PROPERTY` entries:
 SPECIFICATION Spec
 INVARIANT TypeInvariant
 INVARIANT SafetyInvariant
-# PROPERTY LivenessProperty  <- Comment out
+\* PROPERTY LivenessProperty  <- Comment out
 ```
 
 **Why**: Separate invariant violations from liveness violations.
@@ -100,3 +110,7 @@ If invariants pass but properties fail, re-enable properties one at a time:
 - **One thing at a time**: Debug invariants before properties
 - **Read the trace**: TLC's counterexample shows the path to violation
 - **Add intermediate invariants**: Help narrow down where things go wrong
+
+## Further Reading
+
+- **`references/debugging-strategies.md`** - Advanced debugging strategies and techniques

@@ -1,0 +1,124 @@
+---
+name: tla-explore
+description: >-
+  Use when the user asks to "explore states", "generate trace",
+  "show me a behavior", "example execution", "trace exploration",
+  or "what happens when".
+version: 1.0.0
+allowed-tools:
+  - Read
+  - Grep
+  - Write
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore
+---
+
+# TLC Trace Exploration
+
+Generate example behavior traces from your TLA+ specification using TLC simulation.
+
+**IMPORTANT: Always use the MCP tools listed above. Never fall back to running Java or TLC commands via Bash.**
+
+## Usage
+
+```
+/tla-explore test-specs/Counter.tla
+/tla-explore test-specs/Counter.tla test-specs/Counter.cfg
+/tla-explore test-specs/Counter.tla --length 20
+```
+
+Both forms work identically --- the @ is optional and stripped during path normalization.
+
+## What This Does
+
+1. Validates and normalizes the spec path from the argument
+2. Applies deterministic `.cfg` selection algorithm (see below)
+3. Calls `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore` to generate a behavior trace
+4. Reports the trace (sequence of states)
+
+## Implementation
+
+**Step 1: Normalize Spec Path**
+
+Take the spec file path provided as the argument to this skill. If it starts with `@`, strip the leading `@`.
+
+Print `Spec path: <spec_path>`
+
+**Step 2: Validate File**
+
+- Check path ends with `.tla`
+- Use the Read tool to verify the file exists on disk
+- If validation fails, print error and exit
+
+**Step 3: Parse Flags**
+
+Extract `--length <N>` from the argument:
+
+- Default: `LENGTH=10`
+- If `--length <N>` present: `LENGTH=<N>`
+- Validate `<N>` is a positive integer
+
+**Step 4: Determine CFG Argument**
+
+Parse the second token from the argument (split by space, take second). If it ends with `.cfg`, treat it as the CFG_ARG.
+
+**Steps 5-6: Apply CFG Selection Algorithm**
+
+Apply the CFG Selection Algorithm documented in `skills/shared/cfg-selection-algorithm.md`.
+
+**Step 7: Call MCP Tool**
+
+Invoke TLC trace exploration:
+
+```
+mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore
+  --fileName "<SPEC_PATH>"
+  --cfgFile "<FINAL_CFG>"
+  --behaviorLength <LENGTH>
+```
+
+**Step 8: Report Results**
+
+Print summary:
+
+```
+Spec path: <SPEC_PATH>
+CFG used: <FINAL_CFG>
+Behavior length: <LENGTH> steps
+
+<TLC trace output>
+
+Trace exploration complete.
+```
+
+If violations found during exploration:
+
+- Print `Violation detected during trace exploration. See counterexample above.`
+- Suggest: `Use /tla-debug-violations to analyze the violation.`
+
+If no violations:
+
+- Print `Trace generated successfully. <N> states explored.`
+- Suggest: `Use /tla-check for exhaustive verification.`
+
+## Example Output
+
+```
+Spec path: test-specs/Counter.tla
+Phase 1: Spec.cfg exists
+Phase 2: Using default Spec.cfg
+CFG used: test-specs/Counter.cfg
+Behavior length: 10 steps
+
+State 1: <Initial state>
+  count = 0
+
+State 2:
+  count = 1
+
+State 3:
+  count = 2
+
+...
+
+Trace generated successfully. 10 states explored.
+```

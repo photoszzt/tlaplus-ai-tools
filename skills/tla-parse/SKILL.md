@@ -1,8 +1,14 @@
 ---
 name: tla-parse
-description: Parse and validate TLA+ specification syntax and semantics using SANY
+description: >-
+  Use when the user asks to "check syntax", "validate my spec",
+  "is my spec valid", "parse errors", "syntax errors", "SANY errors",
+  "SANY", "parse my TLA+ file", or "check my TLA+ syntax".
 version: 1.0.0
-allowed-tools: [Read, Grep, mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse]
+allowed-tools:
+  - Read
+  - Grep
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse
 ---
 
 # Parse TLA+ Specification
