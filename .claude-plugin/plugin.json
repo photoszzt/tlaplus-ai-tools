@@ -19,11 +19,12 @@
     "formal-methods"
   ],
   "skills": "./skills/",
-  "agents": ["./agents/animation-creator.md", "./agents/trace-analyzer.md"],
   "mcpServers": {
     "tlaplus": {
       "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/start.js"],
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/scripts/start.js"
+      ],
       "cwd": "${CLAUDE_PLUGIN_ROOT}"
     }
   }
