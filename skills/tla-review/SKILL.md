@@ -1,16 +1,17 @@
 ---
 name: tla-review
-description: Comprehensive TLA+ specification review with checklist and automated validation
+description: >-
+  Use when the user asks to "review my spec", "audit my spec",
+  "is my spec good", "spec quality check", "comprehensive review",
+  "best practices check", "check spec quality", or "spec review".
 version: 1.0.0
 allowed-tools:
-  [
-    Read,
-    Grep,
-    Write,
-    mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse,
-    mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol,
-    mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke,
-  ]
+  - Read
+  - Grep
+  - Write
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke
 ---
 
 # TLA+ Specification Review
@@ -27,7 +28,7 @@ Run a comprehensive review of your TLA+ specification including parsing, symbol 
 /tla-review test-specs/Counter.tla --no-smoke
 ```
 
-**Note:** If you typed `@path.tla` as the first argument, this skill strips the leading `@` and validates the file exists.
+Both forms work identically --- the @ is optional and stripped during path normalization.
 
 ## What This Does
 
@@ -86,53 +87,9 @@ Store result:
 
 If smoke is enabled (no `--no-smoke` flag):
 
-Apply CFG selection algorithm (same as `/tla-smoke`):
+Apply the CFG Selection Algorithm documented in `skills/shared/cfg-selection-algorithm.md`.
 
-**Phase 1: Ensure precondition**
-
-Extract spec name and directory:
-
-```
-SPEC_DIR = dirname(SPEC_PATH)
-SPEC_NAME = basename(SPEC_PATH, .tla)
-```
-
-Check preconditions in order:
-
-1. If `SPEC_DIR/SPEC_NAME.cfg` exists:
-   - Print `Phase 1: Spec.cfg exists`
-   - Precondition satisfied
-
-2. Else if `SPEC_DIR/MC<SPEC_NAME>.tla` AND `SPEC_DIR/MC<SPEC_NAME>.cfg` both exist:
-   - Print `Phase 1: MC pair exists`
-   - Precondition satisfied
-
-3. Else if `CFG_ARG` is non-empty and exists:
-   - Copy `CFG_ARG` to `SPEC_DIR/SPEC_NAME.cfg` (non-clobbering)
-   - Print `Phase 1: Copied cfgArg to SPEC_NAME.cfg`
-   - Precondition satisfied
-
-4. Else if `SPEC_DIR/SPEC_NAME.generated.cfg` exists:
-   - Copy it to `SPEC_DIR/SPEC_NAME.cfg` (non-clobbering)
-   - Print `Phase 1: Copied generated cfg`
-   - Precondition satisfied
-
-5. Else:
-   - Print `Smoke test skipped: No config file found`
-   - Set `SMOKE_SKIPPED=true`
-   - Continue to review
-
-**Phase 2: Choose cfg**
-
-If precondition satisfied:
-
-1. If `CFG_ARG` is non-empty:
-   - Resolve and use `CFG_ARG` (copy if needed, same as `/tla-smoke`)
-   - Print `Phase 2: Using explicit cfgArg`
-
-2. Else:
-   - Use default cfg (`Spec.cfg` or `MCSpec.cfg`)
-   - Print `Phase 2: Using default cfg`
+If Phase 1 finds no config file, set `SMOKE_SKIPPED=true` and continue to review instead of exiting.
 
 Store final cfg path in `FINAL_CFG`.
 
@@ -299,48 +256,7 @@ Spec: test-specs/Counter.tla
 
 Parsing successful. No syntax errors.
 
-─────────────────────────────────────────────────────────
-2. STRUCTURE ANALYSIS (Symbol Extraction)
-─────────────────────────────────────────────────────────
-
-Constants: MaxValue
-Variables: count
-Init: Init
-Next: Next
-Spec: Spec
-Invariants: TypeInvariant, BoundInvariant
-Properties: None
-
-Warning: Constants require assignment
-  - Edit .cfg file to assign concrete values
-  - Example: CONSTANT MaxValue = 10
-
-─────────────────────────────────────────────────────────
-3. SMOKE TEST (3-second simulation)
-─────────────────────────────────────────────────────────
-
-Smoke test passed
-  CFG used: test-specs/Counter.cfg
-  No violations found in random simulation
-
-─────────────────────────────────────────────────────────
-4. BEST PRACTICES CHECKLIST
-─────────────────────────────────────────────────────────
-
-Module documentation - Header comment present
-Type invariants - TypeInvariant defined
-Safety properties - BoundInvariant defined
-Liveness properties - None defined (may not be needed)
-Constant bounds - MaxValue = 10 (reasonable)
-Symmetry - Not applicable for this spec
-State constraints - Not needed (small state space)
-
-─────────────────────────────────────────────────────────
-5. RECOMMENDATIONS
-─────────────────────────────────────────────────────────
-
--> Run: /tla-check for exhaustive verification
--> Consider adding liveness properties if termination matters
+... (sections 2-5 follow the template above)
 
 ═══════════════════════════════════════════════════════════
 REVIEW COMPLETE

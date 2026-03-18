@@ -1,15 +1,16 @@
 ---
 name: tla-symbols
-description: Extract symbols from TLA+ spec and generate TLC configuration
+description: >-
+  Use when the user asks to "generate config", "create cfg file",
+  "no config file", "what's in my spec", "extract symbols", "generate .cfg",
+  "list symbols", "show constants", or "show variables".
 version: 1.0.0
 allowed-tools:
-  [
-    Read,
-    Write,
-    Grep,
-    mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse,
-    mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol,
-  ]
+  - Read
+  - Write
+  - Grep
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol
 ---
 
 # Extract Symbols and Generate Config
@@ -27,7 +28,7 @@ Preferred (always works):
 /tla-symbols test-specs/Counter.tla --extended
 ```
 
-**Note:** If you typed `@path.tla` as the first argument, this skill strips the leading `@` and validates the file exists.
+Both forms work identically --- the @ is optional and stripped during path normalization.
 
 ## What This Does
 
