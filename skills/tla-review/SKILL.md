@@ -92,7 +92,7 @@ If smoke is enabled (no `--no-smoke` flag):
 
 Apply the CFG Selection Algorithm documented in `skills/shared/cfg-selection-algorithm.md`.
 
-If Phase 1 finds no config file, set `SMOKE_SKIPPED=true` and continue to review instead of exiting.
+If Phase 1 finds no config file, set `SMOKE_SKIPPED=true` and continue to review instead of exiting. This intentionally overrides the CFG algorithm's default exit behavior so the review can still provide value without a config file.
 
 Store final cfg path in `FINAL_CFG`.
 
@@ -246,4 +246,54 @@ REVIEW COMPLETE
 
 ## Example Output
 
-The review report follows the template in Step 8 above exactly. Each section is populated with actual results from SANY parsing, symbol extraction, smoke testing, and best practices analysis. The template is self-explanatory and requires no additional example.
+Below is a brief example of a populated review report:
+
+```
+═══════════════════════════════════════════════════════════
+TLA+ SPECIFICATION REVIEW
+═══════════════════════════════════════════════════════════
+
+Spec: test-specs/Counter.tla
+
+─────────────────────────────────────────────────────────
+1. SYNTAX & SEMANTICS (SANY Parser)
+─────────────────────────────────────────────────────────
+Parsing successful. No syntax errors.
+
+─────────────────────────────────────────────────────────
+2. STRUCTURE ANALYSIS (Symbol Extraction)
+─────────────────────────────────────────────────────────
+Constants: MaxValue
+Variables: count
+Init: Init
+Next: Next
+Spec: Spec
+Invariants: TypeInvariant, BoundInvariant
+Properties: None
+
+─────────────────────────────────────────────────────────
+3. SMOKE TEST (3-second simulation)
+─────────────────────────────────────────────────────────
+Smoke test passed
+  CFG used: test-specs/Counter.cfg
+  No violations found in random simulation
+
+─────────────────────────────────────────────────────────
+4. BEST PRACTICES CHECKLIST
+─────────────────────────────────────────────────────────
+[pass] Type invariants defined (TypeInvariant)
+[pass] Safety invariants defined (BoundInvariant)
+[warn] No liveness properties defined
+[warn] No module header comment
+
+─────────────────────────────────────────────────────────
+5. RECOMMENDATIONS
+─────────────────────────────────────────────────────────
+-> Consider adding liveness properties if applicable
+-> Add a module header comment explaining purpose
+-> Run: /tla-check for exhaustive verification
+
+═══════════════════════════════════════════════════════════
+REVIEW COMPLETE
+═══════════════════════════════════════════════════════════
+```

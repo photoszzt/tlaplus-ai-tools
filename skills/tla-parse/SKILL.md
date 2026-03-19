@@ -93,7 +93,7 @@ Use `/tla-parse` for syntax-only validation without model checking. Note that `/
 
 - **Parse succeeds** -> Run `/tla-symbols` to generate `.cfg`, then `/tla-smoke` for quick test
 - **Parse fails** -> Fix errors and re-run `/tla-parse` until valid
-- **Need help** -> Review [tla-getting-started skill](skill://tla-getting-started) or knowledge base articles
+- **Need help** -> See `/tla-getting-started` or knowledge base articles
 
 ## Related Skills
 
@@ -104,12 +104,12 @@ Use `/tla-parse` for syntax-only validation without model checking. Note that `/
 
 ## Knowledge Base
 
-See these articles for TLA+ syntax help:
+See these knowledge base articles for TLA+ syntax help:
 
-- [tla-indentation.md](resource://knowledgebase/tla-indentation.md) - Proper TLA+ indentation conventions
-- [tla-functions-operators.md](resource://knowledgebase/tla-functions-operators.md) - Defining operators and functions
-- [tla-functions-records-sequences.md](resource://knowledgebase/tla-functions-records-sequences.md) - Data structure syntax
-- [tla-extends-instance.md](resource://knowledgebase/tla-extends-instance.md) - Module dependencies
+- `resources/knowledgebase/tla-indentation.md` - Proper TLA+ indentation conventions
+- `resources/knowledgebase/tla-functions-operators.md` - Defining operators and functions
+- `resources/knowledgebase/tla-functions-records-sequences.md` - Data structure syntax
+- `resources/knowledgebase/tla-extends-instance.md` - Module dependencies
 
 ---
 
