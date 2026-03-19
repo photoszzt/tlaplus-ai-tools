@@ -1,6 +1,11 @@
 ---
 name: tla-getting-started
-description: Use when the user asks to "learn TLA+", "TLA+ tutorial", "get started with TLA+", "first TLA+ spec", "TLA+ basics", "new to TLA+", "TLA+ introduction", "how to write TLA+", "TLA+ help", or mentions wanting to understand TLA+ fundamentals.
+description: >-
+  This skill provides introductory guidance for learning TLA+ and writing first specifications.
+  It should be used when someone asks to "learn TLA+", "what is TLA+", "TLA+ tutorial",
+  "get started with TLA+", "first TLA+ spec", "TLA+ basics", "new to TLA+",
+  "TLA+ introduction", "how to write TLA+", "TLA+ help",
+  or mentions wanting to understand TLA+ fundamentals.
 version: 1.0.0
 allowed-tools:
   - Read
