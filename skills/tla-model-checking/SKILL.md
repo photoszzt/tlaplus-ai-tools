@@ -2,7 +2,7 @@
 name: tla-model-checking
 description: >-
   This skill orchestrates the full model checking workflow: parse, configure, smoke test, and exhaustive check.
-  It should be used when someone asks to "model check", "run TLC",
+  It should be used when the user asks to "model check", "run TLC",
   "verify specification", "check invariants", "configure TLC", "write config file",
   "full verification workflow", "end-to-end TLC",
   or mentions model checking workflow and TLC configuration.
@@ -51,31 +51,13 @@ Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse` with `fileName` set t
 - If parsing fails: print the errors to the user and **stop**. Do not proceed.
 - If parsing succeeds: print `Parse: OK` and continue.
 
-**Step 3: Check for Config File**
-
-Derive `CFG_PATH` by replacing `.tla` with `.cfg` in `SPEC_PATH`.
-
-Use Read to check if `CFG_PATH` exists.
-
-If the `.cfg` file does NOT exist:
-
-Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol` with `fileName` set to `SPEC_PATH` and `includeExtendedModules` set to `false`.
-
-Generate a `.cfg` file based on the extracted symbols (init, next, spec, invariants, properties, constants). Use the bestGuess fields from the symbol result to populate SPECIFICATION/INIT/NEXT, INVARIANT, and PROPERTY sections. Add commented stubs for any constants that need values. Write the config to `CFG_PATH` using the Write tool.
-
-- Print `Config: Generated <CFG_PATH>` and tell the user to review and edit constant values before proceeding.
-- Ask the user: "Config file generated. Please review it and confirm to proceed, or edit it first."
-- Wait for user confirmation before continuing.
-
-If the `.cfg` file already exists: print `Config: Found <CFG_PATH>` and continue.
-
-**Step 4: Apply CFG Selection Algorithm**
+**Step 3: Apply CFG Selection Algorithm**
 
 Apply the CFG Selection Algorithm documented in `skills/shared/cfg-selection-algorithm.md`.
 
 Store the final cfg path in `FINAL_CFG`.
 
-**Step 5: Smoke Test**
+**Step 4: Smoke Test**
 
 Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke` with:
 
@@ -86,7 +68,7 @@ Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke` with:
 - If violations found: report them to the user and ask "Smoke test found violations. Would you like to proceed to full model check anyway, or fix the issues first?"
 - If no violations: print `Smoke test: Passed` and continue.
 
-**Step 6: Full Model Check**
+**Step 5: Full Model Check**
 
 Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check` with:
 
@@ -95,7 +77,9 @@ Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check` with:
 
 Report: total states explored, distinct states, diameter, any violations (include full counterexample traces), and final result (pass/fail).
 
-**Step 7: Report Results**
+If TLC reports OutOfMemoryError or runs excessively long, suggest reducing constant values, adding state constraints, or using `/tla-smoke` for quick feedback.
+
+**Step 6: Report Results**
 
 Summarize the full workflow:
 

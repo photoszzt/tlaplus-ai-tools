@@ -25,28 +25,34 @@ If refinement fails:
 
 ### Wrong Mapping
 
-```
-count == x * y  \* Should be x + y
-```
+```tla
+\* Bug: wrong mapping expression
+A == INSTANCE AbstractCounter WITH count <- x * y
 
-Fix: Correct the mapping function.
+\* Fix: correct the arithmetic
+A == INSTANCE AbstractCounter WITH count <- x + y
+```
 
 ### Missing Initialization
 
-```
-\* Abstract: x = 0
-\* Concrete: forgot to set something
-```
+```tla
+\* Bug: concrete Init doesn't establish abstract Init
+Init == x = 0
+\* Missing: y is uninitialized, but abstract expects count = x + y = 0
 
-Fix: Initialize all concrete state.
+\* Fix: initialize all variables so mapping satisfies abstract Init
+Init == x = 0 /\ y = 0
+```
 
 ### Extra Behaviors
 
-```
-\* Concrete allows actions abstract doesn't
-```
+```tla
+\* Bug: concrete allows decrement, but abstract only allows increment
+Decrement == x > 0 /\ x' = x - 1 /\ UNCHANGED y
 
-Fix: Strengthen concrete guards or abstract spec.
+\* Fix: remove the action, or add it to abstract spec too
+\* If concrete has behaviors abstract doesn't, refinement fails
+```
 
 ## TLC-Based vs TLAPS Proofs
 

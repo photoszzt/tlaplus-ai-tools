@@ -2,9 +2,9 @@
 name: tla-debug-violations
 description: >-
   This skill provides a systematic workflow to isolate and diagnose TLA+ invariant or property violations.
-  It should be used when someone mentions "invariant violated", "TLC found a bug",
+  It should be used when the user mentions "invariant violated", "TLC found a bug",
   "counterexample", "property failed", "violation trace", "debugging TLA+ violations",
-  "error trace", or "why did TLC fail".
+  "error trace", "why did TLC fail", "fix my spec", "TLC error", or "trace analysis".
 version: 1.0.0
 allowed-tools:
   - Read
@@ -18,6 +18,8 @@ allowed-tools:
 
 Use this skill when TLC reports invariant or property violations to systematically diagnose the issue.
 
+**IMPORTANT: Always use the MCP tools listed above. Never fall back to running Java or TLC commands via Bash.**
+
 ## When to Use
 
 - TLC reports an invariant violation
@@ -26,6 +28,16 @@ Use this skill when TLC reports invariant or property violations to systematical
 - Need to understand why a spec violates requirements
 
 ## Debugging Workflow
+
+### Step 0: Read the Spec and Config
+
+Before debugging, read both the `.tla` spec file and its `.cfg` config file to understand:
+
+- What variables and constants are defined
+- What invariants and properties are being checked
+- What the Spec formula looks like (Init, Next, fairness)
+
+This context is essential for interpreting counterexample traces.
 
 ### Step 1: Minimize the TLC Configuration
 
@@ -42,14 +54,24 @@ Start with the smallest possible configuration to isolate the issue:
 
 Edit your `.cfg` file and temporarily remove all `PROPERTY` entries:
 
+Before (with property):
+
 ```
 SPECIFICATION Spec
 INVARIANT TypeInvariant
 INVARIANT SafetyInvariant
-\* PROPERTY LivenessProperty  <- Comment out
+PROPERTY LivenessProperty
 ```
 
-**Why**: Separate invariant violations from liveness violations.
+After (property removed):
+
+```
+SPECIFICATION Spec
+INVARIANT TypeInvariant
+INVARIANT SafetyInvariant
+```
+
+**Why**: CFG files have no comment syntax, so you must remove the line entirely (you can re-add it later).
 
 ### Step 3: Check Invariants First
 
