@@ -1,7 +1,8 @@
 ---
 name: tla-model-checking
 description: >-
-  Use when the user asks to "model check", "run TLC",
+  This skill orchestrates the full model checking workflow: parse, configure, smoke test, and exhaustive check.
+  It should be used when someone asks to "model check", "run TLC",
   "verify specification", "check invariants", "configure TLC", "write config file",
   "full verification workflow", "end-to-end TLC",
   or mentions model checking workflow and TLC configuration.
@@ -31,7 +32,7 @@ Orchestrate the full model checking workflow: parse, configure, smoke test, and 
 /tla-model-checking specs/MySpec.tla
 ```
 
-Both forms work identically --- the @ is optional and stripped during path normalization.
+Both forms work identically. See `skills/shared/path-normalization.md` for path normalization rules.
 
 ## Implementation
 

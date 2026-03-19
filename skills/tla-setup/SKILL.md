@@ -1,9 +1,10 @@
 ---
 name: tla-setup
 description: >-
-  Use when the user asks to "setup TLA+", "install TLA+",
+  This skill verifies and configures TLA+ tools installation (Java, tla2tools.jar, CommunityModules, MCP server).
+  It should be used when someone asks to "setup TLA+", "install TLA+",
   "TLA+ not working", "tools missing", "java not found", "verify TLA+ installation",
-  "check TLA+ tools", or "TLA+ prerequisites".
+  "check TLA+ tools", "TLA+ prerequisites", "configure TLA+", or "MCP server not connecting".
 version: 1.0.0
 allowed-tools:
   - Bash

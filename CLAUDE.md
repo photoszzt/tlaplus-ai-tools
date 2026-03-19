@@ -144,11 +144,9 @@ When a user runs `/tla-check @Counter.tla`:
 
 1. **Skill** (`skills/tla-check/SKILL.md`) is loaded into the main conversation context
 2. Skill reads `Counter.tla` using Read tool
-3. Skill calls MCP tool `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse` to validate syntax
-4. If config missing, skill calls `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol` to extract symbols
-5. Skill prompts user to generate `Counter.cfg` if needed
-6. Skill calls `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check` to run model checking
-7. Results are formatted and presented to user
+3. Skill applies the CFG Selection Algorithm (`skills/shared/cfg-selection-algorithm.md`) to find or prompt for a config file
+4. Skill calls `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check` to run model checking (TLC handles parse errors directly)
+5. Results are formatted and presented to user
 
 Skills run in the main conversation context where all MCP tools are registered, ensuring reliable tool invocation.
 

@@ -1,9 +1,10 @@
 ---
 name: tla-review
 description: >-
-  Use when the user asks to "review my spec", "audit my spec",
+  This skill runs a comprehensive review of a TLA+ specification including parsing, symbol extraction, smoke testing, and best practices checklist.
+  It should be used when someone asks to "review my spec", "audit my spec",
   "is my spec good", "spec quality check", "comprehensive review",
-  "best practices check", "check spec quality", or "spec review".
+  "best practices check", "check spec quality", "spec review", or wants a full quality assessment.
 version: 1.0.0
 allowed-tools:
   - Read
@@ -28,7 +29,7 @@ Run a comprehensive review of your TLA+ specification including parsing, symbol 
 /tla-review test-specs/Counter.tla --no-smoke
 ```
 
-Both forms work identically --- the @ is optional and stripped during path normalization.
+Both forms work identically. See `skills/shared/path-normalization.md` for path normalization rules.
 
 ## What This Does
 

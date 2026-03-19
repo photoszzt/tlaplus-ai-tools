@@ -1,7 +1,8 @@
 ---
 name: tla-debug-violations
 description: >-
-  Use when the user mentions "invariant violated", "TLC found a bug",
+  This skill provides a systematic workflow to isolate and diagnose TLA+ invariant or property violations.
+  It should be used when someone mentions "invariant violated", "TLC found a bug",
   "counterexample", "property failed", "violation trace", "debugging TLA+ violations",
   "error trace", or "why did TLC fail".
 version: 1.0.0
@@ -54,10 +55,7 @@ INVARIANT SafetyInvariant
 
 Run TLC with only invariants enabled:
 
-```
-# Use MCP tool
-mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check --fileName Spec.tla --cfgFile minimal.cfg
-```
+Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check` with `fileName` set to the spec path and `cfgFile` set to the minimal config path.
 
 **If invariants fail**:
 
@@ -70,6 +68,7 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check --fileName Spec.tla --cfgFile
 
 - Your safety properties are correct
 - The issue is with liveness properties
+- Use `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore` to generate specific behavior traces that help visualize the problematic execution path
 - Proceed to Step 4
 
 ### Step 4: Analyze Property Violations

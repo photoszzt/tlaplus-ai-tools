@@ -7,10 +7,9 @@ This reference covers techniques for verifying refinement with TLC, including in
 Abstract invariants should hold on concrete specifications:
 
 ```
-\* In concrete config
-INVARIANT
-    AbstractSpec!TypeInvariant
-    AbstractSpec!SafetyProperty
+\* In concrete config — use the refinement mapping operator names directly
+INVARIANT TypeInvariant
+INVARIANT SafetyProperty
 ```
 
 ## Trace Checking

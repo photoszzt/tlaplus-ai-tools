@@ -1,7 +1,8 @@
 ---
 name: tla-parse
 description: >-
-  Use when the user asks to "check syntax", "validate my spec",
+  This skill parses and validates TLA+ specification syntax and semantics using SANY.
+  It should be used when someone asks to "check syntax", "validate my spec",
   "is my spec valid", "parse errors", "syntax errors", "SANY errors",
   "SANY", "parse my TLA+ file", or "check my TLA+ syntax".
 version: 1.0.0
@@ -33,7 +34,7 @@ Validate the syntax and semantics of a TLA+ specification using the SANY parser.
 /tla-parse @Counter.tla
 ```
 
-Both forms work identically---the `@` is optional and strips during path normalization.
+Both forms work identically. See `skills/shared/path-normalization.md` for path normalization rules.
 
 ## What This Does
 
@@ -127,9 +128,9 @@ Check that the spec file path was provided as the argument to this skill:
 - If no argument is provided, print "Error: No file path provided. Usage: /tla-parse <path.tla>" and exit
 - Print "Raw argument: <argument>"
 
-**Step 2: Strip Leading @ Symbol**
+**Step 2: Normalize Path**
 
-If the argument starts with `@`, remove it to get the spec path. Otherwise, use the argument as-is.
+Apply path normalization per `skills/shared/path-normalization.md`: if the argument starts with `@`, remove it to get the spec path. Otherwise, use the argument as-is.
 
 Print "Spec path: <spec_path>"
 
