@@ -2,9 +2,10 @@
 name: tla-parse
 description: >-
   This skill parses and validates TLA+ specification syntax and semantics using SANY.
-  It should be used when someone asks to "check syntax", "validate my spec",
+  It should be used when the user asks to "check syntax", "validate my spec",
   "is my spec valid", "parse errors", "syntax errors", "SANY errors",
-  "SANY", "parse my TLA+ file", or "check my TLA+ syntax".
+  "SANY", "parse my TLA+ file", "check my TLA+ syntax", "does my spec compile",
+  "find errors in my spec", or "is my TLA+ correct".
 version: 1.0.0
 allowed-tools:
   - Read
@@ -47,14 +48,7 @@ SANY (Semantic ANalYzer) performs comprehensive syntax and semantic validation:
 
 ## When to Use
 
-Use `/tla-parse` to:
-
-- **Validate new specifications** before generating configs or running model checking
-- **Catch typos and syntax errors** early
-- **Understand semantic issues** with operator definitions or module dependencies
-- **Get detailed error messages** with exact line locations
-
-Do NOT use for model checking---that's `/tla-check` or `/tla-smoke`.
+Use before model checking to validate syntax. For model checking, use `/tla-check` or `/tla-smoke`.
 
 ## Common Error Messages
 

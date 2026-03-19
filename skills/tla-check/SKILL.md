@@ -2,9 +2,10 @@
 name: tla-check
 description: >-
   This skill runs exhaustive model checking to verify all reachable states of a TLA+ specification using TLC.
-  It should be used when someone asks to "check my spec", "run TLC",
+  It should be used when the user asks to "check my spec", "run TLC",
   "verify my TLA+ spec", "find invariant violations", "exhaustive model checking",
-  "check for bugs in my spec", "model check", "exhaustive check", or "verify all states".
+  "check for bugs in my spec", "model check", "exhaustive check", "verify all states",
+  "run model checker", "verify invariants", or "check properties".
 version: 1.0.0
 allowed-tools:
   - Read
@@ -28,7 +29,7 @@ Run exhaustive model checking to verify all reachable states of your TLA+ specif
 /tla-check test-specs/Counter.tla test-specs/Counter.cfg --depth 100
 ```
 
-Both forms work identically. See `skills/shared/path-normalization.md` for path normalization rules.
+All forms work identically. See `skills/shared/path-normalization.md` for path normalization rules.
 
 ## What This Does
 

@@ -2,9 +2,10 @@
 name: tla-symbols
 description: >-
   This skill extracts symbols (constants, variables, operators) from a TLA+ specification and generates a TLC configuration file.
-  It should be used when someone asks to "generate config", "create cfg file",
+  It should be used when the user asks to "generate config", "create cfg file",
   "no config file", "what's in my spec", "extract symbols", "generate .cfg",
-  "list symbols", "show constants", "show variables", or needs a .cfg file for model checking.
+  "list symbols", "show constants", "show variables", "set up TLC config", "prepare for model checking",
+  or needs a .cfg file for model checking.
 version: 1.0.0
 allowed-tools:
   - Read
