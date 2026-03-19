@@ -4,7 +4,8 @@ description: >-
   This skill guides the creation of animations that visualize TLA+ specifications during model checking or trace exploration.
   It should be used when the user asks to "create animation", "animate my spec",
   "visualize state transitions", "show me what's happening", "TLA+ animation",
-  "trace visualization", "see state changes", "render animation in terminal", or "ASCII animation".
+  "trace visualization", "see state changes", "render animation in terminal", "ASCII animation",
+  "SVG animation", or "show animation in browser".
 version: 1.0.0
 allowed-tools:
   - Read
@@ -37,6 +38,9 @@ Create a `.tla` file (e.g., `MySpecAnim.tla`) that EXTENDS your spec:
 ```tla
 ---- MODULE MySpecAnim ----
 EXTENDS TLC, SVG, IOUtils, MySpec
+\* Note: The SVG module requires the Community Modules JAR. Ensure it is on the
+\* classpath (the MCP tools handle this automatically when using tla2tools.jar
+\* with CommunityModules-deps.jar).
 
 \* Visual logic - what to show
 AnimView == [

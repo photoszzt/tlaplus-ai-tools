@@ -3,7 +3,7 @@ name: tla-model-checking
 description: >-
   This skill orchestrates the full model checking workflow: parse, configure, smoke test, and exhaustive check.
   It should be used when the user asks to "model check", "run TLC",
-  "verify specification", "check invariants", "configure TLC", "write config file",
+  "verify specification", "check invariants", "run model checker", "check my spec", "validate spec",
   "full verification workflow", "end-to-end TLC",
   or mentions model checking workflow and TLC configuration.
 version: 3.0.0
@@ -63,7 +63,7 @@ Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke` with:
 
 - `fileName` set to `SPEC_PATH`
 - `cfgFile` set to `FINAL_CFG`
-- `extraJavaOpts` set to `["-Dtlc2.TLC.stopAfter=3"]`
+- `seconds` set to `3`
 
 - If violations found: report them to the user and ask "Smoke test found violations. Would you like to proceed to full model check anyway, or fix the issues first?"
 - If no violations: print `Smoke test: Passed` and continue.

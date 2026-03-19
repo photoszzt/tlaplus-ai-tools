@@ -25,15 +25,16 @@ Check preconditions in order:
 2. Else if `SPEC_DIR/MC<SPEC_NAME>.tla` AND `SPEC_DIR/MC<SPEC_NAME>.cfg` both exist:
    - Print `Phase 1: MC pair exists (MC<SPEC_NAME>.tla + MC<SPEC_NAME>.cfg)`
    - Precondition satisfied
-   - **IMPORTANT:** Do NOT create `Spec.cfg` in this case
+   - **IMPORTANT:** Do NOT create `SPEC_NAME.cfg` in this case
+   - **IMPORTANT:** When the MC pair is used in Phase 2, pass BOTH the MC cfg AND the MC `.tla` file as the spec path to TLC (i.e., change `SPEC_PATH` to `SPEC_DIR/MC<SPEC_NAME>.tla`)
 
 3. Else if `CFG_ARG` is non-empty and exists:
-   - Copy `CFG_ARG` to `SPEC_DIR/SPEC_NAME.cfg` (non-clobbering)
+   - Copy `CFG_ARG` to `SPEC_DIR/SPEC_NAME.cfg` (non-clobbering: if the target file already exists, skip the copy and use the existing file)
    - Print `Phase 1: Copied cfgArg to SPEC_NAME.cfg`
    - Precondition satisfied
 
 4. Else if `SPEC_DIR/SPEC_NAME.generated.cfg` exists:
-   - Copy it to `SPEC_DIR/SPEC_NAME.cfg` (non-clobbering)
+   - Copy it to `SPEC_DIR/SPEC_NAME.cfg` (non-clobbering: if the target file already exists, skip the copy and use the existing file)
    - Print `Phase 1: Copied SPEC_NAME.generated.cfg to SPEC_NAME.cfg`
    - Precondition satisfied
 
@@ -59,7 +60,7 @@ Determine which cfg to pass to TLC:
 2. Else:
    - If `SPEC_DIR/SPEC_NAME.cfg` exists:
      - Use `SPEC_DIR/SPEC_NAME.cfg`
-     - Print `Phase 2: Using default Spec.cfg`
+     - Print `Phase 2: Using default SPEC_NAME.cfg`
    - Else if `SPEC_DIR/MC<SPEC_NAME>.cfg` exists:
      - Use `SPEC_DIR/MC<SPEC_NAME>.cfg`
      - Print `Phase 2: Using default MC<SPEC_NAME>.cfg`

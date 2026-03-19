@@ -5,6 +5,7 @@ description: >-
   It should be used when the user asks to "review my spec", "audit my spec",
   "is my spec good", "spec quality check", "comprehensive review",
   "best practices check", "check spec quality", "spec review", "analyze my spec", "what's wrong with my spec",
+  "review my TLA+ spec", "spec health check", "validate my specification",
   or wants a full quality assessment.
 version: 1.0.0
 allowed-tools:
@@ -99,7 +100,7 @@ Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke` with:
 
 - `fileName=<SPEC_PATH>`
 - `cfgFile=<FINAL_CFG>`
-- `extraJavaOpts=["-Dtlc2.TLC.stopAfter=3"]`
+- `seconds=3`
 
 Store result:
 
@@ -245,4 +246,4 @@ REVIEW COMPLETE
 
 ## Example Output
 
-The output follows the template in Step 8 above. Each section is populated with actual results from SANY parsing, symbol extraction, smoke testing, and best practices analysis.
+The review report follows the template in Step 8 above exactly. Each section is populated with actual results from SANY parsing, symbol extraction, smoke testing, and best practices analysis. The template is self-explanatory and requires no additional example.

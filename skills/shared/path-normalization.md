@@ -4,9 +4,10 @@ When a skill receives a file path argument, it may include a leading `@` prefix 
 
 ## Rules
 
-1. If the argument starts with `@`, remove the leading `@` to get the actual file path
+1. If the argument starts with `@`, remove only a single leading `@` to get the actual file path (e.g., `@@file` becomes `@file`)
 2. If the argument does not start with `@`, use it as-is
 3. Both forms (`@Counter.tla` and `Counter.tla`) are equivalent — the `@` is optional
+4. Resolve the resulting path relative to the current working directory
 
 ## Example
 
