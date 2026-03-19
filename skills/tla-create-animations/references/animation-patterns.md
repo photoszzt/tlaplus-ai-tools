@@ -173,6 +173,7 @@ AnimElements ==
                 centerX == 400
                 centerY == 300
             IN
+                \* Note: Cos and Sin require the Community Modules JAR on the classpath
                 <<centerX + radius * Cos(angle),
                   centerY + radius * Sin(angle)>>
 

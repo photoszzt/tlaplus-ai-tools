@@ -50,9 +50,13 @@ CONSTANT
     Priorities = {1, 2, 3}
 ```
 
-**Symmetric sets** (reduces state space):
+**Symmetric sets** (reduces state space). The set must be declared as model values for symmetry to work:
 
 ```
+CONSTANT
+    Servers = {s1, s2, s3}
+    Clients = {c1, c2, c3}
+
 SYMMETRY Servers
 SYMMETRY Clients
 ```
@@ -78,8 +82,16 @@ Use when no Spec formula or need custom temporal formula.
 
 **With fairness**:
 
+Define the temporal formula in the `.tla` file:
+
+```tla
+Spec == Init /\ [][Next]_vars /\ WF_vars(Action)
 ```
-SPECIFICATION Init /\ [][Next]_vars /\ WF_vars(Action)
+
+Then in the `.cfg` file, reference it by name:
+
+```
+SPECIFICATION Spec
 ```
 
 ### Invariants
@@ -234,11 +246,7 @@ After 1 hour:
 
 ### Worker Threads
 
-Use multiple cores:
-
-```
-/tla-check @Spec.tla --workers 8
-```
+Use multiple cores by passing the `workers` parameter via the MCP tool's `workers` field (or the `--workers` flag in `/tla-check`):
 
 **Guidelines**:
 

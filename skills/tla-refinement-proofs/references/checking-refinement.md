@@ -90,16 +90,4 @@ Decrement == x > 0 /\ x' = x - 1 /\ UNCHANGED y
 
 ## TLAPS Overview
 
-For formal proofs (advanced topic):
-
-```tla
-THEOREM RefinementTheorem ==
-    ASSUME AbstractSpec, ConcreteSpec, Mapping
-    PROVE ConcreteSpec => AbstractSpec
-PROOF
-    <1>1. Init => AbstractInit BY Mapping
-    <1>2. [Next]_vars => [AbstractNext]_abstractVars BY Mapping
-    <1>3. QED BY <1>1, <1>2
-```
-
-See `tlaps-guide.md` for full TLAPS details.
+For formal refinement proofs using the TLA+ Proof System (TLAPS), see `tlaps-guide.md` for the complete guide covering proof structure, tactics, and worked examples.

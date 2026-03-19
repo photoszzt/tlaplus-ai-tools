@@ -351,11 +351,12 @@ CONSTRAINT
 
 ## When Stuck
 
-### Ask for Help
+### Use Available Tools
 
-- Review trace with colleague
-- Post on TLA+ forum
-- Use trace-analyzer agent
+- Use the trace-analyzer agent to get automated trace explanations
+- Run `/tla-review` to check spec structure and best practices
+- Add `Print` statements to trace variable values during model checking
+- Use `/tla-explore` to generate specific behavior traces for comparison
 
 ### Simplify Problem
 

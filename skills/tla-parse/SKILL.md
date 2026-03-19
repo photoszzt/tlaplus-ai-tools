@@ -5,7 +5,7 @@ description: >-
   It should be used when the user asks to "check syntax", "validate my spec",
   "is my spec valid", "parse errors", "syntax errors", "SANY errors",
   "SANY", "parse my TLA+ file", "check my TLA+ syntax", "does my spec compile",
-  "find errors in my spec", or "is my TLA+ correct".
+  "find errors in my spec", "is my TLA+ correct", "lint my spec", or "check for errors".
 version: 1.0.0
 allowed-tools:
   - Read
@@ -48,7 +48,7 @@ SANY (Semantic ANalYzer) performs comprehensive syntax and semantic validation:
 
 ## When to Use
 
-Use before model checking to validate syntax. For model checking, use `/tla-check` or `/tla-smoke`.
+Use `/tla-parse` for syntax-only validation without model checking. Note that `/tla-check` also catches parse errors as part of its workflow, so `/tla-parse` is most useful when you want to validate syntax without running the model checker. For model checking, use `/tla-check` or `/tla-smoke`.
 
 ## Common Error Messages
 

@@ -5,6 +5,7 @@ description: >-
   It should be used when the user asks to "learn TLA+", "what is TLA+", "TLA+ tutorial",
   "get started with TLA+", "first TLA+ spec", "TLA+ basics", "new to TLA+",
   "TLA+ introduction", "how to write TLA+", "TLA+ help", "TLA+ example", "write a spec", "TLA+ spec template",
+  "formal specification", "create a spec", "model a system",
   or the user mentions wanting to understand TLA+ fundamentals.
 version: 1.0.0
 allowed-tools:
@@ -17,7 +18,7 @@ Introductory guidance for learning TLA+ and writing first specifications.
 
 ## What is TLA+?
 
-TLA+ is a formal specification language for designing, modeling, and verifying concurrent and distributed systems. It enables modeling system behavior, finding bugs early through exhaustive verification, and serving as precise documentation.
+TLA+ is a formal specification language for designing, modeling, and verifying concurrent and distributed systems. It enables modeling system behavior, finding bugs early through exhaustive verification, and serving as precise documentation. In practice, TLA+ is used to find concurrency bugs before writing code and to verify the correctness of distributed protocols, saving significant debugging time in production systems.
 
 ## Core Concepts
 

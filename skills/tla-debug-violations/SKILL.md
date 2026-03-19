@@ -134,4 +134,4 @@ If invariants pass but properties fail, re-enable properties one at a time:
 
 ## Further Reading
 
-- **`references/debugging-strategies.md`** - Advanced debugging strategies and techniques
+- **`references/debugging-strategies.md`** - Advanced debugging strategies and techniques, including trace analysis, Print debugging, and common bug patterns
