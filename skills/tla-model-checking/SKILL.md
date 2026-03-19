@@ -4,7 +4,7 @@ description: >-
   This skill orchestrates the full model checking workflow: parse, configure, smoke test, and exhaustive check.
   It should be used when the user asks to "model check", "run TLC",
   "verify specification", "check invariants", "run model checker", "check my spec", "validate spec",
-  "full verification workflow", "end-to-end TLC",
+  "full verification workflow", "end-to-end TLC", "check properties", "check liveness",
   or mentions model checking workflow and TLC configuration.
 version: 3.0.0
 allowed-tools:

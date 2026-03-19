@@ -101,7 +101,7 @@ See `references/syntax-basics.md` for the complete syntax reference covering ope
 
 ## Example Specs
 
-Working specifications in `examples/`: `Counter.tla`, `SimpleLock.tla`, `Counter.cfg`
+Working specifications in `examples/`: `Counter.tla`, `Counter.cfg`, `SimpleLock.tla`, `SimpleLock.cfg`
 
 ## Next Steps
 

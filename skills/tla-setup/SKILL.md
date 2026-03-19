@@ -107,8 +107,8 @@ Java found: <version>
 
 Check for tools in expected locations using Read tool:
 
-1. `tools/tla2tools.jar` (relative to repo root)
-2. `tools/CommunityModules-deps.jar`
+1. `tools/tla2tools.jar` (relative to repository root)
+2. `tools/CommunityModules-deps.jar` (relative to repository root)
 
 If tools not found:
 
