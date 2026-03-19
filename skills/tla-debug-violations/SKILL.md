@@ -4,7 +4,8 @@ description: >-
   This skill provides a systematic workflow to isolate and diagnose TLA+ invariant or property violations.
   It should be used when the user mentions "invariant violated", "TLC found a bug",
   "counterexample", "property failed", "violation trace", "debugging TLA+ violations",
-  "error trace", "why did TLC fail", "fix my spec", "TLC error", or "trace analysis".
+  "error trace", "why did TLC fail", "fix my spec", "TLC error", "trace analysis",
+  "deadlock found", or "lasso-shaped counterexample".
 version: 1.0.0
 allowed-tools:
   - Read
@@ -52,7 +53,7 @@ Start with the smallest possible configuration to isolate the issue:
 
 ### Step 2: Remove PROPERTY Entries
 
-Edit your `.cfg` file and temporarily remove all `PROPERTY` entries:
+Edit the `.cfg` file and temporarily remove all `PROPERTY` entries:
 
 Before (with property):
 

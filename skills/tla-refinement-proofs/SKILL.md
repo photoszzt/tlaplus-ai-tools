@@ -79,8 +79,10 @@ PROPERTY A!Spec
 ### 5. Run TLC
 
 ```
-/tla-check @QueueRefinement.tla    \* or the path to your refinement spec, e.g., @examples/QueueRefinement.tla
+/tla-check @QueueRefinement.tla
 ```
+
+(Use the path to your refinement spec, e.g., `@examples/QueueRefinement.tla`)
 
 If passes: concrete refines abstract. If fails: trace shows where refinement breaks.
 

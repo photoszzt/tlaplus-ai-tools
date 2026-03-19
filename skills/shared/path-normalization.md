@@ -9,7 +9,7 @@ When a skill receives a file path argument, it may include a leading `@` prefix 
 3. Both forms (`@Counter.tla` and `Counter.tla`) are equivalent — the `@` is optional
 4. If the resulting path is already absolute, use it as-is. Otherwise, resolve it relative to the current working directory
 
-## Example
+## Examples
 
 ```
 Input:  @test-specs/Counter.tla
@@ -20,4 +20,9 @@ Output: test-specs/Counter.tla
 
 Input:  @/home/user/specs/Counter.tla
 Output: /home/user/specs/Counter.tla
+
+Input:  @@literal-at-file.tla
+Output: @literal-at-file.tla
 ```
+
+**Note:** If no path argument is provided, the skill should prompt the user for a file path rather than proceeding with an empty path.

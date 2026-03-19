@@ -33,14 +33,13 @@ Use this skill to create animations that visualize TLA+ specifications during mo
 
 ### 1. Animation File Structure
 
+**Note:** The SVG and IOUtils modules require the Community Modules JAR (`CommunityModules-deps.jar`) to be on the classpath. The MCP tools handle this automatically when both `tla2tools.jar` and `CommunityModules-deps.jar` are present in the `tools/` directory.
+
 Create a `.tla` file (e.g., `MySpecAnim.tla`) that EXTENDS your spec:
 
 ```tla
 ---- MODULE MySpecAnim ----
 EXTENDS TLC, SVG, IOUtils, MySpec
-\* Note: The SVG module requires the Community Modules JAR. Ensure it is on the
-\* classpath (the MCP tools handle this automatically when using tla2tools.jar
-\* with CommunityModules-deps.jar).
 
 \* Visual logic - what to show
 AnimView == [

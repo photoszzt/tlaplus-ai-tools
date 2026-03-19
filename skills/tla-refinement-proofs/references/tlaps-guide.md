@@ -18,7 +18,7 @@ INSTANCE TLAPS
 
 This makes proof strategies such as `PTL`, `SMT`, and others available to the prover.
 
-All proofs must be placed in a separate file with the `_proof.tla` extension (e.g., `MyModule_proof.tla`).
+By convention, proofs are placed in a separate file with the `_proof.tla` extension (e.g., `MyModule_proof.tla`).
 
 ## Proof Structure
 

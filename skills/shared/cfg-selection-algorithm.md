@@ -26,7 +26,6 @@ Check preconditions in order:
    - Print `Phase 1: MC pair exists (MC<SPEC_NAME>.tla + MC<SPEC_NAME>.cfg)`
    - Precondition satisfied
    - **IMPORTANT:** Do NOT create `SPEC_NAME.cfg` in this case
-   - **IMPORTANT:** When the MC pair is used in Phase 2, pass BOTH the MC cfg AND the MC `.tla` file as the spec path to TLC (i.e., change `SPEC_PATH` to `SPEC_DIR/MC<SPEC_NAME>.tla`)
 
 3. Else if `CFG_ARG` is non-empty and exists:
    - Copy `CFG_ARG` to `SPEC_DIR/SPEC_NAME.cfg` (non-clobbering: if the target file already exists, skip the copy and use the existing file)
@@ -70,3 +69,8 @@ Determine which cfg to pass to TLC:
      - Exit
 
 Store final cfg path in `FINAL_CFG`.
+
+## Outputs
+
+- `FINAL_CFG`: The resolved path to the `.cfg` file to pass to TLC
+- `SPEC_PATH`: Potentially updated spec path (changed to `SPEC_DIR/MC<SPEC_NAME>.tla` when an MC pair is used in Phase 2)

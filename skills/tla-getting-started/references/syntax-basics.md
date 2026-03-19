@@ -5,7 +5,7 @@ Complete reference for TLA+ syntax and operators.
 ## Module Structure
 
 ```tla
-----MODULE ModuleName ----
+---- MODULE ModuleName ----
 [EXTENDS modules]
 [CONSTANTS symbols]
 [ASSUME assumptions]

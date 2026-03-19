@@ -25,8 +25,3 @@ Spec == Concrete!Spec
 Refinement == Abstract!Spec
 
 ====
-\* TLC Configuration:
-\*   SPECIFICATION Spec
-\*   PROPERTY Refinement
-\*   CONSTANT MaxLen = 3
-\*   CONSTANT Items = {1, 2, 3}

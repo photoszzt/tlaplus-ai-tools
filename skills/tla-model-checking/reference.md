@@ -246,7 +246,7 @@ After 1 hour:
 
 ### Worker Threads
 
-Use multiple cores by passing the `workers` parameter via the MCP tool's `workers` field (or the `--workers` flag in `/tla-check`):
+Use multiple cores by passing the `workers` parameter via the MCP tool's `workers` field. See `/tla-check` for worker configuration.
 
 **Guidelines**:
 
@@ -258,8 +258,9 @@ Use multiple cores by passing the `workers` parameter via the MCP tool's `worker
 
 Increase memory for large state spaces:
 
+Pass heap size via the `--heap` flag in `/tla-check` (e.g., `--heap 8G`), which sets the `-Xmx` JVM option:
+
 ```
-Add to config or use extraJavaOpts:
 -Xmx8192m   (8 GB heap)
 -Xmx16384m  (16 GB heap)
 ```
@@ -404,8 +405,8 @@ For long checks:
 
 ### Related Skills
 
-- `tla-getting-started` - TLA+ basics
-- `tla-debug-violations` - Debug counterexamples
+- `/tla-getting-started` - TLA+ basics
+- `/tla-debug-violations` - Debug counterexamples
 - `/tla-parse` - Syntax check
 - `/tla-symbols` - Generate config
 - `/tla-smoke` - Quick test
@@ -418,7 +419,7 @@ For long checks:
 
 ### Knowledge Base Articles
 
-- [tla-indentation.md](resource://knowledgebase/tla-indentation.md) - Proper TLA+ indentation
-- [tla-functions-operators.md](resource://knowledgebase/tla-functions-operators.md) - Operators and functions
-- [tla-functions-records-sequences.md](resource://knowledgebase/tla-functions-records-sequences.md) - Data structures
-- [tla-extends-instance.md](resource://knowledgebase/tla-extends-instance.md) - Module dependencies
+- `resources/knowledgebase/tla-indentation.md` - Proper TLA+ indentation
+- `resources/knowledgebase/tla-functions-operators.md` - Operators and functions
+- `resources/knowledgebase/tla-functions-records-sequences.md` - Data structures
+- `resources/knowledgebase/tla-extends-instance.md` - Module dependencies

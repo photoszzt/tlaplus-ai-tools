@@ -64,11 +64,11 @@ Extract `--length <N>` from the argument:
 
 Parse the second token from the argument (split by space, take second). If it ends with `.cfg`, treat it as the CFG_ARG.
 
-**Steps 5-6: Apply CFG Selection Algorithm**
+**Step 5: Apply CFG Selection Algorithm**
 
 Apply the CFG Selection Algorithm documented in `skills/shared/cfg-selection-algorithm.md`.
 
-**Step 7: Call MCP Tool**
+**Step 6: Call MCP Tool**
 
 Invoke TLC trace exploration:
 
@@ -79,7 +79,7 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore
   --behaviorLength <LENGTH>
 ```
 
-**Step 8: Report Results**
+**Step 7: Report Results**
 
 Print summary:
 

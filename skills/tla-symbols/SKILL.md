@@ -5,7 +5,8 @@ description: >-
   It should be used when the user asks to "generate config", "create cfg file",
   "no config file", "what's in my spec", "extract symbols", "generate .cfg",
   "list symbols", "show constants", "show variables", "set up TLC config", "prepare for model checking",
-  "show operators", "analyze my spec",
+  "show operators", "analyze my spec", "what constants does my spec have",
+  "what variables are defined", "extended symbols",
   or needs a .cfg file for model checking.
 version: 1.0.0
 allowed-tools:
