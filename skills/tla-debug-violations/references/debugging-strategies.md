@@ -351,10 +351,6 @@ CONSTRAINT
 
 ## When Stuck
 
-### Take a Break
-
-Fresh perspective helps.
-
 ### Ask for Help
 
 - Review trace with colleague

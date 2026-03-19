@@ -2,9 +2,10 @@
 name: tla-review
 description: >-
   This skill runs a comprehensive review of a TLA+ specification including parsing, symbol extraction, smoke testing, and best practices checklist.
-  It should be used when someone asks to "review my spec", "audit my spec",
+  It should be used when the user asks to "review my spec", "audit my spec",
   "is my spec good", "spec quality check", "comprehensive review",
-  "best practices check", "check spec quality", "spec review", or wants a full quality assessment.
+  "best practices check", "check spec quality", "spec review", "analyze my spec", "what's wrong with my spec",
+  or wants a full quality assessment.
 version: 1.0.0
 allowed-tools:
   - Read
@@ -29,7 +30,7 @@ Run a comprehensive review of your TLA+ specification including parsing, symbol 
 /tla-review test-specs/Counter.tla --no-smoke
 ```
 
-Both forms work identically. See `skills/shared/path-normalization.md` for path normalization rules.
+All forms work identically. See `skills/shared/path-normalization.md` for path normalization rules.
 
 ## What This Does
 
@@ -244,22 +245,4 @@ REVIEW COMPLETE
 
 ## Example Output
 
-```
-═══════════════════════════════════════════════════════════
-TLA+ SPECIFICATION REVIEW
-═══════════════════════════════════════════════════════════
-
-Spec: test-specs/Counter.tla
-
-─────────────────────────────────────────────────────────
-1. SYNTAX & SEMANTICS (SANY Parser)
-─────────────────────────────────────────────────────────
-
-Parsing successful. No syntax errors.
-
-... (sections 2-5 follow the template above)
-
-═══════════════════════════════════════════════════════════
-REVIEW COMPLETE
-═══════════════════════════════════════════════════════════
-```
+The output follows the template in Step 8 above. Each section is populated with actual results from SANY parsing, symbol extraction, smoke testing, and best practices analysis.

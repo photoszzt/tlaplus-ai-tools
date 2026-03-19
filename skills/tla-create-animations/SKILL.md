@@ -2,9 +2,9 @@
 name: tla-create-animations
 description: >-
   This skill guides the creation of animations that visualize TLA+ specifications during model checking or trace exploration.
-  It should be used when someone asks to "create animation", "animate my spec",
+  It should be used when the user asks to "create animation", "animate my spec",
   "visualize state transitions", "show me what's happening", "TLA+ animation",
-  "trace visualization", or "see state changes".
+  "trace visualization", "see state changes", "render animation in terminal", or "ASCII animation".
 version: 1.0.0
 allowed-tools:
   - Read
@@ -187,14 +187,9 @@ IN [shape |-> "g", elements |-> SetToSeq(Elements)]
 - `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore`: Generate and view animation
 - `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check`: Run model checker with animation output
 
-## Complete Example
+## Complete Examples
 
-See the knowledge base article `tla-animations.md` for complete examples including:
-
-- BatteryRelay: Simple state machine
-- BlockingQueue: Producer-consumer pattern
-- DiningPhilosophers: Concurrency visualization
-- TwoPhase: Distributed protocol animation
+See `references/animation-patterns.md` for complete animation examples and reusable patterns.
 
 ## Terminal Rendering
 

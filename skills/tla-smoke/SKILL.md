@@ -2,9 +2,9 @@
 name: tla-smoke
 description: >-
   This skill runs a quick 3-second random simulation to catch obvious bugs in a TLA+ specification.
-  It should be used when someone asks for a "quick test", "fast check",
+  It should be used when the user asks for a "quick test", "fast check",
   "test my spec", "try out my spec", "smoke test", "simulate my spec",
-  "random simulation", or "quick check".
+  "random simulation", "quick check", "sanity check", or "run simulation".
 version: 1.0.0
 allowed-tools:
   - Read
@@ -27,7 +27,7 @@ Run a quick 3-second random simulation to catch obvious bugs in a TLA+ specifica
 /tla-smoke test-specs/Counter.tla --seconds 10
 ```
 
-Both forms work identically. See `skills/shared/path-normalization.md` for path normalization rules.
+All forms work identically. See `skills/shared/path-normalization.md` for path normalization rules.
 
 ## What This Does
 

@@ -2,9 +2,10 @@
 name: tla-setup
 description: >-
   This skill verifies and configures TLA+ tools installation (Java, tla2tools.jar, CommunityModules, MCP server).
-  It should be used when someone asks to "setup TLA+", "install TLA+",
+  It should be used when the user asks to "setup TLA+", "install TLA+",
   "TLA+ not working", "tools missing", "java not found", "verify TLA+ installation",
-  "check TLA+ tools", "TLA+ prerequisites", "configure TLA+", or "MCP server not connecting".
+  "check TLA+ tools", "TLA+ prerequisites", "configure TLA+", "MCP server not connecting",
+  "fix TLA+", "SANY not working", or "reinstall TLA+".
 version: 1.0.0
 allowed-tools:
   - Bash
@@ -182,6 +183,8 @@ Next == x' = x + 1
 Write to temporary file: `/tmp/tlaplus-setup-test.tla`
 
 Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse` with the test file.
+
+**Note:** If `/tmp` is not writable, use another temporary location such as the current working directory. Clean up the test file after verification.
 
 If parse succeeds:
 

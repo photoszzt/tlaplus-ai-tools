@@ -2,13 +2,11 @@
 name: tla-refinement-proofs
 description: >-
   This skill provides guidance on specification refinement — proving that one TLA+ specification correctly implements another.
-  It should be used when someone asks about "refinement", "specification refinement", "refine specification",
+  It should be used when the user asks about "refinement", "specification refinement", "refine specification",
   "abstract and concrete specs", "implementation correctness", "prove implementation correct",
-  "specification layers", "refinement mapping", "INSTANCE WITH",
+  "specification layers", "refinement mapping", "INSTANCE WITH", "TLAPS", "stuttering steps", "data refinement",
   or mentions proving one spec implements another.
 version: 1.0.0
-allowed-tools:
-  - Read
 ---
 
 # TLA+ Refinement and Specification Relationships
@@ -81,7 +79,7 @@ PROPERTY A!Spec
 ### 5. Run TLC
 
 ```
-/tla-check @CheckRefinement.tla
+/tla-check @QueueRefinement.tla
 ```
 
 If passes: concrete refines abstract. If fails: trace shows where refinement breaks.
