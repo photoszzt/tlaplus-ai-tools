@@ -19,7 +19,7 @@ SPEC_NAME = basename(SPEC_PATH, .tla)
 Check preconditions in order:
 
 1. If `SPEC_DIR/SPEC_NAME.cfg` exists:
-   - Print `Phase 1: Spec.cfg exists`
+   - Print `Phase 1: SPEC_NAME.cfg exists`
    - Precondition satisfied
 
 2. Else if `SPEC_DIR/MC<SPEC_NAME>.tla` AND `SPEC_DIR/MC<SPEC_NAME>.cfg` both exist:
@@ -63,6 +63,7 @@ Determine which cfg to pass to TLC:
      - Print `Phase 2: Using default SPEC_NAME.cfg`
    - Else if `SPEC_DIR/MC<SPEC_NAME>.cfg` exists:
      - Use `SPEC_DIR/MC<SPEC_NAME>.cfg`
+     - Set `SPEC_PATH` to `SPEC_DIR/MC<SPEC_NAME>.tla` (see Phase 1, step 2)
      - Print `Phase 2: Using default MC<SPEC_NAME>.cfg`
    - Else:
      - Print `Error: Unreachable state (Phase 1 should have ensured cfg exists)`
