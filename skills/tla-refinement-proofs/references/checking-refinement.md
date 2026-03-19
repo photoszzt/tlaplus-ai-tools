@@ -6,8 +6,9 @@ This reference covers techniques for verifying refinement with TLC, including in
 
 Abstract invariants should hold on concrete specifications:
 
+In the concrete spec's config file, use the refinement mapping operator names directly:
+
 ```
-\* In concrete config — use the refinement mapping operator names directly
 INVARIANT TypeInvariant
 INVARIANT SafetyProperty
 ```

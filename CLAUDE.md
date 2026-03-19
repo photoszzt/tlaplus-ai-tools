@@ -134,6 +134,12 @@ The server exposes these tools via MCP (prefix: `tlaplus_mcp_`):
 - `tlc_smoke` - Run quick random simulation (3-second default)
 - `tlc_explore` - Generate specific behavior traces
 
+**Animation Tools:**
+
+- `animation_detect` - Detect animation operators in a spec
+- `animation_render` - Render animation frame as SVG
+- `animation_frameCount` - Count total animation frames
+
 **Knowledge Base:**
 
 - `knowledge` (resource) - Access 20+ articles on TLA+ best practices

@@ -85,7 +85,7 @@ Print summary:
 ```
 Spec path: <SPEC_PATH>
 CFG used: <FINAL_CFG>
-Smoke duration: <SECONDS> seconds (default 3s unless overridden)
+Smoke duration: <SECONDS> seconds
 
 <TLC output>
 

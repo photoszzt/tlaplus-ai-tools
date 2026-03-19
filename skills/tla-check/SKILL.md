@@ -6,7 +6,8 @@ description: >-
   "verify my TLA+ spec", "find invariant violations", "exhaustive model checking",
   "check for bugs in my spec", "model check", "exhaustive check", "verify all states",
   "run model checker", "verify invariants", "check properties", "check temporal properties",
-  "check liveness", "full check", or "check all states".
+  "check liveness", "full check", "check all states",
+  "check safety", or "verify properties".
 version: 1.0.0
 allowed-tools:
   - Read
@@ -110,7 +111,7 @@ TLC options:
 If violations found:
 
 - Print `Violations detected. See counterexample above.`
-- Suggest: `Use trace-analyzer agent to understand the violation.`
+- Suggest: `Ask Claude to "analyze the trace" to invoke the trace-analyzer agent for detailed violation analysis.`
 
 If no violations:
 

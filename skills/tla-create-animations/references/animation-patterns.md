@@ -293,6 +293,8 @@ CirclePos(index, total, radius, center) ==
          center[2] + radius * Sin(angle)>>
 ```
 
+> **Note:** `Cos` and `Sin` are provided by the Community Modules JAR (`CommunityModules-deps.jar` must be on the classpath).
+
 ### Tree Layout
 
 ```tla

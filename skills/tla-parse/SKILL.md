@@ -5,7 +5,8 @@ description: >-
   It should be used when the user asks to "check syntax", "validate my spec",
   "is my spec valid", "parse errors", "syntax errors", "SANY errors",
   "SANY", "parse my TLA+ file", "check my TLA+ syntax", "does my spec compile",
-  "find errors in my spec", "is my TLA+ correct", "lint my spec", or "check for errors".
+  "find errors in my spec", "is my TLA+ correct", "lint my spec", "check for errors",
+  "why won't my spec parse", or "check my spec for errors".
 version: 1.0.0
 allowed-tools:
   - Read
@@ -110,6 +111,8 @@ See these knowledge base articles for TLA+ syntax help:
 - `resources/knowledgebase/tla-functions-operators.md` - Defining operators and functions
 - `resources/knowledgebase/tla-functions-records-sequences.md` - Data structure syntax
 - `resources/knowledgebase/tla-extends-instance.md` - Module dependencies
+
+These articles are also accessible programmatically via the `knowledge` MCP resource.
 
 ---
 
