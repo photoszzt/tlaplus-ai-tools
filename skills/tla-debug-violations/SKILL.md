@@ -72,7 +72,7 @@ INVARIANT TypeInvariant
 INVARIANT SafetyInvariant
 ```
 
-**Why**: CFG files have no comment syntax, so you must remove the line entirely (you can re-add it later).
+**Why**: TLC configuration files (.cfg) do not support comments, so you must remove the line entirely (you can re-add it later).
 
 ### Step 3: Check Invariants First
 

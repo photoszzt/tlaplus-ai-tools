@@ -162,13 +162,13 @@ Choose based on system guarantees.
 ### Off-by-One Errors
 
 ```tla
-\* Bug
-Action == count < Max /\ count' = count + 1  \* Allows count = Max
+\* Bug: guard allows count to reach Max (count goes 0,1,...,Max-1,Max)
+Action == count < Max /\ count' = count + 1
 
-\* Fix
-Action == count < Max - 1 /\ count' = count + 1
-\* Or
+\* Fix: keep count strictly below Max (count goes 0,1,...,Max-1)
 Action == count + 1 < Max /\ count' = count + 1
+\* Equivalent fix:
+Action == count < Max - 1 /\ count' = count + 1
 ```
 
 ### Missing Guards

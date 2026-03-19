@@ -122,6 +122,8 @@ TLAPS will indicate whether each proof obligation has been successfully discharg
 
 ## Complete Example
 
+**File: MyModule.tla**
+
 ```tla
 ----- MODULE MyModule -----
 CONSTANT S
@@ -139,7 +141,11 @@ Next == A \/ B
 
 Spec == Init /\ [][Next]_vars
 =====
+```
 
+**File: MyModule_proof.tla**
+
+```tla
 ----- MODULE MyModule_proof -----
 EXTENDS MyModule, TLAPS
 

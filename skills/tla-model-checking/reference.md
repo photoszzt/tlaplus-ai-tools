@@ -246,7 +246,7 @@ After 1 hour:
 
 ### Worker Threads
 
-Use multiple cores by passing the `workers` parameter via the MCP tool's `workers` field. See `/tla-check` for worker configuration.
+Use multiple cores by passing the `workers` parameter via the MCP tool's `workers` field, or the `--workers` flag in `/tla-check`.
 
 **Guidelines**:
 
@@ -258,11 +258,11 @@ Use multiple cores by passing the `workers` parameter via the MCP tool's `worker
 
 Increase memory for large state spaces:
 
-Pass heap size via the `--heap` flag in `/tla-check` (e.g., `--heap 8G`), which sets the `-Xmx` JVM option:
+Pass heap size via the `--heap` flag in `/tla-check` (e.g., `--heap 8G`), which sets the `-Xmx` JVM option internally:
 
 ```
--Xmx8192m   (8 GB heap)
--Xmx16384m  (16 GB heap)
+--heap 8G    → internally passes -Xmx8192m to JVM
+--heap 16G   → internally passes -Xmx16384m to JVM
 ```
 
 **Guidelines**:
