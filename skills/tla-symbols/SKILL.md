@@ -1,9 +1,10 @@
 ---
 name: tla-symbols
 description: >-
-  Use when the user asks to "generate config", "create cfg file",
+  This skill extracts symbols (constants, variables, operators) from a TLA+ specification and generates a TLC configuration file.
+  It should be used when someone asks to "generate config", "create cfg file",
   "no config file", "what's in my spec", "extract symbols", "generate .cfg",
-  "list symbols", "show constants", or "show variables".
+  "list symbols", "show constants", "show variables", or needs a .cfg file for model checking.
 version: 1.0.0
 allowed-tools:
   - Read
@@ -28,7 +29,7 @@ Preferred (always works):
 /tla-symbols test-specs/Counter.tla --extended
 ```
 
-Both forms work identically --- the @ is optional and stripped during path normalization.
+Both forms work identically. See `skills/shared/path-normalization.md` for path normalization rules.
 
 ## What This Does
 
@@ -68,6 +69,8 @@ Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_symbol` with:
 
 - `fileName=<spec_path>`
 - `includeExtendedModules=<flag>`
+
+If the symbol extraction fails or returns an error, print the error message and exit. Do not proceed to config generation with incomplete data.
 
 **Step 5: Generate Config File**
 

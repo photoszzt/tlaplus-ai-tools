@@ -1,7 +1,8 @@
 ---
 name: tla-smoke
 description: >-
-  Use when the user asks for a "quick test", "fast check",
+  This skill runs a quick 3-second random simulation to catch obvious bugs in a TLA+ specification.
+  It should be used when someone asks for a "quick test", "fast check",
   "test my spec", "try out my spec", "smoke test", "simulate my spec",
   "random simulation", or "quick check".
 version: 1.0.0
@@ -14,7 +15,7 @@ allowed-tools:
 
 # TLC Smoke Test
 
-Run a quick 3-second random simulation to catch obvious bugs in your TLA+ specification.
+Run a quick 3-second random simulation to catch obvious bugs in a TLA+ specification.
 
 **IMPORTANT: Always use the MCP tools listed above. Never fall back to running Java or TLC commands via Bash.**
 
@@ -26,7 +27,7 @@ Run a quick 3-second random simulation to catch obvious bugs in your TLA+ specif
 /tla-smoke test-specs/Counter.tla --seconds 10
 ```
 
-Both forms work identically --- the @ is optional and stripped during path normalization.
+Both forms work identically. See `skills/shared/path-normalization.md` for path normalization rules.
 
 ## What This Does
 

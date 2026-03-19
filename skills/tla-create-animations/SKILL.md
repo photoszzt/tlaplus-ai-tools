@@ -1,12 +1,17 @@
 ---
 name: tla-create-animations
 description: >-
-  Use when the user asks to "create animation", "animate my spec",
+  This skill guides the creation of animations that visualize TLA+ specifications during model checking or trace exploration.
+  It should be used when someone asks to "create animation", "animate my spec",
   "visualize state transitions", "show me what's happening", "TLA+ animation",
   "trace visualization", or "see state changes".
 version: 1.0.0
 allowed-tools:
   - Read
+  - Write
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check
   - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_detect
   - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
   - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_frameCount

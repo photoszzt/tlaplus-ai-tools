@@ -1,9 +1,10 @@
 ---
 name: tla-explore
 description: >-
-  Use when the user asks to "explore states", "generate trace",
+  This skill generates example behavior traces from a TLA+ specification using TLC simulation.
+  It should be used when someone asks to "explore states", "generate trace",
   "show me a behavior", "example execution", "trace exploration",
-  or "what happens when".
+  "what happens when", or wants to see how a spec executes step by step.
 version: 1.0.0
 allowed-tools:
   - Read
@@ -26,7 +27,7 @@ Generate example behavior traces from your TLA+ specification using TLC simulati
 /tla-explore test-specs/Counter.tla --length 20
 ```
 
-Both forms work identically --- the @ is optional and stripped during path normalization.
+Both forms work identically. See `skills/shared/path-normalization.md` for path normalization rules.
 
 ## What This Does
 

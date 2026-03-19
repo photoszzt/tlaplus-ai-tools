@@ -1,6 +1,11 @@
 ---
 name: tla-refinement-proofs
-description: Use when the user asks about "refinement", "specification refinement", "refine specification", "abstract and concrete specs", "implementation correctness", "prove implementation correct", "specification layers", or mentions proving one spec implements another.
+description: >-
+  This skill provides guidance on specification refinement — proving that one TLA+ specification correctly implements another.
+  It should be used when someone asks about "refinement", "specification refinement", "refine specification",
+  "abstract and concrete specs", "implementation correctness", "prove implementation correct",
+  "specification layers", "refinement mapping", "INSTANCE WITH",
+  or mentions proving one spec implements another.
 version: 1.0.0
 allowed-tools:
   - Read
