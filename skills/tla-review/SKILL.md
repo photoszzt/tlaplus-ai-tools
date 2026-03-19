@@ -174,33 +174,33 @@ Smoke test failed
 4. BEST PRACTICES CHECKLIST
 ─────────────────────────────────────────────────────────
 
-<Check and report on:>
+<Evaluate each item and mark as [pass], [warn], or [fail]:>
 
-Module documentation
+[pass/warn/fail] Module documentation
   - Does module have header comment explaining purpose?
   - Are complex operators documented?
 
-Type invariants
+[pass/warn/fail] Type invariants
   - Are type invariants defined for all variables?
   - Example: TypeInvariant == var \in ExpectedType
 
-Safety properties
+[pass/warn/fail] Safety properties
   - Are safety invariants defined?
   - Do they cover critical correctness conditions?
 
-Liveness properties
+[pass/warn/fail] Liveness properties
   - Are liveness properties defined if needed?
   - Example: <>[]Termination
 
-Constant bounds
+[pass/warn/fail] Constant bounds
   - Are constants bounded to reasonable values?
   - Large constants cause state explosion
 
-Symmetry
+[pass/warn/fail] Symmetry
   - Can symmetry sets reduce state space?
   - Example: SYMMETRY SymmetrySet
 
-State constraints
+[pass/warn/fail] State constraints
   - Are state constraints needed to limit exploration?
   - Example: CONSTRAINT StateConstraint
 

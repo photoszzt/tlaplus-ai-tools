@@ -115,7 +115,7 @@ If tools not found:
 ```
 TLA+ tools not found
 
-Expected location: tools/tla2tools.jar
+Expected location: tools/tla2tools.jar (relative to repository root)
 
 To download tools, run:
   npm run setup
@@ -123,12 +123,12 @@ To download tools, run:
 Or manually download:
   1. Visit: https://github.com/tlaplus/tlaplus/releases
   2. Download tla2tools.jar
-  3. Place in: tools/tla2tools.jar
+  3. Place in: tools/tla2tools.jar (relative to repository root)
 
 For CommunityModules:
   1. Visit: https://github.com/tlaplus/CommunityModules/releases
   2. Download CommunityModules-deps.jar
-  3. Place in: tools/CommunityModules-deps.jar
+  3. Place in: tools/CommunityModules-deps.jar (relative to repository root)
 ```
 
 If tools found:
