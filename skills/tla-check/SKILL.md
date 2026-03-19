@@ -5,7 +5,7 @@ description: >-
   It should be used when the user asks to "check my spec", "run TLC",
   "verify my TLA+ spec", "find invariant violations", "exhaustive model checking",
   "check for bugs in my spec", "model check", "exhaustive check", "verify all states",
-  "run model checker", "verify invariants", or "check properties".
+  "run model checker", "verify invariants", "check properties", "full check", or "check all states".
 version: 1.0.0
 allowed-tools:
   - Read
@@ -136,7 +136,7 @@ TLC options:
   Depth: (unlimited)
   Heap: 2G
 
-TLC2 Version 2.18 of Day Month 20XX
+TLC2 Version 2.18 of 10 January 2024
 Running breadth-first search with 4 workers
 Explored 1,234,567 states in 45 seconds
 Diameter: 12 states

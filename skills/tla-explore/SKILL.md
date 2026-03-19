@@ -2,9 +2,10 @@
 name: tla-explore
 description: >-
   This skill generates example behavior traces from a TLA+ specification using TLC simulation.
-  It should be used when the user asks to "explore states", "generate trace",
+  This skill should be used when the user asks to "explore states", "generate trace",
   "show me a behavior", "example execution", "trace exploration",
   "what happens when", "simulate", "run a simulation", "sample behavior",
+  "show example states", "walk through the spec", "run an example",
   or wants to see how a spec executes step by step.
 version: 1.0.0
 allowed-tools:

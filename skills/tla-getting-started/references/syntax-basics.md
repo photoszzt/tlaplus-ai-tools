@@ -228,7 +228,7 @@ RemoveFirst(seq, elem) ==
 - `Assert(condition, message)` - Runtime assertion
 - `JavaTime` - Current time in ms
 - `ToString(val)` - Convert to string
-- `:>` - Function constructor
+- `:>` - Function constructor (e.g., `"key" :> "value"` creates a function mapping `"key"` to `"value"`; combine with `@@` to build multi-key functions)
 
 ### Bags (multisets)
 

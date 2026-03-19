@@ -4,7 +4,8 @@ description: >-
   This skill runs a quick 3-second random simulation to catch obvious bugs in a TLA+ specification.
   It should be used when the user asks for a "quick test", "fast check",
   "test my spec", "try out my spec", "smoke test", "simulate my spec",
-  "random simulation", "quick check", "sanity check", or "run simulation".
+  "random simulation", "quick check", "sanity check", "run simulation",
+  "try my spec", "does my spec work", or "quick simulation".
 version: 1.0.0
 allowed-tools:
   - Read
@@ -74,12 +75,12 @@ Invoke TLC smoke test:
 mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke
   --fileName "<SPEC_PATH>"
   --cfgFile "<FINAL_CFG>"
-  --extraJavaOpts ["-Dtlc2.TLC.stopAfter=<SECONDS>"]
+  --seconds <SECONDS>
 ```
 
 **Note on `--seconds` flag:**
 
-The MCP tool sets `-Dtlc2.TLC.stopAfter=3` by default for a 3-second simulation. When you pass `--seconds N`, an additional `-Dtlc2.TLC.stopAfter=N` is appended to `extraJavaOpts` to override this default. If the override does not take effect (runtime still ~3s), use `/tla-check` instead for thorough checking.
+The `--seconds N` flag controls the simulation duration by setting `-Dtlc2.TLC.stopAfter=N` in `extraJavaOpts`. The default is 3 seconds. When a custom value is provided, it replaces the default value in the `extraJavaOpts` array passed to the MCP tool.
 
 **Step 8: Report Results**
 
@@ -112,7 +113,7 @@ Phase 2: Using default Spec.cfg
 CFG used: test-specs/Counter.cfg
 Smoke duration: 3 seconds (default 3s unless overridden)
 
-TLC2 Version 2.18 of Day Month 20XX
+TLC2 Version 2.18 of 10 January 2024
 Running in simulation mode with seed 1234567890
 Explored 1523 states in 3 seconds
 

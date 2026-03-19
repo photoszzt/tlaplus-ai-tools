@@ -5,13 +5,12 @@ description: >-
   It should be used when the user asks to "setup TLA+", "install TLA+",
   "TLA+ not working", "tools missing", "java not found", "verify TLA+ installation",
   "check TLA+ tools", "TLA+ prerequisites", "configure TLA+", "MCP server not connecting",
-  "fix TLA+", "SANY not working", or "reinstall TLA+".
+  "fix TLA+", "SANY not working", "reinstall TLA+", "environment check", or "check prerequisites".
 version: 1.0.0
 allowed-tools:
   - Bash
   - Read
   - Write
-  - Grep
   - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_modules
   - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse
 ---
