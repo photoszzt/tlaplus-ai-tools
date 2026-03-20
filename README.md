@@ -81,8 +81,6 @@ claude plugin install tlaplus
 
 **Note:** The plugin now includes automatic setup during installation. The MCP server is built and TLA+ tools are downloaded automatically when you install the plugin.
 
-See [INSTALLATION.md](INSTALLATION.md) for detailed instructions.
-
 ## Requirements
 
 - **Node.js** 18.0.0 or higher
@@ -170,7 +168,6 @@ Follow the guidance to create a simple counter specification.
 
 ## Documentation
 
-- **[INSTALLATION.md](INSTALLATION.md)** - Complete installation guide
 - **[TESTING.md](TESTING.md)** - Testing and verification guide
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines (coming soon)
@@ -284,8 +281,6 @@ claude --plugin-dir $(pwd)
 /plugin list
 ```
 
-See [INSTALLATION.md](INSTALLATION.md) for more troubleshooting.
-
 ## Contributing
 
 Contributions are welcome! This project is derived from and inspired by [vscode-tlaplus](https://github.com/tlaplus/vscode-tlaplus).
@@ -331,7 +326,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Quick Links
 
-- [Installation Guide](INSTALLATION.md)
 - [Testing Guide](TESTING.md)
 - [Changelog](CHANGELOG.md)
 - [License](LICENSE)
