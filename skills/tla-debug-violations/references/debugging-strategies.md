@@ -353,7 +353,7 @@ CONSTRAINT
 
 ### Use Available Tools
 
-- Use the trace-analyzer agent to get automated trace explanations
+- Use `/tla-debug-violations` to work through the counterexample systematically
 - Run `/tla-review` to check spec structure and best practices
 - Add `Print` statements to trace variable values during model checking
 - Use `/tla-explore` to generate specific behavior traces for comparison
@@ -453,11 +453,11 @@ Most bugs are:
 - Missing UNCHANGED
 - Off-by-one errors
 
-Use tools and agents:
+Use tools and skills:
 
 - `/tla-parse` - Syntax check
 - `/tla-smoke` - Quick test
-- trace-analyzer agent - Analyze violations
+- `/tla-debug-violations` - Analyze violations
 - `/tla-review` - Review structure
 
 Debugging TLA+ specifications is an iterative process - each bug fixed teaches you more about the system and makes future bugs easier to find.

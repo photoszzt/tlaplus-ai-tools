@@ -200,7 +200,7 @@ State trace (length 5):
 
 **Next steps**:
 
-1. Analyze trace with trace-analyzer agent
+1. Analyze the trace with `/tla-debug-violations`
 2. Identify which action caused violation
 3. Fix the bug (strengthen guard, fix logic)
 4. Re-check
@@ -319,8 +319,6 @@ View == <<count, status>>  \* Ignore timestamp
 
 For a systematic approach to debugging invariant and property violations, use `/tla-debug-violations`. It provides a step-by-step workflow for minimizing configurations, isolating failures, and analyzing counterexample traces.
 
-You can also use the trace-analyzer agent to get explanations of what failed, why, and how to fix it.
-
 ## Best Practices
 
 ### Start Simple
@@ -412,10 +410,6 @@ For long checks:
 - `/tla-smoke` - Quick test
 - `/tla-check` - Full check
 - `/tla-review` - Comprehensive review
-
-### Related Agents
-
-- `trace-analyzer` - Analyze violations
 
 ### Knowledge Base Articles
 

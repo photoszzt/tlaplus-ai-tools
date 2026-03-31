@@ -277,34 +277,6 @@ Expected:
 - Offers fixes if issues
 ```
 
-#### 3.4 Agents Testing
-
-Test agents spawn and execute correctly.
-
-**Test animation-creator**:
-
-```
-User: "Create animation for Counter.tla"
-
-Expected:
-- Agent spawns
-- Analyzes spec
-- Generates CounterAnim.tla
-- Explains usage
-```
-
-**Test trace-analyzer**:
-
-```
-User: "Analyze this counterexample: [paste trace]"
-
-Expected:
-- Agent spawns
-- Parses trace
-- Explains violation
-- Suggests fixes
-```
-
 ### Level 4: End-to-End Workflows
 
 Test complete user workflows.
@@ -335,8 +307,8 @@ Test complete user workflows.
 2. User: "/tla-review @Spec.tla"
    → Review identifies potential issues
 
-3. User: "Analyze this counterexample: [trace]"
-   → trace-analyzer agent explains violation
+3. User: "/tla-debug-violations @Spec.tla"
+   → Skill guides counterexample analysis and debugging
 
 4. User fixes spec based on suggestions
 
@@ -351,9 +323,9 @@ Test complete user workflows.
 
 ```
 1. User: "Create animation for my queue spec"
-   → animation-creator agent spawns
+   → tla-create-animations skill loads
 
-2. Agent generates QueueAnim.tla
+2. Skill guides creation of QueueAnim.tla
 
 3. User: "/tla-check @QueueAnim.tla"
    → Generates animation
@@ -437,9 +409,8 @@ Expected: Memory error, suggestions provided
 ### Current Limitations
 
 1. **MCP Server Testing**: Requires actual Claude Code environment
-2. **Agent Testing**: Needs full Claude Code to spawn agents
-3. **Hook Testing**: Requires interactive session to trigger
-4. **Skill Triggering**: Depends on Claude's matching logic
+2. **Hook Testing**: Requires interactive session to trigger
+3. **Skill Triggering**: Depends on Claude's matching logic
 
 ### What Can Be Tested Standalone
 
@@ -453,7 +424,6 @@ Expected: Memory error, suggestions provided
 
 ⏳ Skill triggering
 ⏳ Command execution
-⏳ Agent spawning
 ⏳ Hook activation
 ⏳ Full workflow testing
 

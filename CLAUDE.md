@@ -8,7 +8,6 @@ TLA+ AI Tools is a comprehensive Claude Code plugin that integrates TLA+ formal 
 
 - **MCP Server** (`src/`) - TypeScript-based Model Context Protocol server providing TLA+ toolchain access
 - **AI Skills** (`skills/`) - Both educational knowledge modules and operational skills (parsing, checking, validating specs)
-- **Autonomous Agents** (`agents/`) - Self-directed tasks for validation, config generation, and trace analysis
 - **Knowledge Base** (`resources/knowledgebase/`) - 20+ articles on TLA+ best practices and patterns
 
 ## Common Commands
@@ -112,11 +111,9 @@ skills/               # AI skills (educational + operational)
 ├── tla-check/            # Operational: Full model checking with TLC
 ├── tla-review/           # Operational: Comprehensive spec review
 └── tla-setup/            # Operational: Interactive setup and verification
-
-agents/               # Autonomous agents (self-directed tasks)
-├── animation-creator.md # Create animation specs
-└── trace-analyzer.md    # Analyze counterexample traces
 ```
+
+This repository does not ship standalone agent definitions. Interactive workflows are implemented as skills that run in the main conversation context.
 
 ### MCP Tools Exposed
 
@@ -177,7 +174,7 @@ Skills run in the main conversation context where all MCP tools are registered, 
 
 - **Skills (educational)**: Must have YAML frontmatter with `name`, `description`
 - **Skills (operational)**: Must have YAML frontmatter with `name`, `description`, `allowed-tools`
-- **Agents**: Must have YAML frontmatter with `description`, `model`, `color`, `tools`
+- Prefer expressing new workflows as skills; do not add repo-local standalone agent assets
 
 ### Testing
 
@@ -301,13 +298,12 @@ Generate configs using `/tla-symbols`.
 4. Add examples in `examples/` subdirectory if helpful
 5. Update skill description to include triggering phrases
 
-### Adding a New Agent
+### Modeling a New Workflow
 
-1. Create `agents/agent-name.md` with YAML frontmatter
-2. Specify `model` (sonnet/opus/haiku), `color`, `tools`
-3. Write clear triggering conditions in description
-4. Provide step-by-step execution instructions
-5. Test by asking Claude to perform the agent's task
+1. Prefer adding or extending a skill under `skills/`
+2. Keep workflow guidance in the main conversation context instead of repo-local agent files
+3. If the workflow needs new capabilities, add or extend an MCP tool in `src/tools/`
+4. Test the resulting skill/tool flow in Claude Code
 
 ## Troubleshooting
 

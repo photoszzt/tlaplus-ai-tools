@@ -111,7 +111,7 @@ TLC options:
 If violations found:
 
 - Print `Violations detected. See counterexample above.`
-- Suggest: `Ask Claude to "analyze the trace" to invoke the trace-analyzer agent for detailed violation analysis.`
+- Suggest: `Use /tla-debug-violations to work through the counterexample and isolate the failing action.`
 
 If no violations:
 
