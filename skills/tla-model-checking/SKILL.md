@@ -94,6 +94,6 @@ Model Checking Summary for <SPEC_PATH>
   Distinct states: <N>
 ```
 
-If violations were found, suggest: "Use `/tla-debug-violations` or the trace-analyzer agent to understand the counterexample."
+If violations were found, suggest: "Use `/tla-debug-violations` to understand the counterexample."
 
 If all passed, suggest: "Consider increasing constant values or adding more properties to strengthen verification."

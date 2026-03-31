@@ -88,7 +88,7 @@ fi
 
 # Check 4: Plugin structure
 echo -n "Checking plugin structure... "
-REQUIRED_DIRS=("skills" "commands" "agents" "hooks" "dist" ".claude-plugin")
+REQUIRED_DIRS=("skills" "scripts" "src" "resources" ".claude-plugin")
 MISSING_DIRS=()
 
 for dir in "${REQUIRED_DIRS[@]}"; do
@@ -124,13 +124,13 @@ else
   echo "  Run: npm run build"
 fi
 
-# Check 7: Commands directory
-echo -n "Checking commands... "
-COMMAND_COUNT=$(find "$PLUGIN_ROOT/commands" -name "tla-*.md" 2>/dev/null | wc -l)
-if [[ $COMMAND_COUNT -ge 6 ]]; then
-  echo -e "${GREEN}✓${NC} $COMMAND_COUNT commands found"
+# Check 7: Skill packages
+echo -n "Checking skills... "
+SKILL_COUNT=$(find "$PLUGIN_ROOT/skills" -mindepth 2 -maxdepth 2 -name "SKILL.md" 2>/dev/null | wc -l)
+if [[ $SKILL_COUNT -ge 12 ]]; then
+  echo -e "${GREEN}✓${NC} $SKILL_COUNT skills found"
 else
-  echo -e "${YELLOW}⚠${NC} Only $COMMAND_COUNT commands found (expected 6)"
+  echo -e "${YELLOW}⚠${NC} Only $SKILL_COUNT skills found (expected 12)"
   WARNINGS=$((WARNINGS + 1))
 fi
 

@@ -23,9 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `tla-check` - Run model checking with TLC
   - `tla-review` - Comprehensive specification review
   - `tla-setup` - Interactive setup and verification
-- Two AI agents:
-  - `animation-creator` - Create visualization animations
-  - `trace-analyzer` - Analyze counterexample traces
 - Installation infrastructure:
   - Automatic TLA+ tools download via post-install
   - Verification script with auto-fix support
@@ -47,10 +44,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Removed legacy Codex agent installation/config references; the repo now uses skills for interactive workflows.
+
 ### Planned
 
 - Additional skills for TLA+ fundamentals and advanced topics
-- Enhanced agents with more sophisticated analysis
+- Enhanced debugging and animation guidance within skills
 - Marketplace icon and screenshots
 - Community contributions and feedback integration
 

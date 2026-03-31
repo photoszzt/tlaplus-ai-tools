@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CODEX_HOME="${HOME}/.codex"
 SKILLS_DIR="${CODEX_HOME}/skills"
-AGENTS_DIR="${CODEX_HOME}/agents"
+LEGACY_AGENTS_DIR="${CODEX_HOME}/agents"
 CONFIG_FILE="${CODEX_HOME}/config.toml"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 BACKUP_ROOT="${CODEX_HOME}/backups/tlaplus-ai-tools/${TIMESTAMP}"
@@ -146,56 +146,28 @@ if (rewritten.length > 0) {
 NODE
 }
 
-install_agents() {
-  echo "==> Installing Codex agents"
-  mkdir -p "$AGENTS_DIR"
+cleanup_legacy_agents() {
+  echo "==> Cleaning up legacy Codex agents"
 
-  TLAPLUS_CODEX_ROOT="$ROOT_DIR" \
-  TLAPLUS_CODEX_AGENTS_DIR="$AGENTS_DIR" \
+  TLAPLUS_CODEX_LEGACY_AGENTS_DIR="$LEGACY_AGENTS_DIR" \
   TLAPLUS_CODEX_BACKUP_ROOT="$BACKUP_ROOT" \
   TLAPLUS_CODEX_CONFIG_FILE="$CONFIG_FILE" \
   node <<'NODE'
 const fs = require('fs');
 const path = require('path');
 
-const repoRoot = process.env.TLAPLUS_CODEX_ROOT;
-const agentsDir = process.env.TLAPLUS_CODEX_AGENTS_DIR;
+const agentsDir = process.env.TLAPLUS_CODEX_LEGACY_AGENTS_DIR;
 const backupRoot = process.env.TLAPLUS_CODEX_BACKUP_ROOT;
 const configFile = process.env.TLAPLUS_CODEX_CONFIG_FILE;
 
-const agentSpecs = [
-  {
-    name: 'trace-analyzer',
-    source: path.join(repoRoot, 'agents', 'trace-analyzer.md'),
-    configFile: 'agents/trace-analyzer.toml',
-  },
-  {
-    name: 'animation-creator',
-    source: path.join(repoRoot, 'agents', 'animation-creator.md'),
-    configFile: 'agents/animation-creator.toml',
-  },
+const legacyAgentFiles = [
+  'trace-analyzer.toml',
+  'animation-creator.toml',
 ];
-
-function parseAgentMarkdown(markdown) {
-  let body = markdown;
-  let description = '';
-  const frontmatterMatch = markdown.match(/^---\n([\s\S]*?)\n---\n?/);
-  if (frontmatterMatch) {
-    body = markdown.slice(frontmatterMatch[0].length);
-    const descriptionMatch = frontmatterMatch[1].match(/^description:\s*(.+)$/m);
-    if (descriptionMatch) {
-      description = descriptionMatch[1].trim().replace(/^["']|["']$/g, '');
-    }
-  }
-  return { body: body.trimStart(), description };
-}
-
-function tomlMultilineString(value) {
-  if (!value.includes("'''")) {
-    return `'''\n${value}\n'''`;
-  }
-  return `"""\n${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}\n"""`;
-}
+const legacyAgentTables = [
+  'agents."trace-analyzer"',
+  'agents."animation-creator"',
+];
 
 function findTable(lines, tableName) {
   const pattern = new RegExp(`^\\s*\\[${tableName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\]\\s*$`);
@@ -211,101 +183,75 @@ function tableEnd(lines, startIndex) {
   return lines.length;
 }
 
-function setTableKey(lines, tableName, key, valueLine) {
-  let changed = false;
+function removeTable(lines, tableName) {
   let index = findTable(lines, tableName);
   if (index === -1) {
-    if (lines.length > 0 && lines[lines.length - 1].trim() !== '') {
-      lines.push('');
-    }
-    lines.push(`[${tableName}]`);
-    lines.push(valueLine);
-    return true;
+    return false;
   }
 
-  const end = tableEnd(lines, index);
-  const pattern = new RegExp(`^\\s*${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*=`);
-  for (let i = index + 1; i < end; i += 1) {
-    if (pattern.test(lines[i])) {
-      if (lines[i] !== valueLine) {
-        lines[i] = valueLine;
-        changed = true;
-      }
-      return changed;
-    }
+  let start = index;
+  let end = tableEnd(lines, index);
+  if (end < lines.length && lines[end].trim() === '') {
+    end += 1;
+  } else if (start > 0 && lines[start - 1].trim() === '') {
+    start -= 1;
   }
-
-  lines.splice(end, 0, valueLine);
+  lines.splice(start, end - start);
   return true;
 }
 
-const installed = [];
 const backedUp = [];
-const configured = [];
+const removedFiles = [];
+const removedTables = [];
 
-let configLines = fs.existsSync(configFile)
-  ? fs.readFileSync(configFile, 'utf8').split(/\r?\n/)
-  : [];
-let configChanged = false;
+if (fs.existsSync(agentsDir)) {
+  for (const fileName of legacyAgentFiles) {
+    const source = path.join(agentsDir, fileName);
+    if (!fs.existsSync(source)) {
+      continue;
+    }
 
-configChanged = setTableKey(
-  configLines,
-  'features',
-  'multi_agent',
-  'multi_agent = true'
-) || configChanged;
-
-for (const spec of agentSpecs) {
-  if (!fs.existsSync(spec.source)) {
-    continue;
-  }
-
-  const markdown = fs.readFileSync(spec.source, 'utf8');
-  const parsed = parseAgentMarkdown(markdown);
-  const destination = path.join(agentsDir, path.basename(spec.configFile));
-
-  if (fs.existsSync(destination)) {
-    const backupFile = path.join(backupRoot, 'agents', path.basename(spec.configFile));
+    const backupFile = path.join(backupRoot, 'agents', fileName);
     fs.mkdirSync(path.dirname(backupFile), { recursive: true });
-    fs.copyFileSync(destination, backupFile);
+    fs.copyFileSync(source, backupFile);
+    fs.rmSync(source, { force: true });
     backedUp.push(backupFile);
+    removedFiles.push(source);
   }
 
-  const agentConfig = [
-    'model = "gpt-5.4"',
-    'model_reasoning_effort = "medium"',
-    `developer_instructions = ${tomlMultilineString(parsed.body)}`,
-    '',
-  ].join('\n');
-  fs.writeFileSync(destination, agentConfig);
-  installed.push(destination);
-
-  const tableName = `agents."${spec.name}"`;
-  configChanged = setTableKey(
-    configLines,
-    tableName,
-    'description',
-    `description = "${parsed.description || spec.name}"`
-  ) || configChanged;
-  configChanged = setTableKey(
-    configLines,
-    tableName,
-    'config_file',
-    `config_file = "${spec.configFile}"`
-  ) || configChanged;
-  configured.push(spec.name);
+  if (fs.readdirSync(agentsDir).length === 0) {
+    fs.rmdirSync(agentsDir);
+  }
 }
 
-if (configChanged) {
-  fs.writeFileSync(configFile, `${configLines.join('\n').replace(/\n*$/, '\n')}`);
+if (fs.existsSync(configFile)) {
+  const configLines = fs.readFileSync(configFile, 'utf8').split(/\r?\n/);
+  let configChanged = false;
+  for (const tableName of legacyAgentTables) {
+    const removed = removeTable(configLines, tableName);
+    configChanged = removed || configChanged;
+    if (removed) {
+      removedTables.push(tableName);
+    }
+  }
+
+  if (configChanged) {
+    fs.writeFileSync(configFile, `${configLines.join('\n').replace(/\n*$/, '\n')}`);
+  }
 }
 
-console.log(`    Installed ${installed.length} agent configs into ${agentsDir}`);
-if (backedUp.length > 0) {
-  console.log(`    Backed up ${backedUp.length} existing agent configs to ${path.join(backupRoot, 'agents')}`);
-}
-if (configured.length > 0) {
-  console.log(`    Registered agent tables: ${configured.join(', ')}`);
+if (removedFiles.length === 0 && removedTables.length === 0) {
+  console.log('    No legacy agent configs found');
+} else {
+  if (removedFiles.length > 0) {
+    console.log(`    Removed ${removedFiles.length} legacy agent config file(s)`);
+  }
+  if (backedUp.length > 0) {
+    console.log(`    Backed up removed agent config file(s) to ${path.join(backupRoot, 'agents')}`);
+  }
+  if (removedTables.length > 0) {
+    console.log(`    Removed legacy agent tables from config.toml: ${removedTables.join(', ')}`);
+  }
 }
 NODE
 }
@@ -316,7 +262,6 @@ print_summary() {
   echo "  Repo: ${ROOT_DIR}"
   echo "  MCP server: tlaplus -> node ${ROOT_DIR}/scripts/start.js"
   echo "  Skills: ${SKILLS_DIR}/tla-*"
-  echo "  Agents: ${AGENTS_DIR}/trace-analyzer.toml, ${AGENTS_DIR}/animation-creator.toml"
   if [[ -d "$BACKUP_ROOT" ]]; then
     echo "  Backups: ${BACKUP_ROOT}"
   fi
@@ -329,5 +274,5 @@ print_summary() {
 ensure_runtime
 register_mcp_server
 install_skills
-install_agents
+cleanup_legacy_agents
 print_summary
