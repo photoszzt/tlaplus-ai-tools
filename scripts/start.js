@@ -64,6 +64,9 @@ function npmInstall() {
 function runtimeDepsResolvable() {
   try {
     require.resolve("@modelcontextprotocol/sdk");
+    require.resolve("@modelcontextprotocol/sdk/server/mcp.js");
+    require.resolve("@modelcontextprotocol/sdk/server/stdio.js");
+    require.resolve("@modelcontextprotocol/sdk/server/streamableHttp.js");
     require.resolve("fast-xml-parser");
     require.resolve("zod");
     require.resolve("express");
