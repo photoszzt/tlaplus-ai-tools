@@ -70,10 +70,19 @@ jobs:
       - name: Run tests with coverage
         run: npm run test:ci
 
+      - name: Save coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-lcov
+          path: coverage/lcov.info
+          if-no-files-found: error
+
       - name: Upload coverage
         uses: codecov/codecov-action@v6
+        continue-on-error: true
         with:
           files: ./coverage/lcov.info
+          disable_search: true
           flags: mcp-server
           use_oidc: true
           use_pypi: true
