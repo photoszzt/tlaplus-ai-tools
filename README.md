@@ -1,11 +1,11 @@
 # TLA+ AI Tools
 
-> Complete TLA+ formal specification and model checking toolkit for Claude Code
+> TLA+ formal specification and model checking toolkit for Claude Code and Codex
 
 **AI-powered assistance for writing, verifying, and debugging TLA+ specifications.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Node Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D18.14.0-brightgreen)](https://nodejs.org/)
 [![Java Version](https://img.shields.io/badge/java-%3E%3D11-orange)](https://adoptium.net/)
 
 ## Overview
@@ -20,7 +20,7 @@ TLA+ AI Tools is a comprehensive plugin that brings the power of TLA+ formal met
 
 ## Features
 
-### AI Skills (11)
+### AI Skills (12)
 
 **Educational (5):**
 
@@ -30,11 +30,12 @@ TLA+ AI Tools is a comprehensive plugin that brings the power of TLA+ formal met
 - **tla-debug-violations** - Systematic debugging of counterexamples
 - **tla-create-animations** - Visualize specifications with SVG animations
 
-**Operational (6):**
+**Operational (7):**
 
 - **tla-parse** - Parse and validate TLA+ specifications
 - **tla-check** - Run exhaustive model checking with TLC
 - **tla-smoke** - Quick 3-second smoke test
+- **tla-explore** - Generate behavior traces with TLC
 - **tla-symbols** - Extract symbols and generate TLC config
 - **tla-review** - Comprehensive spec review with validation
 - **tla-setup** - Interactive setup and verification
@@ -78,6 +79,24 @@ claude plugin install tlaplus
 
 See [INSTALLATION.md](INSTALLATION.md) for detailed instructions.
 
+### Codex Plugin Installation (local repository)
+
+```bash
+pnpm install
+pnpm run build
+pnpm run setup
+python3 scripts/build_codex_plugin.py
+codex plugin marketplace add "$(pwd)"
+codex plugin add tlaplus@tlaplus-local
+```
+
+The Codex skills are maintained in [`codex/tlaplus/skills/`](codex/tlaplus/skills/),
+while the MCP server implementation is shared with the Claude Code plugin. The
+plugin build installs its runtime dependencies with pnpm before registration;
+pass `--package-manager bun` to use Bun instead. Start
+a new Codex task after installation to load the skills and tools. See the
+[Codex plugin notes](codex/tlaplus/README.md) for rebuild and recovery details.
+
 ### Local install
 
 ```bash
@@ -99,11 +118,11 @@ claude --plugin-dir $(pwd)
 
 ## Requirements
 
-- **Node.js** 18.0.0 or higher
+- **Node.js** 18.14.0 or higher
 - **Java** 11 or higher (for TLA+ tools)
-- **Claude Code**
+- **Claude Code or Codex**
 
-## Quick Start Guide
+## Quick Start Guide (Claude Code)
 
 ### 1. Create Your First Spec
 
@@ -248,6 +267,8 @@ More examples in `skills/*/examples/` directories.
 ```
 tlaplus-ai-tools/
 ├── skills/          # AI skills (educational + operational)
+├── codex/tlaplus/   # Codex-specific skills and plugin manifest
+├── plugins/tlaplus/ # Generated local Codex plugin (gitignored)
 ├── src/             # MCP server source code
 ├── dist/            # Compiled MCP server
 ├── tools/           # TLA+ tools (downloaded)
@@ -260,6 +281,7 @@ tlaplus-ai-tools/
 - ✅ **Linux** (Ubuntu, Debian, Fedora)
 - ✅ **Windows** 10/11 (via WSL for scripts)
 - ✅ **Claude Code**
+- ✅ **Codex**
 
 ## Troubleshooting
 
@@ -285,7 +307,7 @@ npm run setup
 npm run verify
 ```
 
-### Plugin Not Loading
+### Claude Code Plugin Not Loading
 
 ```bash
 # Verify structure
@@ -297,6 +319,16 @@ claude --plugin-dir $(pwd)
 # Check plugin list
 /plugin list
 ```
+
+### Codex Plugin Not Loading
+
+Run `codex plugin list --json` and check for an enabled `tlaplus@tlaplus-local`
+entry whose source is this repository's `plugins/tlaplus` directory. Check
+`plugins/tlaplus/.mcp.json` for its startup path. If the build or bundled JARs
+are missing, run `pnpm run build`, `pnpm run setup`, and
+`python3 scripts/build_codex_plugin.py` from the repository root. Reinstall the
+Codex plugin and start a new task so its tools can load. The `$tla-setup` skill
+runs a Java, JAR, MCP connection, and SANY parse check.
 
 See [INSTALLATION.md](INSTALLATION.md) for more troubleshooting.
 

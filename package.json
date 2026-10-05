@@ -44,8 +44,8 @@
   "scripts": {
     "build": "tsgo",
     "dev": "tsgo --watch",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run build",
+    "prepare": "tsgo",
+    "prepublishOnly": "tsgo",
     "postinstall": "node scripts/postinstall.js",
     "setup": "node scripts/setup.js",
     "verify": "bash scripts/verify.sh",
@@ -59,27 +59,26 @@
     "lint:fix": "oxlint --fix"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.2",
-    "adm-zip": "^0.5.16",
-    "express": "^5.1.0",
-    "fast-xml-parser": "^5.3.3",
-    "tsx": "^4.21.0",
-    "zod": "^3.24.4"
+    "@modelcontextprotocol/sdk": "^1.32.0",
+    "adm-zip": "^0.6.1",
+    "express": "^5.2.1",
+    "fast-xml-parser": "^5.11.2",
+    "tsx": "^4.23.15",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@types/adm-zip": "^0.5.7",
-    "@types/express": "^5.0.2",
+    "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
-    "@types/node": "^22.0.0",
-    "@typescript/native-preview": "^7.0.0-dev.20260317.1",
-    "jest": "^30.2.0",
+    "@types/node": "^22.20.5",
+    "@typescript/native-preview": "^7.0.0-dev.20260707.2",
+    "jest": "^30.5.2",
     "oxfmt": "^0.41.0",
-    "oxlint": "^1.56.0",
-    "ts-jest": "^29.1.1",
+    "oxlint": "^1.86.0",
+    "ts-jest": "^29.4.14",
     "typescript": "^5.9.3"
   },
   "optionalDependencies": {
-    "@napi-rs/canvas": "^0.1.65"
+    "@napi-rs/canvas": "^0.1.100"
   },
   "overrides": {
     "test-exclude": "7.0.1"

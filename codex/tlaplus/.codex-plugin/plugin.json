@@ -1,0 +1,29 @@
+{
+  "name": "tlaplus",
+  "version": "1.0.0",
+  "description": "TLA+ formal specification and model checking tools with AI assistance",
+  "author": {
+    "name": "Zhiting Zhu",
+    "email": "zhitingzzt@gmail.com",
+    "url": "https://github.com/photoszzt"
+  },
+  "homepage": "https://github.com/photoszzt/tlaplus-ai-tools",
+  "repository": "https://github.com/photoszzt/tlaplus-ai-tools",
+  "license": "MIT",
+  "keywords": ["tla+", "formal-verification", "model-checking", "mcp", "formal-methods"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "TLA+ AI Tools",
+    "shortDescription": "Parse and model check TLA+ specifications.",
+    "longDescription": "Use SANY, TLC, animation tools, and guided skills to write, review, and verify TLA+ specifications in Codex.",
+    "developerName": "Zhiting Zhu",
+    "category": "Developer Tools",
+    "capabilities": ["Read", "Write"],
+    "defaultPrompt": [
+      "Parse this TLA+ specification and explain any errors.",
+      "Model check this TLA+ spec and analyze violations.",
+      "Help me write a TLA+ specification for this design."
+    ]
+  }
+}
