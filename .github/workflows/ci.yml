@@ -78,7 +78,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7.1.1
         continue-on-error: true
         with:
           files: ./coverage/lcov.info
