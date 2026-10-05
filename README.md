@@ -71,7 +71,7 @@ Full integration with TLA+ toolchain:
 
 ```bash
 # Add to marketplace
-claude plugin marketplace add https://gitlab-master.nvidia.com/zhitingz/tlaplus-ai-tools.git
+claude plugin marketplace add https://github.com/photoszzt/tlaplus-ai-tools.git
 claude plugin install tlaplus
 ```
 
@@ -105,7 +105,7 @@ a new Codex task after installation to load the skills and tools. See the
 
 ```bash
 # Clone repository
-git clone https://gitlab-master.nvidia.com/zhitingz/tlaplus-ai-tools.git
+git clone https://github.com/photoszzt/tlaplus-ai-tools.git
 cd tlaplus-ai-tools
 
 # Install and setup
