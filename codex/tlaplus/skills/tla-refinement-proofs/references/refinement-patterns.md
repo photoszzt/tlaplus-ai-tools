@@ -69,7 +69,7 @@ To verify refinement with TLC:
 3. Run TLC on the concrete spec:
 
    ```
-   /tla-check ConcreteSpec.tla
+   $tla-check ConcreteSpec.tla
    ```
 
 4. If TLC reports no violations, the concrete spec refines the abstract spec.

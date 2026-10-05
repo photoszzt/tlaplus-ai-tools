@@ -3,6 +3,8 @@ dist/
 tools/*.jar
 tools/.setup-lock.json
 coverage/
+build/codex/
+plugins/tlaplus/
 .env
 __pycache__/
 

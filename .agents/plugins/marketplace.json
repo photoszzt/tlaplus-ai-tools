@@ -1,0 +1,20 @@
+{
+  "name": "tlaplus-local",
+  "interface": {
+    "displayName": "Tlaplus Local"
+  },
+  "plugins": [
+    {
+      "name": "tlaplus",
+      "source": {
+        "source": "local",
+        "path": "./plugins/tlaplus"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

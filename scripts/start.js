@@ -63,7 +63,6 @@ function npmInstall() {
 // but dependencies are still resolvable through the parent tree.
 function runtimeDepsResolvable() {
   try {
-    require.resolve("@modelcontextprotocol/sdk");
     require.resolve("@modelcontextprotocol/sdk/server/mcp.js");
     require.resolve("@modelcontextprotocol/sdk/server/stdio.js");
     require.resolve("@modelcontextprotocol/sdk/server/streamableHttp.js");
