@@ -7,7 +7,7 @@ import * as fs from "fs";
 import { listTlaModulesInJar, resolveJarfilePath, clearJarCache } from "../../utils/jarfile";
 import { getModuleSearchPaths } from "../../utils/tla-tools";
 
-const TOOLS_DIR = path.resolve(__dirname, "../../../../tools");
+const TOOLS_DIR = path.resolve(__dirname, "../../../tools");
 const TLA2TOOLS_JAR = path.join(TOOLS_DIR, "tla2tools.jar");
 
 const describeIfJarExists = fs.existsSync(TLA2TOOLS_JAR) ? describe : describe.skip;

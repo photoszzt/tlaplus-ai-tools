@@ -4,8 +4,8 @@
 
 **Refinement** means that a lower-level (concrete/implementation) specification correctly implements the behavior of a higher-level (abstract) specification. Every behavior allowed by the concrete spec must correspond to a behavior allowed by the abstract spec.
 
-- **Abstract spec**: Describes *what* the system should do at a high level
-- **Concrete spec**: Describes *how* the system does it with more implementation detail
+- **Abstract spec**: Describes _what_ the system should do at a high level
+- **Concrete spec**: Describes _how_ the system does it with more implementation detail
 
 Refinement is semantic -- it is about the meaning of the specs (their behaviors), not syntax. The specs do not need to share variables or modules.
 
@@ -96,22 +96,23 @@ CommitTransfer == /\ balance' = balance + amount
 
 The `BeginTransfer` step does not change the abstract state (`balance`), so it appears as a stuttering step from the abstract spec's perspective. This is valid as long as the observable behavior (changes to `balance`) matches.
 
-The abstract spec does not care *how* the result was achieved, as long as the resulting behavior is the same.
+The abstract spec does not care _how_ the result was achieved, as long as the resulting behavior is the same.
 
 ## EXTENDS vs. INSTANCE
 
 Use `EXTENDS` to import definitions directly (like standard modules: Naturals, Sequences). This inlines all operators but can cause name clashes.
 
 Use `INSTANCE` for:
+
 - **Namespacing**: Avoid name clashes with qualified access (`M!Op`)
 - **Parameterization**: Substitute CONSTANTS and VARIABLES via `WITH`
 - **Refinement**: Map concrete variables to abstract variables
 - **Multiple instances**: Create different parameterized versions of the same module
 
-| Use Case                       | EXTENDS | INSTANCE |
-|-------------------------------|---------|----------|
-| Standard library imports       | Yes     | No       |
-| Avoid name clashes            | No      | Yes (qualified access) |
-| Module has CONSTANTS          | No      | Yes (WITH) |
+| Use Case                      | EXTENDS | INSTANCE                 |
+| ----------------------------- | ------- | ------------------------ |
+| Standard library imports      | Yes     | No                       |
+| Avoid name clashes            | No      | Yes (qualified access)   |
+| Module has CONSTANTS          | No      | Yes (WITH)               |
 | Module has VARIABLES          | No      | Yes (refinement mapping) |
-| Multiple parameterized copies | No      | Yes      |
+| Multiple parameterized copies | No      | Yes                      |

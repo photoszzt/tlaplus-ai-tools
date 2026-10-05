@@ -81,6 +81,7 @@ Explicitly reference facts, assumptions, and definitions the prover needs:
 ```
 
 The `BY` clause lists:
+
 - Named assumptions (e.g., `Assumption`)
 - Previous proof steps (e.g., `<1>1`, `<1>2`)
 - Proof strategies (e.g., `PTL`, `SMT`)
