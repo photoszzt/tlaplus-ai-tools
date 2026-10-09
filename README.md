@@ -335,6 +335,22 @@ runs a Java, JAR, MCP connection, and SANY parse check.
 
 ## Contributing
 
+### Maintenance
+
+Run `python3 scripts/sync_upstream.py --dry-run` to preview imported knowledge
+updates, then `python3 scripts/sync_upstream.py` to merge them and refresh the
+published TLA+ JARs. Use `--docs-only` or `--jars-only` for one component, and
+`--upstream /path/to/vscode-tlaplus` to read a local upstream clone. Install dev
+dependencies first with `npm ci` and commit knowledge-base edits before applying.
+The upstream currently publishes knowledge articles, not plugin skills; local
+skills remain maintained here and read the updated guidance. Conflicts stop the
+doc update without writing articles or advancing its recorded revision.
+
+`resources/knowledgebase/.upstream-revision` records the last imported upstream
+snapshot. Its initial baseline is the last knowledge-base commit before our
+February 27, 2026 manual sync. Rebuild and reinstall the Codex bundle after
+updating source articles or JARs.
+
 Contributions are welcome! This project is derived from and inspired by [vscode-tlaplus](https://github.com/tlaplus/vscode-tlaplus).
 
 Please:

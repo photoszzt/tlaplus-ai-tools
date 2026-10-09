@@ -26,6 +26,13 @@ This document uses a **producer-consumer** (bounded buffer) specification as a r
   ```
   See `tla-functions-records-sequences.md` for details on `EXCEPT` and nested updates.
 
+### CASE
+
+- Avoid `CASE` with overlapping guards (guards that can hold simultaneously). Per _Specifying Systems_ §16.1.4, the chosen arm is then unspecified, so the value of the `CASE` is not determined by the language semantics. Different tools may resolve the choice differently, making the spec non-portable: the same `CASE` can yield different verdicts depending on which matching arm a tool picks. Flag any `CASE` whose guards are not mutually exclusive. If all overlapping arms yield the same value the overlap is benign, but then it should be removed by merging those arms into one (disjoining their guards), leaving non-overlapping guards.
+  - To decide overlap: check pairwise disjointness (`~(g_i /\ g_j)`) as an `INVARIANT` with TLC/Apalache (reachable states only), or prove it deductively with TLAPS.
+
+- Use `CASE` only as syntactic sugar for a nested `IF-THEN-ELSE` with non-overlapping guards. Do not use `CASE` to express non-determinism. For a non-deterministic next-state relation, write a disjunction of action formulas `(p1 /\ A1) \/ ... \/ (pn /\ An)`, where each `Ai` is an action. To choose non-deterministically among values, use existential quantification, e.g. `\E v \in S : x' = v`.
+
 ## Spec Structure
 
 - Use SANY to perform syntax and level-checking of a TLA+ module before reviewing. This catches syntax errors early and ensures the spec is well-formed. If you are an AI assistant, use the `tlaplus_mcp_sany_parse` tool to parse the spec.
@@ -40,6 +47,26 @@ This document uses a **producer-consumer** (bounded buffer) specification as a r
   - The only notable exception is the `TLC!@@` operator, which merges two functions.
   - The use of `RandomElement` is almost always wrong. Use non-determinism (`\E` or disjunction) instead. See `tla-RandomElement.md` for details.
   - Use of `TLC!Assert` is discouraged in plain TLA+ specs. `Assert` is primarily used in PlusCal specs. An invariant is a better alternative, and TLC will report a counterexample if the invariant is violated.
+
+### System and auxiliary declarations
+
+Declare system parameters and state separately from auxiliary modeling constants and variables:
+
+```tla
+\* System parameters and state.
+CONSTANTS Producers, Consumers, Capacity
+VARIABLES buffer, pc
+
+\* Auxiliary modeling declarations.
+CONSTANT SpuriousWakeups  \* Model switch, not implementation configuration.
+VARIABLE enqueueCount    \* History variable counting enqueues.
+```
+
+Classify by semantic role: `pc` represents system control state even without a corresponding implementation field.
+
+- Document each auxiliary declaration's effect on behaviors: history variables must not restrict them; model switches or bounds may. Identify settings matching the implementation.
+- Declare constants and variables used solely by the model-checking workload in the model-checking module, not in the system specification.
+- Apply the usual assumptions and `TypeOK` checks to both categories. Grouping changes neither scope nor semantics.
 
 ### Constants and Assumptions
 
@@ -107,8 +134,8 @@ This document uses a **producer-consumer** (bounded buffer) specification as a r
 
 ### Configuration file
 
-- Consider whether deadlock checking is appropriate for your spec. Some specs legitimately terminate (e.g., when producers stop producing and consumers finish consuming all items from the buffer), and reporting this as a deadlock would be a false positive. In such cases, disable deadlock checking in the TLC configuration with `CHECK_DEADLOCK FALSE`. Additionally, consider adding an invariant that characterizes states in which the system may terminate, for example
-  `(~ ENABLED Next) <=> buffer = <<>>`.
+- Consider whether deadlock checking is appropriate for your spec. Some specs legitimately terminate (e.g., when producers stop producing and consumers finish consuming all items from the buffer), and reporting this as a deadlock would be a false positive. In such cases, disable deadlock checking in the TLC configuration with `CHECK_DEADLOCK FALSE`. Additionally, consider adding an invariant that constrains the states in which the system may terminate, for example
+  `(~ ENABLED Next) => buffer = <<>>`.
 
 ### Simulation and Exhaustive Model Checking
 
