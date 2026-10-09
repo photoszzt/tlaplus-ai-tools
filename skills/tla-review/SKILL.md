@@ -109,6 +109,11 @@ Store result:
 
 **Step 8: Generate Review Report**
 
+Read `resources/knowledgebase/tla-review-guidelines.md` from this plugin's root
+and evaluate its applicable guidelines alongside the checklist below. This is
+the imported upstream guidance; read the current file rather than relying on
+a copied checklist alone.
+
 Print comprehensive review summary:
 
 ```
