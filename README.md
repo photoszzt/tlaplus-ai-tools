@@ -71,7 +71,7 @@ Full integration with TLA+ toolchain:
 
 ```bash
 # Add to marketplace
-claude plugin marketplace add https://gitlab-master.nvidia.com/zhitingz/tlaplus-ai-tools.git
+claude plugin marketplace add https://github.com/photoszzt/tlaplus-ai-tools.git
 claude plugin install tlaplus
 ```
 
@@ -80,7 +80,7 @@ claude plugin install tlaplus
 ### Codex Plugin Installation
 
 ```bash
-codex plugin marketplace add https://gitlab-master.nvidia.com/zhitingz/tlaplus-ai-tools.git
+codex plugin marketplace add https://github.com/photoszzt/tlaplus-ai-tools.git
 codex plugin add tlaplus@tlaplus
 ```
 
@@ -96,7 +96,7 @@ previous `tlaplus-local` installation.
 
 ```bash
 # Clone repository
-git clone https://gitlab-master.nvidia.com/zhitingz/tlaplus-ai-tools.git
+git clone https://github.com/photoszzt/tlaplus-ai-tools.git
 cd tlaplus-ai-tools
 
 # Install and setup
