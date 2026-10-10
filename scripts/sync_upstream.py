@@ -90,7 +90,7 @@ def sync_docs(root: Path, upstream: str, ref: str, dry_run: bool) -> None:
             target = root / name
             if target.is_symlink() or target.parent.resolve() != (root / ARTICLES).resolve():
                 raise ValueError(f"Refusing to replace a symlink or unexpected path: {name}")
-            local = target.read_bytes() if target.exists() else None
+            local = target.read_bytes().replace(b"\r\n", b"\n") if target.exists() else None
             if new is not None:
                 new = format_doc(root, name, new)
             if old is not None:
