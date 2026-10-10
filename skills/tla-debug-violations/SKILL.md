@@ -72,7 +72,10 @@ INVARIANT TypeInvariant
 INVARIANT SafetyInvariant
 ```
 
-**Why**: TLC configuration files (.cfg) do not support comments, so you must remove the line entirely (you can re-add it later).
+**Why**: Disabling temporal properties isolates invariant failures. TLC configuration
+files support TLA+ comments (`\*` for a line or `(* ... *)` for a block), so
+commenting out a `PROPERTY` entry is also valid. Restore the entries after this
+check.
 
 ### Step 3: Check Invariants First
 
@@ -89,8 +92,9 @@ Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check` with `fileName` set to
 
 **If invariants pass**:
 
-- Your safety properties are correct
-- The issue is with liveness properties
+- No invariant violation was found in this model configuration; this does not
+  prove safety for every configuration
+- Continue with property-specific trace analysis
 - Use `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore` to generate specific behavior traces that help visualize the problematic execution path
 - Proceed to Step 4
 

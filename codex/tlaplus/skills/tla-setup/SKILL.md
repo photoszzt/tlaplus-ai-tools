@@ -23,20 +23,22 @@ installation when the user has asked you to set up or repair the environment.
 
 ## 2. Check the bundled TLA+ tools
 
-Find this installed plugin's `.mcp.json` and read the `tlaplus` server's `cwd`.
-That directory is the MCP server's runtime root. Check that both of these files
-exist there and have nonzero size:
+Start from this loaded skill's absolute file path and walk up to the directory
+containing `.codex-plugin/plugin.json`. That is the installed runtime root.
+`codex plugin list --json` identifies the installation, but its source path
+is the marketplace checkout, not the runtime cache; do not repair that source
+by mistake. Read the root manifest's declared `.mcp-codex.json`; its
+`cwd: "."` resolves to this installed plugin root. Check that both of these
+files exist there and have nonzero size:
 
 - `tools/tla2tools.jar`
 - `tools/CommunityModules-deps.jar`
 
-Report each file's path and size. The plugin build bundles these JARs. If they
-are missing in a repo-backed installation, run `pnpm run setup` at the source
-repository root to download the pinned versions, then run
-`python3 scripts/build_codex_plugin.py` there to rebuild the plugin. Reinstall
-`tlaplus@tlaplus-local` and start a new Codex task to load the rebuilt plugin.
-If this is not a repo-backed installation, use its own installation procedure
-instead. Do not substitute unverified JAR versions.
+Report each path and size. The first MCP startup downloads missing JARs. If
+startup setup failed, fix the reported Java, npm, or network error and restart
+the MCP server. For manual repair, run `npm run setup` in the installed runtime
+root. Do not substitute unverified JAR versions. Reinstall `tlaplus@tlaplus` and
+start a new task after refreshing a Git marketplace installation.
 
 ## 3. Check the MCP connection
 
@@ -49,17 +51,17 @@ If the tools are missing or the call fails:
 
 1. Check `codex plugin list --json` for an enabled `tlaplus` installation and
    report its marketplace and source path.
-2. Check the installed plugin's `.mcp.json` command, args, and cwd. Confirm
-   that the startup script and `dist/index.js` exist in the runtime root.
+2. Check the installed plugin's `.mcp-codex.json` command, args, and cwd. Confirm
+   that `scripts/start.js` and `src/index.ts` exist in the runtime root.
 3. Check Node.js availability and whether the runtime dependencies declared in
-   the plugin's `package.json` are installed. The startup script reports missing
-   dependencies but does not install them. In a repo-backed installation, run
-   `python3 scripts/build_codex_plugin.py` from the source repository root;
-   that step installs and checks dependencies. Then refresh and reinstall the
-   plugin.
+   the plugin's `package.json` are installed. Startup installs missing production
+   dependencies with npm lifecycle scripts disabled; it runs TypeScript through
+   `tsx` without a manual build. If automatic setup failed, fix the reported
+   error and restart. For manual provisioning, run
+   `npm ci --omit=dev --ignore-scripts` and `npm run setup` in the installed root.
 4. If the plugin was just installed or rebuilt, start a new Codex task so the
-   new MCP tools and skills can load. If the files or build are missing, repair
-   them in the source repository and reinstall the plugin.
+   new MCP tools and skills can load. If tracked source files are missing,
+   refresh the marketplace and reinstall the plugin.
 
 Do not run Java or TLC directly as a substitute for a failed MCP connection.
 

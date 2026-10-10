@@ -77,29 +77,20 @@ claude plugin install tlaplus
 
 **Note:** The plugin now includes automatic setup during installation. The MCP server is built and TLA+ tools are downloaded automatically when you install the plugin.
 
-### Codex Plugin Installation (local repository)
-
-Codex supports Git-backed marketplaces, but this repository currently requires a
-local build: the marketplace points to the gitignored `plugins/tlaplus` directory,
-which bundles the compiled MCP server, TLA+ JARs, and runtime dependencies.
-Register a local clone after building it; adding only the repository URL does not
-produce that plugin bundle.
+### Codex Plugin Installation
 
 ```bash
-pnpm install
-pnpm run build
-pnpm run setup
-python3 scripts/build_codex_plugin.py
-codex plugin marketplace add "$(pwd)"
-codex plugin add tlaplus@tlaplus-local
+codex plugin marketplace add https://gitlab-master.nvidia.com/zhitingz/tlaplus-ai-tools.git
+codex plugin add tlaplus@tlaplus
 ```
 
-The Codex skills are maintained in [`codex/tlaplus/skills/`](codex/tlaplus/skills/),
-while the MCP server implementation is shared with the Claude Code plugin. The
-plugin build installs its runtime dependencies with pnpm before registration;
-pass `--package-manager bun` to use Bun instead. Start
-a new Codex task after installation to load the skills and tools. See the
-[Codex plugin notes](codex/tlaplus/README.md) for rebuild and recovery details.
+No local build is required. On first startup, the installed plugin downloads its
+runtime dependencies and TLA+ JARs automatically, then runs the shared TypeScript
+MCP server through `tsx`. Later startups reuse those files. Node.js, npm, Java,
+and network access are needed for initial setup. The Codex skills are maintained
+in [`codex/tlaplus/skills/`](codex/tlaplus/skills/). See the
+[Codex plugin notes](codex/tlaplus/README.md) for updates and migration from the
+previous `tlaplus-local` installation.
 
 ### Local install
 
@@ -271,7 +262,7 @@ More examples in `skills/*/examples/` directories.
 tlaplus-ai-tools/
 ├── skills/          # AI skills (educational + operational)
 ├── codex/tlaplus/   # Codex-specific skills and plugin manifest
-├── plugins/tlaplus/ # Generated local Codex plugin (gitignored)
+├── .codex-plugin/   # Codex manifest for Git marketplace installation
 ├── src/             # MCP server source code
 ├── dist/            # Compiled MCP server
 ├── tools/           # TLA+ tools (downloaded)
@@ -325,13 +316,12 @@ claude --plugin-dir $(pwd)
 
 ### Codex Plugin Not Loading
 
-Run `codex plugin list --json` and check for an enabled `tlaplus@tlaplus-local`
-entry whose source is this repository's `plugins/tlaplus` directory. Check
-`plugins/tlaplus/.mcp.json` for its startup path. If the build or bundled JARs
-are missing, run `pnpm run build`, `pnpm run setup`, and
-`python3 scripts/build_codex_plugin.py` from the repository root. Reinstall the
-Codex plugin and start a new task so its tools can load. The `$tla-setup` skill
-runs a Java, JAR, MCP connection, and SANY parse check.
+Run `codex plugin list --json` and check for an enabled `tlaplus@tlaplus`
+entry. First startup installs the cached runtime's dependencies and missing JARs.
+If setup fails, read the MCP startup diagnostic, fix the reported Java, npm, or
+network problem, and restart the server. Use `$tla-setup` to verify Java, JARs,
+the MCP connection, and a SANY parse. See the
+[Codex plugin notes](codex/tlaplus/README.md) for recovery instructions.
 
 ## Contributing
 
@@ -348,8 +338,9 @@ doc update without writing articles or advancing its recorded revision.
 
 `resources/knowledgebase/.upstream-revision` records the last imported upstream
 snapshot. Its initial baseline is the last knowledge-base commit before our
-February 27, 2026 manual sync. Rebuild and reinstall the Codex bundle after
-updating source articles or JARs.
+February 27, 2026 manual sync. After publishing source changes, refresh the
+Codex marketplace with `codex plugin marketplace upgrade tlaplus`, reinstall
+`tlaplus@tlaplus`, and start a new task.
 
 Contributions are welcome! This project is derived from and inspired by [vscode-tlaplus](https://github.com/tlaplus/vscode-tlaplus).
 

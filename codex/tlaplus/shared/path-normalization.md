@@ -7,7 +7,10 @@ When a skill receives a file path argument, it may include a leading `@` prefix 
 1. If the argument starts with `@`, remove only a single leading `@` to get the actual file path (e.g., `@@file` becomes `@file`)
 2. If the argument does not start with `@`, use it as-is
 3. Both forms (`@Counter.tla` and `Counter.tla`) are equivalent — the `@` is optional
-4. If the resulting path is already absolute, use it as-is. Otherwise, resolve it relative to the current working directory
+4. If the resulting path is already absolute, use it as-is. Otherwise, resolve it relative to the task's working directory, not the cached plugin directory or MCP server's working directory
+
+Before an MCP call, send the resolved absolute filesystem paths. The examples
+below illustrate only removal of the `@` prefix.
 
 ## Examples
 

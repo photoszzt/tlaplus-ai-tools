@@ -24,7 +24,7 @@ $tla-review test-specs/Counter.tla test-specs/Counter.cfg
 $tla-review test-specs/Counter.tla --no-smoke
 ```
 
-All forms work identically. See `shared/path-normalization.md` for path normalization rules.
+All forms work identically. See `codex/tlaplus/shared/path-normalization.md` for path normalization rules.
 
 ## What This Does
 
@@ -83,7 +83,7 @@ Store result:
 
 If smoke is enabled (no `--no-smoke` flag):
 
-Apply the CFG Selection Algorithm documented in `shared/cfg-selection-algorithm.md`.
+Apply the CFG Selection Algorithm documented in `codex/tlaplus/shared/cfg-selection-algorithm.md`.
 
 If Phase 1 finds no config file, set `SMOKE_SKIPPED=true` and continue to review instead of exiting. This intentionally overrides the CFG algorithm's default exit behavior so the review can still provide value without a config file.
 
@@ -93,7 +93,8 @@ Call `mcp__tlaplus__tlaplus_mcp_tlc_smoke` with:
 
 - `fileName=<SPEC_PATH>`
 - `cfgFile=<FINAL_CFG>`
-- `seconds=3`
+
+Use the tool's default three-second simulation; do not pass a `seconds` argument.
 
 Store result:
 
@@ -106,6 +107,12 @@ Read `resources/knowledgebase/tla-review-guidelines.md` from this plugin's root
 and evaluate its applicable guidelines alongside the checklist below. This is
 the imported upstream guidance; read the current file rather than relying on
 a copied checklist alone.
+
+If model state strings or dynamically constructed record keys contain non-ASCII
+text, flag TLC's fingerprinting and serialization limitations. Read
+`codex/tlaplus/skills/tla-getting-started/references/syntax-basics.md` from the plugin root for
+the upstream evidence. A run reporting fingerprint collisions must not be
+presented as successful verification.
 
 Print comprehensive review summary:
 

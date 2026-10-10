@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "tlaplus": {
+      "command": "node",
+      "args": ["scripts/start.js"],
+      "cwd": ".",
+      "env": {
+        "TLAPLUS_AUTO_INSTALL": "1",
+        "NODE_ENV": "production"
+      },
+      "startup_timeout_sec": 180,
+      "tool_timeout_sec": 3600
+    }
+  }
+}

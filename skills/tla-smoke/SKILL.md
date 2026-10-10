@@ -69,13 +69,18 @@ Apply the CFG Selection Algorithm documented in `skills/shared/cfg-selection-alg
 
 **Step 6: Call MCP Tool**
 
+Set `TIMEOUT_MS = max(120000, (SECONDS + 30) * 1000)` to allow startup time
+and avoid cutting off a longer requested simulation. The tool has no `seconds`
+argument; its default three-second stop time is overridden by `extraJavaOpts`.
+
 Invoke TLC smoke test:
 
 ```
 mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke
   --fileName "<SPEC_PATH>"
   --cfgFile "<FINAL_CFG>"
-  --seconds <SECONDS>
+  --extraJavaOpts ["-Dtlc2.TLC.stopAfter=<SECONDS>"]
+  --timeoutMs <TIMEOUT_MS>
 ```
 
 **Step 7: Report Results**

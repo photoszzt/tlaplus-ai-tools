@@ -4,6 +4,7 @@
  * Bootstrap script for TLA+ MCP server.
  *
  * - Auto-installs dependencies if key runtime deps are not resolvable
+ * - Downloads missing pinned TLA+ tools when auto-install is enabled
  * - Runs from TypeScript source (via tsx) when available
  * - Falls back to pre-compiled dist/index.js when tsx is unavailable
  * - Cross-platform: uses Node.js instead of bash
@@ -47,8 +48,8 @@ function isAutoInstallAllowed() {
 function npmInstall() {
   const hasLockfile = fs.existsSync(path.join(rootDir, "package-lock.json"));
   const npmArgs = hasLockfile
-    ? ["ci", "--no-audit", "--no-fund"]
-    : ["install", "--no-audit", "--no-fund"];
+    ? ["ci", "--no-audit", "--no-fund", "--ignore-scripts"]
+    : ["install", "--no-audit", "--no-fund", "--ignore-scripts"];
   if (process.env.NODE_ENV === "production") {
     npmArgs.push("--omit=dev");
   }
@@ -101,6 +102,31 @@ if (!runtimeDepsResolvable()) {
     );
     process.exit(typeof err.status === "number" ? err.status : 1);
   }
+}
+
+const toolsDir = process.env.TLA_TOOLS_DIR || path.join(rootDir, "tools");
+if (
+  isAutoInstallAllowed() &&
+  !process.argv.includes("--tools-dir") &&
+  ["tla2tools.jar", "CommunityModules-deps.jar"].some(
+    (jar) => !fs.existsSync(path.join(toolsDir, jar)),
+  )
+) {
+  try {
+    execFileSync(process.execPath, [path.join(rootDir, "scripts", "setup.js")], {
+      stdio: ["ignore", "pipe", "pipe"],
+      cwd: rootDir,
+    });
+  } catch (err) {
+    process.stderr.write(
+      "Error: Failed to set up TLA+ tools.\n" + String(err.stderr || err.stdout || err) + "\n",
+    );
+    process.exit(1);
+  }
+}
+
+if (process.env.TLA_TOOLS_DIR && !process.argv.includes("--tools-dir")) {
+  process.argv.push("--tools-dir", toolsDir);
 }
 
 const srcEntry = path.join(rootDir, "src", "index.ts");

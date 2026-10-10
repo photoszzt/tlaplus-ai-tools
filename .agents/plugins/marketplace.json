@@ -1,14 +1,14 @@
 {
-  "name": "tlaplus-local",
+  "name": "tlaplus",
   "interface": {
-    "displayName": "Tlaplus Local"
+    "displayName": "TLA+ AI Tools"
   },
   "plugins": [
     {
       "name": "tlaplus",
       "source": {
         "source": "local",
-        "path": "./plugins/tlaplus"
+        "path": "./"
       },
       "policy": {
         "installation": "AVAILABLE",
