@@ -33,6 +33,7 @@ def check():
             git(repo, "config", "user.name", "Sync Test")
             git(repo, "config", "user.email", "sync@example.invalid")
             git(repo, "config", "commit.gpgsign", "false")
+            git(repo, "config", "core.autocrlf", "input")
             hooks = repo / ".git" / "empty-hooks"
             hooks.mkdir()
             git(repo, "config", "core.hooksPath", str(hooks))
@@ -41,7 +42,8 @@ def check():
         upstream_doc.write_text("# Guide\n\nUpstream: old.\n\nMiddle section.\n\nLocal note: original.\n")
         initial = commit(upstream)
         local_doc = local / sync.ARTICLES / "guide.md"
-        local_doc.write_text(upstream_doc.read_text().replace("Local note: original.", "Local note: adapted."))
+        # Reproduce a Windows checkout against Git's LF-normalized blobs.
+        local_doc.write_bytes(upstream_doc.read_text().replace("Local note: original.", "Local note: adapted.").replace("\n", "\r\n").encode())
         revision = local / sync.REVISION
         local_only = local / sync.ARTICLES / "local-only.md"
         local_only.write_text("Locally authored\n")
