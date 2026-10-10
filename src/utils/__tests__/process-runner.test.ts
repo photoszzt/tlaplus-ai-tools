@@ -7,6 +7,28 @@ describe("process-runner", () => {
     jest.setTimeout(15000);
   });
 
+  it("delivers output while the process is still running", async () => {
+    const controller = new AbortController();
+    let observed = false;
+    const options = {
+      command: node,
+      args: ["-e", "process.stdout.write('ready\\n'); setInterval(() => {}, 1000)"],
+      signal: controller.signal,
+      timeoutMs: 3000,
+      onOutput: (chunk: Buffer, stream: "stdout" | "stderr") => {
+        if (stream === "stdout" && chunk.toString().includes("ready")) {
+          observed = true;
+          controller.abort();
+        }
+      },
+    };
+    const result = await runProcess(options);
+    expect(observed).toBe(true);
+    expect(result.aborted).toBe(true);
+    expect(result.timedOut).toBe(false);
+    expect(result.stdout).toContain("ready");
+  });
+
   it("never-ending stream cannot hang the runner (timeout)", async () => {
     const started = Date.now();
     const result = await runProcess({
@@ -22,14 +44,27 @@ describe("process-runner", () => {
     expect(Date.now() - started).toBeLessThan(5000);
   });
 
+  it("preserves output and completes when its live output observer throws", async () => {
+    const result = await runProcess({
+      command: node,
+      args: ["-e", "process.stdout.write('ready'); process.stderr.write('diagnostic')"],
+      timeoutMs: 3000,
+      onOutput: () => {
+        throw new Error("observer-private-details");
+      },
+    });
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("ready");
+    expect(result.stderr).toContain("diagnostic");
+    expect(result.combined).toContain("Output observer failed");
+    expect(result.combined).not.toContain("observer-private-details");
+  });
+
   it("timeout kills process and returns partial logs", async () => {
     const result = await runProcess({
       command: node,
-      args: [
-        "-e",
-        "let i = 0; setInterval(() => process.stdout.write('line-' + (i++) + '\\n'), 5)",
-      ],
-      timeoutMs: 500,
+      args: ["-e", "process.stdout.write('line-0\\n'); setInterval(() => {}, 1000)"],
+      timeoutMs: 3000,
       killGraceMs: 100,
     });
 

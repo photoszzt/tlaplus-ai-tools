@@ -231,6 +231,43 @@ Foreign or opaque Origins receive HTTP 403 before the request body is parsed.
 Remote access requires a tunnel or a local authenticated proxy. A proxy must
 forward a loopback Host header and enforce its own browser Origin policy.
 
+### TLC Progress and Logging
+
+TLC tools stream native progress/statistics messages while Java runs. Request
+progress with `_meta.progressToken`; integer `0` and empty-string tokens are
+supported. Progress counts updates and omits `total`, because TLC discovers
+the state space during execution. The message carries generated/distinct state
+counts, queue size, search depth or simulation trace count, and available rates.
+Simulation and DFID can report `-1` for unavailable statistics.
+No percentage or ETA is inferred.
+
+Progress reports use a five-second TLC interval unless `extraJavaOpts` supplies
+`-Dtlc2.TLC.progressInterval=<seconds>`. Lifecycle and final-status updates also
+arrive for short runs. Notifications are rate-limited and buffered in a bounded
+queue; the latest statistics are retained during bursts.
+
+The server supports `logging/setLevel` and sends safe TLC lifecycle/statistics
+through `notifications/message`. Model state dumps and arbitrary `PrintT`
+output remain in the tool result. Stdio logging levels apply to the connection;
+the stateless HTTP endpoint shares one minimum level across clients.
+
+### Conformance Testing
+
+From a development checkout, run `npm run setup`, then
+`npm run test:conformance`. The command uses the pinned MCP conformance revision
+`c37eec888e1c6ff140af79987a40008548b7cc5f` against MCP `2025-11-25` and writes
+reports under `conformance-results/`.
+
+Application results and fixture results are separate. The application baseline
+records 21 optional-capability or prescribed-fixture failures and the
+unexercised optional session-ID gate; a baseline pass
+does not claim complete SDK conformance. The test-only fixture server reuses
+production tool/resource registration, HTTP guards, and the live TLC wrapper,
+then adds the required `test_*` tools, prompts, resources, and interactive
+fixtures. Its active suite runs with no expected failures. Production does not
+register fixture capabilities. The npm package excludes fixture files; Git
+installations contain the test sources without activating them.
+
 ## Examples
 
 ### Counter Specification

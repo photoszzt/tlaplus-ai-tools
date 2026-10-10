@@ -4,7 +4,8 @@ import * as fs from "fs";
 import * as path from "path";
 import { ServerConfig } from "../types";
 import { resolveAndValidatePath } from "../utils/paths";
-import { getSpecFiles, runTlcAndWait } from "../utils/tlc-helpers";
+import { getSpecFiles, runTlcAndWait, TlcProgressCallback } from "../utils/tlc-helpers";
+import type { LoggingLevel, ServerNotification } from "@modelcontextprotocol/sdk/types.js";
 import { formatErrorResponse } from "./shared/error-formatting";
 import { registerTool } from "./shared/tool-registration";
 
@@ -12,14 +13,14 @@ const DEFAULT_SMOKE_TIMEOUT_MS = 120000;
 const DEFAULT_EXPLORE_TIMEOUT_MS = 600000;
 const DEFAULT_TRACE_TIMEOUT_MS = 600000;
 
-type ToolContext = {
+export type ToolContext = {
   signal?: AbortSignal;
   request?: { signal?: AbortSignal };
   _meta?: {
     progressToken?: string | number;
     [key: string]: unknown;
   };
-  sendNotification?: (notification: any) => Promise<void>;
+  sendNotification?: (notification: ServerNotification) => Promise<void>;
 };
 
 function getAbortSignal(context?: ToolContext): AbortSignal | undefined {
@@ -37,7 +38,7 @@ async function sendProgress(
   message?: string,
 ): Promise<void> {
   const progressToken = getProgressToken(context);
-  if (!progressToken || !context?.sendNotification) {
+  if (progressToken === undefined || !context?.sendNotification) {
     return;
   }
 
@@ -50,6 +51,24 @@ async function sendProgress(
       message,
     },
   });
+}
+
+export type TlcLogCallback = (
+  level: LoggingLevel,
+  message: string,
+  context?: ToolContext,
+) => Promise<void>;
+
+export async function reportTlcProgress(
+  context: ToolContext | undefined,
+  event: Parameters<TlcProgressCallback>[0],
+  log?: TlcLogCallback,
+  notificationSignal?: AbortSignal,
+): Promise<void> {
+  if (notificationSignal?.aborted) return;
+  await sendProgress(context, event.progress, undefined, event.message);
+  if (notificationSignal?.aborted) return;
+  if (event.message) await log?.(event.level ?? "info", event.message, context);
 }
 
 function parseTimeoutMs(value: unknown): number | undefined {
@@ -106,7 +125,11 @@ function resolveTimeoutMs(value: unknown, envKey: string, fallback: number): num
  * - trace: Load and replay TLC trace files
  */
 // @implements REQ-REVIEW-002, SCN-REVIEW-002-01
-export async function registerTlcTools(server: McpServer, config: ServerConfig): Promise<void> {
+export async function registerTlcTools(
+  server: McpServer,
+  config: ServerConfig,
+  log?: TlcLogCallback,
+): Promise<void> {
   // Tool 1: Model check
   registerTool(
     server,
@@ -203,11 +226,8 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
           config.javaHome || undefined,
           parseTimeoutMs(timeoutMs) ?? parseTimeoutMs(process.env.TLC_CHECK_TIMEOUT_MS),
           getAbortSignal(context),
-          (progress) => {
-            sendProgress(context, progress.progress, progress.total, progress.message).catch(
-              () => {},
-            );
-          },
+          (progress, notificationSignal) =>
+            reportTlcProgress(context, progress, log, notificationSignal),
         );
 
         return {
@@ -331,11 +351,8 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
           config.javaHome || undefined,
           timeoutMsResolved,
           signal,
-          (progress) => {
-            sendProgress(context, progress.progress, progress.total, progress.message).catch(
-              () => {},
-            );
-          },
+          (progress, notificationSignal) =>
+            reportTlcProgress(context, progress, log, notificationSignal),
         );
 
         return {
@@ -468,11 +485,8 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
           config.javaHome || undefined,
           timeoutMsResolved,
           signal,
-          (progress) => {
-            sendProgress(context, progress.progress, progress.total, progress.message).catch(
-              () => {},
-            );
-          },
+          (progress, notificationSignal) =>
+            reportTlcProgress(context, progress, log, notificationSignal),
         );
 
         return {
@@ -607,11 +621,8 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
           config.javaHome || undefined,
           timeoutMsResolved,
           signal,
-          (progress) => {
-            sendProgress(context, progress.progress, progress.total, progress.message).catch(
-              () => {},
-            );
-          },
+          (progress, notificationSignal) =>
+            reportTlcProgress(context, progress, log, notificationSignal),
         );
 
         return {

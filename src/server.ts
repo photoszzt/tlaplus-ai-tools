@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { localhostHostValidation } from "@modelcontextprotocol/sdk/server/middleware/hostHeaderValidation.js";
+import { applyHttpSecurity } from "./utils/http-security";
 import express from "express";
 import * as fs from "fs";
 import * as http from "http";
@@ -10,7 +10,12 @@ import { ServerConfig } from "./types";
 import { Logger } from "./utils/logging";
 import { parseMarkdownFrontmatter } from "./utils/markdown";
 import { registerSanyTools } from "./tools/sany";
-import { registerTlcTools } from "./tools/tlc";
+import { registerTlcTools, ToolContext } from "./tools/tlc";
+import {
+  LoggingLevelSchema,
+  SetLevelRequestSchema,
+  type LoggingLevel,
+} from "@modelcontextprotocol/sdk/types.js";
 import {
   registerKnowledgeBaseResources,
   registerKnowledgeBaseFromCache,
@@ -48,6 +53,7 @@ const FATAL_ERROR_CODES = new Set(["EADDRINUSE", "EACCES", "ENOSPC", "EMFILE", "
  */
 export class TLAPlusMCPServer {
   private logger: Logger;
+  private mcpLogLevel: LoggingLevel = "info";
   // @implements REQ-REVIEW-005, SCN-REVIEW-005-01
   private cachedKnowledgeBase: KnowledgeBaseEntry[] | null = null;
 
@@ -104,22 +110,7 @@ export class TLAPlusMCPServer {
     }
 
     const app = express();
-    app.use(localhostHostValidation());
-    app.use((req, res, next) => {
-      const origin = req.headers.origin;
-      const allowedOrigins = ["localhost", "127.0.0.1", "[::1]"].map(
-        (host) => new URL(`http://${host}:${req.socket.localPort}`).origin,
-      );
-      if (origin !== undefined && !allowedOrigins.includes(origin)) {
-        res.status(403).json({
-          jsonrpc: "2.0",
-          error: { code: -32000, message: "Invalid Origin header" },
-          id: null,
-        });
-        return;
-      }
-      next();
-    });
+    applyHttpSecurity(app);
     app.use(express.json());
 
     // POST /mcp - Handle MCP requests (stateless mode)
@@ -244,7 +235,7 @@ export class TLAPlusMCPServer {
    * @implements REQ-REVIEW-011, SCN-REVIEW-011-01
    * @implements REQ-REVIEW-005, SCN-REVIEW-005-02
    */
-  private async createMCPServer(): Promise<McpServer> {
+  async createMCPServer(): Promise<McpServer> {
     const server = new McpServer(
       {
         name: "TLA+ MCP Tools",
@@ -254,16 +245,24 @@ export class TLAPlusMCPServer {
       {
         capabilities: {
           resources: {}, // Enable resource support
+          logging: {},
         },
       },
     );
+
+    server.server.setRequestHandler(SetLevelRequestSchema, async (request) => {
+      this.mcpLogLevel = request.params.level;
+      return {};
+    });
 
     // Register SANY tools (parse, symbol, modules)
     await registerSanyTools(server, this.config);
     this.logger.debug("SANY tools registered");
 
     // Register TLC tools (check, smoke, explore, trace)
-    await registerTlcTools(server, this.config);
+    await registerTlcTools(server, this.config, (level, message, context) =>
+      this.sendLog(level, message, context),
+    );
     this.logger.debug("TLC tools registered");
 
     // Register animation tools (detect, render, frameCount)
@@ -284,6 +283,19 @@ export class TLAPlusMCPServer {
     }
 
     return server;
+  }
+
+  async sendLog(level: LoggingLevel, message: string, context?: ToolContext): Promise<void> {
+    if (!context?.sendNotification || context.signal?.aborted) return;
+    if (
+      LoggingLevelSchema.options.indexOf(level) <
+      LoggingLevelSchema.options.indexOf(this.mcpLogLevel)
+    )
+      return;
+    await context.sendNotification({
+      method: "notifications/message",
+      params: { level, logger: "tlc", data: { message } },
+    });
   }
 
   /**

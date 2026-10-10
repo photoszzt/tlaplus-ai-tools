@@ -20,6 +20,155 @@ describe("TLC Progress Notifications", () => {
     (getModuleSearchPaths as jest.Mock).mockReturnValue([]);
   });
 
+  it("reports upstream TLC statistics before process completion without a fabricated total", async () => {
+    const callback = jest.fn();
+    let finished = false;
+    mockRunProcess.mockImplementation(async (options) => {
+      const observer = options.onOutput;
+      const output =
+        "@!@!@STARTMSG 2200:0 @!@!@\nProgress(12) at 2026-10-10 00:00:00: 2,500 states generated (1,000 s/min), 1,234 distinct states found (500 ds/min), 321 states left on queue.\n@!@!@ENDMSG 2200 @!@!@\n";
+      observer?.(Buffer.from(output.slice(0, 87)), "stdout");
+      observer?.(Buffer.from(output.slice(87)), "stdout");
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(
+        callback.mock.calls.some(([event]) => event.message.includes("321 states left on queue")),
+      ).toBe(true);
+      expect(finished).toBe(false);
+      finished = true;
+      return {
+        exitCode: 0,
+        stdout: output,
+        stderr: "",
+        combined: output,
+        timedOut: false,
+        aborted: false,
+        killed: false,
+      };
+    });
+    await runTlcAndWait(
+      "/path/spec.tla",
+      "spec.cfg",
+      [],
+      [],
+      "/tools",
+      undefined,
+      undefined,
+      undefined,
+      callback,
+    );
+    const events = callback.mock.calls.map(([event]) => event);
+    expect(events.every((event) => event.total === undefined)).toBe(true);
+    expect(events.map((event) => event.progress)).toEqual([...events.keys()]);
+    expect(events.some((event) => event.message.includes("1,234 distinct states"))).toBe(true);
+  });
+
+  it("a blocked notification cannot hold a timed-out tool open forever", async () => {
+    mockRunProcess.mockResolvedValue({
+      exitCode: null,
+      stdout: "",
+      stderr: "",
+      combined: "",
+      timedOut: true,
+      aborted: false,
+      killed: true,
+    });
+    const started = Date.now();
+    const result = await runTlcAndWait(
+      "/path/spec.tla",
+      "spec.cfg",
+      [],
+      [],
+      "/tools",
+      undefined,
+      1,
+      undefined,
+      () => new Promise(() => {}),
+    );
+    expect(result.exitCode).toBe(124);
+    expect(Date.now() - started).toBeLessThan(2500);
+  });
+
+  it("keeps arbitrary user output and checkpoint paths out of notifications", async () => {
+    const callback = jest.fn();
+    const output = [
+      "user-secret-\u03bb",
+      "@!@!@STARTMSG 2200:0 @!@!@",
+      "Progress(1) at 2026-10-10 00:00:00: user-secret-\u03bb",
+      "@!@!@ENDMSG 2200 @!@!@",
+      "@!@!@STARTMSG 2195:0 @!@!@",
+      "Checkpointing to /private/user-secret",
+      "@!@!@ENDMSG 2195 @!@!@",
+    ].join("\n");
+    mockRunProcess.mockImplementation(async (options) => {
+      const bytes = Buffer.from(output);
+      for (const byte of bytes) options.onOutput?.(Buffer.from([byte]), "stderr");
+      return {
+        exitCode: 0,
+        stdout: "",
+        stderr: output,
+        combined: output,
+        timedOut: false,
+        aborted: false,
+        killed: false,
+      };
+    });
+    const result = await runTlcAndWait(
+      "/path/spec.tla",
+      "spec.cfg",
+      [],
+      [],
+      "/tools",
+      undefined,
+      undefined,
+      undefined,
+      callback,
+    );
+    expect(result.output.join("\n")).toContain("user-secret-\u03bb");
+    const messages = callback.mock.calls.map(([event]) => event.message);
+    expect(messages).toContain("TLC checkpoint started");
+    expect(messages.join("\n")).not.toContain("user-secret");
+    expect(messages.join("\n")).not.toContain("/private/");
+  });
+
+  it("cancellation releases a blocked notification immediately", async () => {
+    const controller = new AbortController();
+    mockRunProcess.mockImplementation(async () => {
+      await new Promise((resolve) => setImmediate(resolve));
+      controller.abort();
+      return {
+        exitCode: null,
+        stdout: "",
+        stderr: "",
+        combined: "",
+        timedOut: false,
+        aborted: true,
+        killed: true,
+      };
+    });
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const result = await Promise.race([
+        runTlcAndWait(
+          "/path/spec.tla",
+          "spec.cfg",
+          [],
+          [],
+          "/tools",
+          undefined,
+          undefined,
+          controller.signal,
+          () => new Promise(() => {}),
+        ),
+        new Promise<never>((_resolve, reject) => {
+          timer = setTimeout(() => reject(new Error("Cancellation blocked on notifications")), 250);
+        }),
+      ]);
+      expect(result.exitCode).toBe(130);
+    } finally {
+      clearTimeout(timer);
+    }
+  });
+
   it.each([
     { timedOut: true, aborted: false, expected: 124 },
     { timedOut: false, aborted: true, expected: 130 },
@@ -104,12 +253,11 @@ describe("TLC Progress Notifications", () => {
       progressCallback,
     );
 
-    if (progressCallback.mock.calls.length > 0) {
-      const firstCall = progressCallback.mock.calls[0][0];
-      expect(firstCall).toHaveProperty("progress");
-      expect(firstCall).toHaveProperty("total");
-      expect(firstCall).toHaveProperty("message");
-    }
+    expect(progressCallback).toHaveBeenCalled();
+    const firstCall = progressCallback.mock.calls[0][0];
+    expect(firstCall.progress).toBe(0);
+    expect(firstCall.total).toBeUndefined();
+    expect(firstCall.message).toBe("Starting TLC");
   });
 
   it("should not fail if progress callback is not provided", async () => {
@@ -167,12 +315,10 @@ describe("TLC Progress Notifications", () => {
       progressCallback,
     );
 
-    if (progressCallback.mock.calls.length > 0) {
-      const lastCall = progressCallback.mock.calls[progressCallback.mock.calls.length - 1][0];
-      expect(lastCall.message).toContain("Processing TLC output");
-      expect(lastCall.message).toMatch(/\d+\/\d+ lines/);
-      expect(lastCall.progress).toBeGreaterThan(0);
-      expect(lastCall.total).toBeGreaterThan(0);
-    }
+    expect(progressCallback).toHaveBeenCalled();
+    const lastCall = progressCallback.mock.calls[progressCallback.mock.calls.length - 1][0];
+    expect(lastCall.message).toContain("TLC finished with exit code 0");
+    expect(lastCall.progress).toBeGreaterThan(0);
+    expect(lastCall.total).toBeUndefined();
   });
 });
