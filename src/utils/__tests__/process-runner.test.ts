@@ -8,6 +8,7 @@ describe("process-runner", () => {
   });
 
   it("never-ending stream cannot hang the runner (timeout)", async () => {
+    const started = Date.now();
     const result = await runProcess({
       command: node,
       args: ["-e", "setInterval(() => process.stdout.write('tick\\n'), 5)"],
@@ -17,11 +18,8 @@ describe("process-runner", () => {
 
     expect(result.timedOut).toBe(true);
     expect(result.killed).toBe(true);
-    if (process.platform === "win32") {
-      expect(result.stdout.length).toBeGreaterThanOrEqual(0);
-    } else {
-      expect(result.stdout.length).toBeGreaterThan(0);
-    }
+    // A loaded runner may time out before Node emits its first line.
+    expect(Date.now() - started).toBeLessThan(5000);
   });
 
   it("timeout kills process and returns partial logs", async () => {
