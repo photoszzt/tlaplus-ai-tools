@@ -28,7 +28,7 @@ Run exhaustive model checking to verify all reachable states of your TLA+ specif
 /tla-check test-specs/Counter.tla
 /tla-check test-specs/Counter.tla test-specs/Counter.cfg
 /tla-check test-specs/Counter.tla --workers 4 --heap 2G
-/tla-check test-specs/Counter.tla test-specs/Counter.cfg --depth 100
+/tla-check test-specs/Counter.tla test-specs/Counter.cfg --workers 4
 ```
 
 All forms work identically. See `skills/shared/path-normalization.md` for path normalization rules.
@@ -59,8 +59,10 @@ Print `Spec path: <spec_path>`
 Extract flags from the argument:
 
 - `--workers <N>`: Number of worker threads (default: omit, let TLC decide)
-- `--depth <N>`: Maximum search depth (default: omit)
 - `--heap <SIZE>`: JVM heap size, e.g., `2G`, `1024m` (default: omit)
+
+TLC’s `-depth` applies to simulation, so do not use it to bound exhaustive checking.
+For sample traces of a chosen length, use `/tla-explore --length <N>`.
 
 **Step 4: Determine CFG Argument**
 
@@ -75,7 +77,6 @@ Apply the CFG Selection Algorithm documented in `skills/shared/cfg-selection-alg
 Construct `extraOpts` array:
 
 - If `WORKERS` is set: add `["-workers", "<WORKERS>"]`
-- If `DEPTH` is set: add `["-depth", "<DEPTH>"]`
 
 Construct `extraJavaOpts` array:
 
@@ -102,21 +103,26 @@ Spec path: <SPEC_PATH>
 CFG used: <FINAL_CFG>
 TLC options:
   Workers: <WORKERS> (or TLC default)
-  Depth: <DEPTH> (or unlimited)
   Heap: <HEAP> (or JVM default)
 
 <TLC output>
 ```
+
+First inspect the MCP `isError` flag, exit code, and TLC output. Missing files,
+parser/config errors, timeouts, cancellation, and resource failures are incomplete
+checks; report the cause without claiming verification. An invariant/property
+violation or deadlock is a model result to explain from its counterexample.
 
 If violations found:
 
 - Print `Violations detected. See counterexample above.`
 - Suggest: `Use /tla-debug-violations to work through the counterexample and isolate the failing action.`
 
-If no violations:
+Only if exit code is zero, TLC reports completed exhaustive checking, and there
+are no violations or fingerprint-collision warnings:
 
 - Print `Model checking complete. No violations found.`
-- Print `All reachable states verified against invariants and properties.`
+- Print `All reachable states in this model configuration checked against its configured invariants and properties.`
 
 If state space too large:
 
@@ -135,7 +141,6 @@ Phase 2: Using default Spec.cfg
 CFG used: test-specs/Counter.cfg
 TLC options:
   Workers: 4
-  Depth: (unlimited)
   Heap: 2G
 
 TLC2 Version 2.18 of 10 January 2024
@@ -144,5 +149,5 @@ Explored 1,234,567 states in 45 seconds
 Diameter: 12 states
 
 Model checking complete. No violations found.
-All reachable states verified against invariants and properties.
+All reachable states in this model configuration checked against its configured invariants and properties.
 ```

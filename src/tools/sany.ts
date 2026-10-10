@@ -36,6 +36,7 @@ export async function registerSanyTools(server: McpServer, config: ServerConfig)
       try {
         if (!config.toolsDir) {
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -56,6 +57,7 @@ export async function registerSanyTools(server: McpServer, config: ServerConfig)
             ({ jarPath } = parseJarfileUri(fileName));
           } catch (err) {
             return {
+              isError: true,
               content: [
                 {
                   type: "text",
@@ -71,6 +73,7 @@ export async function registerSanyTools(server: McpServer, config: ServerConfig)
             } catch (err) {
               const message = err instanceof Error ? err.message : String(err);
               return {
+                isError: true,
                 content: [
                   {
                     type: "text",
@@ -86,6 +89,7 @@ export async function registerSanyTools(server: McpServer, config: ServerConfig)
             absolutePath = await resolveJarfilePath(fileName);
           } catch (err) {
             return {
+              isError: true,
               content: [
                 {
                   type: "text",
@@ -98,6 +102,7 @@ export async function registerSanyTools(server: McpServer, config: ServerConfig)
           absolutePath = resolveAndValidatePath(fileName, config.workingDir);
           if (!fs.existsSync(absolutePath)) {
             return {
+              isError: true,
               content: [
                 {
                   type: "text",
@@ -126,10 +131,11 @@ export async function registerSanyTools(server: McpServer, config: ServerConfig)
           };
         } else {
           const errorMessages = result.errors.map((err) => {
-            return `Parsing of file ${err.file} failed at line ${err.line} with error: '${err.message}'`;
+            return `Parsing of file ${err.file || absolutePath} failed at line ${err.line} with error: '${err.message}'`;
           });
 
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -140,6 +146,7 @@ export async function registerSanyTools(server: McpServer, config: ServerConfig)
         }
       } catch (error) {
         return {
+          isError: true,
           content: [
             {
               type: "text",
@@ -179,6 +186,7 @@ export async function registerSanyTools(server: McpServer, config: ServerConfig)
       try {
         if (!config.toolsDir) {
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -199,6 +207,7 @@ export async function registerSanyTools(server: McpServer, config: ServerConfig)
             ({ jarPath } = parseJarfileUri(fileName));
           } catch (err) {
             return {
+              isError: true,
               content: [
                 {
                   type: "text",
@@ -214,6 +223,7 @@ export async function registerSanyTools(server: McpServer, config: ServerConfig)
             } catch (err) {
               const message = err instanceof Error ? err.message : String(err);
               return {
+                isError: true,
                 content: [
                   {
                     type: "text",
@@ -229,6 +239,7 @@ export async function registerSanyTools(server: McpServer, config: ServerConfig)
             absolutePath = await resolveJarfilePath(fileName);
           } catch (err) {
             return {
+              isError: true,
               content: [
                 {
                   type: "text",
@@ -241,6 +252,7 @@ export async function registerSanyTools(server: McpServer, config: ServerConfig)
           absolutePath = resolveAndValidatePath(fileName, config.workingDir);
           if (!fs.existsSync(absolutePath)) {
             return {
+              isError: true,
               content: [
                 {
                   type: "text",
@@ -268,6 +280,7 @@ export async function registerSanyTools(server: McpServer, config: ServerConfig)
         };
       } catch (error) {
         return {
+          isError: true,
           content: [
             {
               type: "text",
@@ -289,6 +302,7 @@ export async function registerSanyTools(server: McpServer, config: ServerConfig)
       try {
         if (!config.toolsDir) {
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -349,6 +363,7 @@ export async function registerSanyTools(server: McpServer, config: ServerConfig)
 
         if (results.length === 0 && errors.length === 0) {
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -366,10 +381,12 @@ export async function registerSanyTools(server: McpServer, config: ServerConfig)
         }
 
         return {
+          isError: errors.length > 0,
           content: [{ type: "text", text: output }],
         };
       } catch (error) {
         return {
+          isError: true,
           content: [
             {
               type: "text",

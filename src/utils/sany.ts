@@ -84,6 +84,7 @@ export async function parseSanyOutput(procInfo: ProcessInfo): Promise<SanyParseR
   let inWarningBlock = false;
   let currentMessage = "";
   let currentRange: { line: number; column: number } | undefined;
+  const output: string[] = [];
 
   const rl = createInterface({
     input: procInfo.mergedOutput,
@@ -91,6 +92,10 @@ export async function parseSanyOutput(procInfo: ProcessInfo): Promise<SanyParseR
   });
 
   for await (const line of rl) {
+    output.push(line);
+    if (line === "SANY finished.") {
+      continue;
+    }
     // Track current file being parsed
     if (line.startsWith("Parsing file ")) {
       // Normalize to forward slashes internally
@@ -215,38 +220,42 @@ export async function parseSanyOutput(procInfo: ProcessInfo): Promise<SanyParseR
         currentRange = undefined;
       }
     }
+  }
 
-    // Success indicator
-    if (line === "SANY finished.") {
-      // If we have pending error message without range, add it
-      if (currentMessage && currentFile) {
-        const item = {
-          file: currentFile,
-          line: 1,
-          column: 1,
-          message: currentMessage,
-        };
-
-        if (inWarningBlock) {
-          warnings.push(item);
-        } else if (inErrorBlock) {
-          errors.push(item);
-        }
-      }
-      break;
+  // SANY can terminate before printing a footer or a source location.
+  if (currentMessage) {
+    const item = {
+      file: currentFile ?? "",
+      line: currentRange?.line ?? 1,
+      column: currentRange?.column ?? 1,
+      message: currentMessage,
+    };
+    if (inWarningBlock) {
+      warnings.push(item);
+    } else if (inErrorBlock) {
+      errors.push(item);
     }
   }
 
   // Wait for process to complete (if not already completed)
-  if (procInfo.process.exitCode === null) {
+  if (procInfo.process.exitCode === null && !procInfo.process.signalCode) {
     await new Promise<void>((resolve) => {
       procInfo.process.once("close", () => resolve());
     });
   }
 
+  if (procInfo.process.exitCode !== 0 && errors.length === 0) {
+    errors.push({
+      file: currentFile ?? "",
+      line: 1,
+      column: 1,
+      message: `SANY exited with ${procInfo.process.signalCode ?? `code ${procInfo.process.exitCode}`}\n${output.join("\n")}`,
+    });
+  }
+
   // Denormalize back to platform-specific paths in results
   return {
-    success: errors.length === 0,
+    success: procInfo.process.exitCode === 0 && errors.length === 0,
     errors: errors.map((e) => ({
       ...e,
       file: process.platform === "win32" ? e.file.replace(/\//g, "\\") : e.file,

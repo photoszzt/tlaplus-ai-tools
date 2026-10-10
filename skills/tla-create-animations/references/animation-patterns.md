@@ -395,7 +395,7 @@ AnimElements == <<[shape |-> "circle", cx |-> x * 50, cy |-> 300, r |-> 30]>>
 ### Test with Small Traces
 
 ```
-/tla-check @SpecAnim.tla with behaviorLength 3
+/tla-explore @SpecAnim.tla --length 3
 ```
 
 Verify animation works before long traces.

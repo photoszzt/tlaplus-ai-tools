@@ -80,6 +80,10 @@ mcp__tlaplus__tlaplus_mcp_tlc_smoke
 
 **Step 7: Report Results**
 
+First inspect `isError`, exit code, and output. Report parser/config failures,
+timeouts, cancellation, and resource failures as incomplete simulations. Only
+report no violations when the simulation finishes successfully with exit code zero.
+
 Print summary:
 
 ```
@@ -96,7 +100,7 @@ If violations found:
 
 - Print `Violations detected. Run $tla-check for full trace.`
 
-If no violations:
+If the simulation completed successfully with no violations:
 
 - Print `No violations found in smoke test. Run $tla-check for exhaustive verification.`
 

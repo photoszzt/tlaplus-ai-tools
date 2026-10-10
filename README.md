@@ -55,7 +55,7 @@ Full integration with TLA+ toolchain:
 - **tlc_check** - Exhaustive state space exploration
 - **tlc_smoke** - Fast random simulation
 - **tlc_explore** - Generate execution traces
-- **tlc_trace** - Parse and analyze TLC counterexample traces
+- **tlc_trace** - Replay saved TLC counterexample traces with ALIAS expressions
 
 **Animation Tools (3):**
 

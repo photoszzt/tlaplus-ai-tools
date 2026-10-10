@@ -37,7 +37,7 @@ export interface SpecFiles {
  * Run TLC model checker and wait for completion.
  *
  * @param tlaFilePath - Path to the TLA+ spec file
- * @param cfgFileName - Name of the config file
+ * @param cfgFileName - Path to the config file (absolute paths preserve external configs)
  * @param tlcOptions - TLC command-line options
  * @param javaOpts - Java command-line options
  * @param toolsDir - Path to tools directory
@@ -133,7 +133,7 @@ export async function runTlcAndWait(
     output.push("TLC process was aborted.");
   }
 
-  const exitCode = result.exitCode ?? (result.timedOut ? 124 : result.aborted ? 130 : 0);
+  const exitCode = result.timedOut ? 124 : result.aborted ? 130 : (result.exitCode ?? 0);
 
   return { exitCode, output };
 }

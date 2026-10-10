@@ -145,6 +145,10 @@ mcp__tlaplus__tlaplus_mcp_sany_parse --fileName "<spec_path>"
 
 **Step 5: Report Results**
 
+If `isError` is true, report the failure and its diagnostics. Java/toolchain failures
+are failed parses even when no syntax error location is available. Report success
+only when the tool explicitly confirms a successful parse.
+
 If parsing succeeds:
 
 - Print "Parsing successful. No errors found."

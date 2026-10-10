@@ -61,7 +61,7 @@ describe("TLC Tools - Contract Tests (Codex cfgFile)", () => {
   });
 
   // @tests-contract REQ-CODEX-001
-  it("response has no isError field for missing cfgFile", async () => {
+  it("response sets isError for missing cfgFile", async () => {
     await setupTools();
     (fs.existsSync as jest.Mock).mockImplementation((p: string) => {
       if (p === "/tmp/missing.cfg") return false;
@@ -73,7 +73,7 @@ describe("TLC Tools - Contract Tests (Codex cfgFile)", () => {
       cfgFile: "/tmp/missing.cfg",
     });
 
-    expect(response).not.toHaveProperty("isError");
+    expect(response.isError).toBe(true);
   });
 
   // @tests-contract REQ-CODEX-002

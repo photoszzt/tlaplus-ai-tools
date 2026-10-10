@@ -13,6 +13,7 @@ allowed-tools:
   - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse
   - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore
   - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check
+  - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_trace
   - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_detect
   - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_render
   - mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_animation_frameCount
@@ -77,6 +78,19 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse --fileName MySpecAnim.tla
 # Explore with animation
 mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore --fileName MySpecAnim.tla --cfgFile MySpec.cfg --behaviorLength 20
 ```
+
+### 3. Animate a Saved Counterexample
+
+To save a failing check’s behavior, pass
+`extraOpts: ["-dumpTrace", "tlc", "/absolute/path/trace.tlc"]` to
+`mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check`; traces are not saved by default.
+Keep the matching model and constants. Add `ALIAS AnimAlias` to a replay config,
+then call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_trace` with the animation module’s
+absolute `fileName`, replay `cfgFile`, and the saved `traceFile`.
+This evaluates the animation alias on the saved trace rather than sampling a
+new behavior. Read `tlc-alias-expressions.md` from the knowledge resource for
+ALIAS semantics. Check the output for parser/config/process failures before
+using it as animation data.
 
 ## SVG Element Reference
 
@@ -189,6 +203,7 @@ IN [shape |-> "g", elements |-> SetToSeq(Elements)]
 - `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse`: Validate animation spec syntax
 - `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore`: Generate and view animation
 - `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_check`: Run model checker with animation output
+- `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_trace`: Replay saved traces with an animation ALIAS
 
 ## Complete Examples
 
