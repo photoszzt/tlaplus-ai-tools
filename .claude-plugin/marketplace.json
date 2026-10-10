@@ -11,7 +11,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://gitlab-master.nvidia.com/zhitingz/tlaplus-ai-tools"
+    "url": "https://github.com/photoszzt/tlaplus-ai-tools"
   },
   "plugins": [
     {
