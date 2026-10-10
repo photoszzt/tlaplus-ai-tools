@@ -136,7 +136,7 @@ USAGE:
   tlaplus-ai-tools [options]
 
 OPTIONS:
-  --http                    Enable HTTP transport (default: stdio)
+  --http                    Enable local HTTP transport on 127.0.0.1 (default: stdio)
   --port <number>           HTTP server port (default: 3000, use 0 for random)
   --working-dir <path>      Working directory for TLA+ files (restricts file access)
   --tools-dir <path>        Path to TLA+ tools directory (auto-detected if omitted)

@@ -35,7 +35,7 @@ function createMockMcpServerInternal() {
         tools.set(name, { name, description, schema, handler });
       },
     ),
-    resource: jest.fn((uri: string, name: string, metadata: any, handler: () => Promise<any>) => {
+    resource: jest.fn((name: string, uri: string, metadata: any, handler: () => Promise<any>) => {
       resources.set(uri, { uri, name, metadata, handler });
     }),
     getRegisteredTools: () => tools,

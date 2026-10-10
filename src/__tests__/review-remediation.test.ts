@@ -512,7 +512,7 @@ describe("REQ-REVIEW-005: KB Caching", () => {
       removeListener: jest.fn(),
       address: jest.fn(() => ({ port: 3000 })),
     };
-    mockHttpServer.listen = jest.fn((_port: number, callback: () => void) => {
+    mockHttpServer.listen = jest.fn((_port: number, _host: string, callback: () => void) => {
       setImmediate(() => callback());
       return mockHttpServer;
     });
@@ -521,7 +521,7 @@ describe("REQ-REVIEW-005: KB Caching", () => {
       post: jest.fn(),
       get: jest.fn(),
       delete: jest.fn(),
-      listen: jest.fn((_port: number, callback: () => void) => {
+      listen: jest.fn((_port: number, _host: string, callback: () => void) => {
         setImmediate(() => callback());
         return mockHttpServer;
       }),
@@ -655,10 +655,12 @@ describe("REQ-REVIEW-006: HTTP Error Handler", () => {
       listen: jest.Mock;
       address: jest.Mock;
     };
-    (mockHttpServer as any).listen = jest.fn((_port: number, callback: () => void) => {
-      setImmediate(() => callback());
-      return mockHttpServer;
-    });
+    (mockHttpServer as any).listen = jest.fn(
+      (_port: number, _host: string, callback: () => void) => {
+        setImmediate(() => callback());
+        return mockHttpServer;
+      },
+    );
     (mockHttpServer as any).address = jest.fn(() => ({ port: 3000 }));
 
     const mockApp = {
@@ -666,7 +668,7 @@ describe("REQ-REVIEW-006: HTTP Error Handler", () => {
       post: jest.fn(),
       get: jest.fn(),
       delete: jest.fn(),
-      listen: jest.fn((_port: number, callback: () => void) => {
+      listen: jest.fn((_port: number, _host: string, callback: () => void) => {
         setImmediate(() => callback());
         return mockHttpServer;
       }),
@@ -745,10 +747,12 @@ describe("REQ-REVIEW-006: HTTP Error Handler", () => {
       listen: jest.Mock;
       address: jest.Mock;
     };
-    (mockHttpServer as any).listen = jest.fn((_port: number, callback: () => void) => {
-      setImmediate(() => callback());
-      return mockHttpServer;
-    });
+    (mockHttpServer as any).listen = jest.fn(
+      (_port: number, _host: string, callback: () => void) => {
+        setImmediate(() => callback());
+        return mockHttpServer;
+      },
+    );
     (mockHttpServer as any).address = jest.fn(() => ({ port: 3000 }));
 
     const mockApp = {
@@ -756,7 +760,7 @@ describe("REQ-REVIEW-006: HTTP Error Handler", () => {
       post: jest.fn(),
       get: jest.fn(),
       delete: jest.fn(),
-      listen: jest.fn((_port: number, callback: () => void) => {
+      listen: jest.fn((_port: number, _host: string, callback: () => void) => {
         setImmediate(() => callback());
         return mockHttpServer;
       }),

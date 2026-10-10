@@ -54,7 +54,7 @@ describe("TLAPlusMCPServer", () => {
 
     // Mock Express
     mockHttpServer = {
-      listen: jest.fn((port, callback) => {
+      listen: jest.fn((port, _host, callback) => {
         setImmediate(() => callback());
         return mockHttpServer;
       }),
@@ -68,7 +68,7 @@ describe("TLAPlusMCPServer", () => {
       post: jest.fn(),
       get: jest.fn(),
       delete: jest.fn(),
-      listen: jest.fn((port, callback) => {
+      listen: jest.fn((port, _host, callback) => {
         setImmediate(() => callback());
         return mockHttpServer;
       }),
@@ -187,7 +187,11 @@ describe("TLAPlusMCPServer", () => {
 
       expect(express).toHaveBeenCalledTimes(1);
       expect(mockExpressApp.use).toHaveBeenCalledWith(express.json());
-      expect(mockExpressApp.listen).toHaveBeenCalledWith(HTTP_CONFIG.port, expect.any(Function));
+      expect(mockExpressApp.listen).toHaveBeenCalledWith(
+        HTTP_CONFIG.port,
+        "127.0.0.1",
+        expect.any(Function),
+      );
     });
 
     it("does not create stdio transport in HTTP mode", async () => {

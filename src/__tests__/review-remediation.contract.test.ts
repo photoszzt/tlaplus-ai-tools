@@ -229,7 +229,7 @@ describe("Contract: REQ-REVIEW-006 HTTP Error Handler", () => {
     }));
 
     const mockHttpServer = new EventEmitter();
-    mockHttpServer.listen = jest.fn((_port: number, callback: () => void) => {
+    mockHttpServer.listen = jest.fn((_port: number, _host: string, callback: () => void) => {
       setImmediate(() => callback());
       return mockHttpServer;
     });
@@ -240,7 +240,7 @@ describe("Contract: REQ-REVIEW-006 HTTP Error Handler", () => {
       post: jest.fn(),
       get: jest.fn(),
       delete: jest.fn(),
-      listen: jest.fn((_port: number, callback: () => void) => {
+      listen: jest.fn((_port: number, _host: string, callback: () => void) => {
         setImmediate(() => callback());
         return mockHttpServer;
       }),
