@@ -71,8 +71,7 @@ describe("INV-CODEX-002: No New Runtime Dependencies", () => {
 // ---- INV-CODEX-003: Error Response Format Convention ----
 // These tests verify that error responses from cfgFile-not-found (TLC tools)
 // and jarfile access-denied (SANY tools) use the early-return pattern:
-//   { content: [{ type: 'text', text: ... }] }
-// with NO isError field.
+//   { content: [{ type: 'text', text: ... }], isError: true }
 
 import { registerTlcTools } from "../tools/tlc";
 import { registerSanyTools } from "../tools/sany";
@@ -140,7 +139,7 @@ describe("INV-CODEX-003: Error Response Format Convention", () => {
   }
 
   // @tests-invariant INV-CODEX-003
-  it("cfgFile-not-found error response has content[0].type=text, content[0].text is string, no isError", async () => {
+  it("cfgFile-not-found error response has content[0].type=text, content[0].text is string, isError=true", async () => {
     await setupTlcTools();
     (existsSync as jest.Mock).mockImplementation((p: string) => {
       if (p === "/mock/spec.tla") return true;
@@ -162,12 +161,12 @@ describe("INV-CODEX-003: Error Response Format Convention", () => {
     expect(typeof response.content[0].text).toBe("string");
     expect(response.content[0].text.length).toBeGreaterThan(0);
 
-    // INV-CODEX-003: No isError field (early-return convention)
-    expect(response).not.toHaveProperty("isError");
+    // Failures must be distinguishable from successful tool responses.
+    expect(response.isError).toBe(true);
   });
 
   // @tests-invariant INV-CODEX-003
-  it("jarfile access-denied error response has content[0].type=text, content[0].text is string, no isError", async () => {
+  it("jarfile access-denied error response has content[0].type=text, content[0].text is string, isError=true", async () => {
     const configWithDir = { ...MINIMAL_CONFIG, workingDir: "/workspace" };
     await registerSanyTools(mockServer, configWithDir);
 
@@ -194,8 +193,8 @@ describe("INV-CODEX-003: Error Response Format Convention", () => {
     expect(typeof response.content[0].text).toBe("string");
     expect(response.content[0].text.length).toBeGreaterThan(0);
 
-    // INV-CODEX-003: No isError field (early-return convention)
-    expect(response).not.toHaveProperty("isError");
+    // Failures must be distinguishable from successful tool responses.
+    expect(response.isError).toBe(true);
   });
 
   // @tests-invariant INV-CODEX-003

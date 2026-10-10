@@ -81,6 +81,18 @@ mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_explore
 
 **Step 7: Report Results**
 
+Inspect `isError`, exit code, and TLC output before interpreting the trace.
+The tool injects `-invlevel <LENGTH>` to print a trace when the requested level
+is reached. A violation of that generated `TLCGet("level") < LENGTH` invariant
+is expected trace termination; describe it as a sampled behavior. TLC names this
+invariant `__DebuggerExpr__<number>`. Confirm it is the length invariant rather
+than another injected `-inv` expression or a configured user invariant. Never dismiss a
+violation of a configured user invariant or property. If its identity is unclear,
+report that uncertainty.
+
+Report parser/config failures, timeouts, cancellation, or resource failures as
+incomplete exploration, preserving any partial trace without claiming success.
+
 Print summary:
 
 ```
@@ -93,12 +105,13 @@ Behavior length: <LENGTH> steps
 Trace exploration complete.
 ```
 
-If violations found during exploration:
+If a user invariant/property violation or deadlock is found during exploration:
 
 - Print `Violation detected during trace exploration. See counterexample above.`
 - Suggest: `Use /tla-debug-violations to analyze the violation.`
 
-If no violations:
+If a trace was generated and only the injected length invariant stopped exploration,
+or the simulation completed successfully without user violations:
 
 - Print `Trace generated successfully. <N> states explored.`
 - Suggest: `Use /tla-check for exhaustive verification.`

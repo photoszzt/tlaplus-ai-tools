@@ -71,7 +71,7 @@ Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_sany_parse` with `fileName=<spec_
 
 Store result:
 
-- `PARSE_SUCCESS=true/false`
+- `PARSE_SUCCESS=true` only for an explicit successful parse with `isError` not true; otherwise false
 - `PARSE_ERRORS=<error list>`
 
 **Step 6: Extract Symbols**
@@ -105,7 +105,8 @@ Use the tool's default three-second simulation; do not pass a `seconds` argument
 
 Store result:
 
-- `SMOKE_SUCCESS=true/false`
+- `SMOKE_SUCCESS=true` only for completed simulation with exit code zero and no violations
+- `SMOKE_ERROR=<parser/config/process failure, timeout, or cancellation, if any>`
 - `SMOKE_VIOLATIONS=<violation list>`
 
 **Step 8: Generate Review Report**
@@ -171,6 +172,10 @@ Warning: Constants require assignment
 
 <if SMOKE_SKIPPED>
 Skipped (no config file or --no-smoke flag)
+<else if SMOKE_ERROR>
+Smoke test incomplete
+  CFG used: <FINAL_CFG>
+  Cause: <SMOKE_ERROR>
 <else if SMOKE_SUCCESS>
 Smoke test passed
   CFG used: <FINAL_CFG>

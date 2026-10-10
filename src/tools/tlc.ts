@@ -65,6 +65,21 @@ function parseTimeoutMs(value: unknown): number | undefined {
   return undefined;
 }
 
+async function getConfiguredSpecFiles(
+  tlaFilePath: string,
+  cfgFile: string | undefined,
+  workingDir: string | null,
+) {
+  if (cfgFile) {
+    const cfgFilePath = resolveAndValidatePath(cfgFile, workingDir);
+    if (!fs.existsSync(cfgFilePath)) {
+      throw new Error(`Config file ${cfgFilePath} does not exist on disk.`);
+    }
+    return { tlaFilePath, cfgFilePath };
+  }
+  return getSpecFiles(tlaFilePath);
+}
+
 function extractFingerprintFromTrace(traceFilePath: string): number | undefined {
   const fileName = path.basename(traceFilePath);
   const match = /_F(\d+)_/.exec(fileName);
@@ -102,18 +117,31 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
       cfgFile: z.string().optional(),
       extraOpts: z.array(z.string()).optional(),
       extraJavaOpts: z.array(z.string()).optional(),
+      timeoutMs: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe(
+          "Optional time limit in milliseconds; otherwise uses TLC_CHECK_TIMEOUT_MS or runs without a time limit.",
+        ),
     },
-    async ({
-      fileName,
-      cfgFile,
-      extraOpts,
-      extraJavaOpts,
-    }: {
-      fileName: string;
-      cfgFile?: string;
-      extraOpts?: string[];
-      extraJavaOpts?: string[];
-    }) => {
+    async (
+      {
+        fileName,
+        cfgFile,
+        extraOpts,
+        extraJavaOpts,
+        timeoutMs,
+      }: {
+        fileName: string;
+        cfgFile?: string;
+        extraOpts?: string[];
+        extraJavaOpts?: string[];
+        timeoutMs?: number;
+      },
+      context?: ToolContext,
+    ) => {
       try {
         // Resolve and validate file path
         const absolutePath = resolveAndValidatePath(fileName, config.workingDir);
@@ -121,6 +149,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         // Check if file exists
         if (!fs.existsSync(absolutePath)) {
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -133,6 +162,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         // Ensure tools directory is configured
         if (!config.toolsDir) {
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -143,10 +173,11 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         }
 
         // Find spec files (TLA + CFG)
-        const specFiles = await getSpecFiles(absolutePath);
+        const specFiles = await getConfiguredSpecFiles(absolutePath, cfgFile, config.workingDir);
         if (!specFiles) {
           const specName = path.basename(absolutePath, path.extname(absolutePath));
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -158,25 +189,6 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
           };
         }
 
-        // Use provided cfgFile if specified
-        // @implements REQ-CODEX-001, SCN-CODEX-001-01, SCN-CODEX-001-02
-        let configFilePath = specFiles.cfgFilePath;
-        if (cfgFile) {
-          const resolvedCfgPath = resolveAndValidatePath(cfgFile, config.workingDir);
-          if (!fs.existsSync(resolvedCfgPath)) {
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `Config file ${resolvedCfgPath} does not exist on disk.`,
-                },
-              ],
-            };
-          }
-          // @implements REQ-CODEX-002, SCN-CODEX-002-01
-          configFilePath = resolvedCfgPath;
-        }
-
         // Build TLC options: -cleanup -modelcheck [extraOpts]
         const tlcOptions = ["-cleanup", "-modelcheck", ...(extraOpts || [])];
         const javaOpts = extraJavaOpts || [];
@@ -184,14 +196,22 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         // Run TLC and wait for completion
         const result = await runTlcAndWait(
           specFiles.tlaFilePath,
-          path.basename(configFilePath),
+          specFiles.cfgFilePath,
           tlcOptions,
           javaOpts,
           config.toolsDir,
           config.javaHome || undefined,
+          parseTimeoutMs(timeoutMs) ?? parseTimeoutMs(process.env.TLC_CHECK_TIMEOUT_MS),
+          getAbortSignal(context),
+          (progress) => {
+            sendProgress(context, progress.progress, progress.total, progress.message).catch(
+              () => {},
+            );
+          },
         );
 
         return {
+          isError: result.exitCode !== 0,
           content: [
             {
               type: "text",
@@ -203,6 +223,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         };
       } catch (error) {
         return {
+          isError: true,
           content: [
             {
               type: "text",
@@ -249,6 +270,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         // Check if file exists
         if (!fs.existsSync(absolutePath)) {
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -261,6 +283,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         // Ensure tools directory is configured
         if (!config.toolsDir) {
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -271,10 +294,11 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         }
 
         // Find spec files (TLA + CFG)
-        const specFiles = await getSpecFiles(absolutePath);
+        const specFiles = await getConfiguredSpecFiles(absolutePath, cfgFile, config.workingDir);
         if (!specFiles) {
           const specName = path.basename(absolutePath, path.extname(absolutePath));
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -284,25 +308,6 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
               },
             ],
           };
-        }
-
-        // Use provided cfgFile if specified
-        // @implements REQ-CODEX-001, SCN-CODEX-001-01, SCN-CODEX-001-02
-        let configFilePath = specFiles.cfgFilePath;
-        if (cfgFile) {
-          const resolvedCfgPath = resolveAndValidatePath(cfgFile, config.workingDir);
-          if (!fs.existsSync(resolvedCfgPath)) {
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `Config file ${resolvedCfgPath} does not exist on disk.`,
-                },
-              ],
-            };
-          }
-          // @implements REQ-CODEX-002, SCN-CODEX-002-01
-          configFilePath = resolvedCfgPath;
         }
 
         // Build TLC options: -cleanup -simulate [extraOpts]
@@ -319,7 +324,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         const signal = getAbortSignal(context);
         const result = await runTlcAndWait(
           specFiles.tlaFilePath,
-          path.basename(configFilePath),
+          specFiles.cfgFilePath,
           tlcOptions,
           javaOpts,
           config.toolsDir,
@@ -334,6 +339,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         );
 
         return {
+          isError: result.exitCode !== 0,
           content: [
             {
               type: "text",
@@ -345,6 +351,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         };
       } catch (error) {
         return {
+          isError: true,
           content: [
             {
               type: "text",
@@ -363,7 +370,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
     "Explore the given TLA+ module by using TLC to randomly generate and print a behavior—a sequence of states, where each state represents an assignment of values to the module's variables. Choose a meaningful value for the behavior length N that is neither too small nor too large, based on your estimate of what constitutes an interesting behavior for this particular module.",
     {
       fileName: z.string(),
-      behaviorLength: z.number().min(1),
+      behaviorLength: z.number().int().min(1),
       cfgFile: z.string().optional(),
       extraOpts: z.array(z.string()).optional(),
       extraJavaOpts: z.array(z.string()).optional(),
@@ -394,6 +401,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         // Check if file exists
         if (!fs.existsSync(absolutePath)) {
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -406,6 +414,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         // Ensure tools directory is configured
         if (!config.toolsDir) {
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -416,10 +425,11 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         }
 
         // Find spec files (TLA + CFG)
-        const specFiles = await getSpecFiles(absolutePath);
+        const specFiles = await getConfiguredSpecFiles(absolutePath, cfgFile, config.workingDir);
         if (!specFiles) {
           const specName = path.basename(absolutePath, path.extname(absolutePath));
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -429,25 +439,6 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
               },
             ],
           };
-        }
-
-        // Use provided cfgFile if specified
-        // @implements REQ-CODEX-001, SCN-CODEX-001-01, SCN-CODEX-001-02
-        let configFilePath = specFiles.cfgFilePath;
-        if (cfgFile) {
-          const resolvedCfgPath = resolveAndValidatePath(cfgFile, config.workingDir);
-          if (!fs.existsSync(resolvedCfgPath)) {
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `Config file ${resolvedCfgPath} does not exist on disk.`,
-                },
-              ],
-            };
-          }
-          // @implements REQ-CODEX-002, SCN-CODEX-002-01
-          configFilePath = resolvedCfgPath;
         }
 
         // Build TLC options: -cleanup -simulate -invlevel <behaviorLength> [extraOpts]
@@ -470,7 +461,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         const signal = getAbortSignal(context);
         const result = await runTlcAndWait(
           specFiles.tlaFilePath,
-          path.basename(configFilePath),
+          specFiles.cfgFilePath,
           tlcOptions,
           javaOpts,
           config.toolsDir,
@@ -485,6 +476,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         );
 
         return {
+          isError: result.exitCode !== 0,
           content: [
             {
               type: "text",
@@ -496,6 +488,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         };
       } catch (error) {
         return {
+          isError: true,
           content: [
             {
               type: "text",
@@ -511,7 +504,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
   registerTool(
     server,
     "tlaplus_mcp_tlc_trace",
-    "Load and replay a previously generated TLC trace file. This tool is particularly useful after tlaplus_mcp_tlc_check finds a counterexample and automatically generates a trace file. Trace files are .tlc files stored in the .vscode/tlc/ directory with the naming pattern: {specName}_trace_T{timestamp}_F{fp}_W{workers}_M{mode}.tlc. By rerunning TLC with -loadtrace, you can add or modify ALIAS expressions in the configuration file to derive compound values, rename variables, filter out variables, or create custom animations of the trace for better analysis. The ALIAS feature allows you to evaluate expressions on pairs of states (s -> t) in the error trace and display custom formatted output instead of raw state dumps. For comprehensive guidance on ALIAS expressions, see resource tlaplus://knowledge/tlc-alias-expressions.md.",
+    'Load and replay a previously generated TLC trace file. To save a counterexample, run tlaplus_mcp_tlc_check with extraOpts ["-dumpTrace", "tlc", "/absolute/path/trace.tlc"]. Checks do not save trace files by default. Supply the saved .tlc path as traceFile. By rerunning TLC with -loadtrace, you can add or modify ALIAS expressions in the configuration file to derive compound values, rename variables, filter out variables, or create custom animations of the trace for better analysis. The ALIAS feature allows you to evaluate expressions on pairs of states (s -> t) in the error trace and display custom formatted output instead of raw state dumps. For comprehensive guidance on ALIAS expressions, see resource tlaplus://knowledge/tlc-alias-expressions.md.',
     {
       fileName: z.string(),
       traceFile: z.string(),
@@ -540,6 +533,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
 
         if (!fs.existsSync(absolutePath)) {
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -551,6 +545,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
 
         if (!config.toolsDir) {
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -560,10 +555,11 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
           };
         }
 
-        const specFiles = await getSpecFiles(absolutePath);
+        const specFiles = await getConfiguredSpecFiles(absolutePath, cfgFile, config.workingDir);
         if (!specFiles) {
           const specName = path.basename(absolutePath, path.extname(absolutePath));
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -575,27 +571,10 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
           };
         }
 
-        // @implements REQ-CODEX-001, SCN-CODEX-001-01, SCN-CODEX-001-03
-        let configFilePath = specFiles.cfgFilePath;
-        if (cfgFile) {
-          const resolvedCfgPath = resolveAndValidatePath(cfgFile, config.workingDir);
-          if (!fs.existsSync(resolvedCfgPath)) {
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `Config file ${resolvedCfgPath} does not exist on disk.`,
-                },
-              ],
-            };
-          }
-          // @implements REQ-CODEX-002, SCN-CODEX-002-01
-          configFilePath = resolvedCfgPath;
-        }
-
         const absoluteTracePath = resolveAndValidatePath(traceFile, config.workingDir);
         if (!fs.existsSync(absoluteTracePath)) {
           return {
+            isError: true,
             content: [
               {
                 type: "text",
@@ -621,7 +600,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         const signal = getAbortSignal(context);
         const result = await runTlcAndWait(
           specFiles.tlaFilePath,
-          path.basename(configFilePath),
+          specFiles.cfgFilePath,
           tlcOptions,
           javaOpts,
           config.toolsDir,
@@ -636,6 +615,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         );
 
         return {
+          isError: result.exitCode !== 0,
           content: [
             {
               type: "text",
@@ -647,6 +627,7 @@ export async function registerTlcTools(server: McpServer, config: ServerConfig):
         };
       } catch (error) {
         return {
+          isError: true,
           content: [
             {
               type: "text",

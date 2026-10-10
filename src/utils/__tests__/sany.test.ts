@@ -16,10 +16,10 @@ jest.mock("../tla-tools", () => ({
   getModuleSearchPaths: (...args: unknown[]) => mockGetModuleSearchPaths(...args),
 }));
 
-function createMockProcessInfo(output: string): ProcessInfo {
+function createMockProcessInfo(output: string, exitCode: number | null = 0): ProcessInfo {
   const mergedOutput = new PassThrough();
   const proc = new EventEmitter() as EventEmitter & { exitCode: number | null };
-  proc.exitCode = 0;
+  proc.exitCode = exitCode;
 
   setImmediate(() => {
     mergedOutput.write(output);
@@ -118,6 +118,36 @@ describe("sany", () => {
   });
 
   describe("parseSanyOutput", () => {
+    it("reports a signaled Java exit without waiting for another close event", async () => {
+      const procInfo = createMockProcessInfo("", null);
+      Object.defineProperty(procInfo.process, "signalCode", { value: "SIGTERM" });
+      const result = await parseSanyOutput(procInfo);
+      expect(result.success).toBe(false);
+      expect(result.errors[0].message).toContain("SIGTERM");
+    });
+    it("retains missing-module errors when SANY exits without its footer", async () => {
+      const procInfo = createMockProcessInfo(
+        `Parsing file /path/Module.tla
+*** Abort messages:
+Cannot find source file for module MissingModuleAudit.
+`,
+        255,
+      );
+      const result = await parseSanyOutput(procInfo);
+      expect(result.success).toBe(false);
+      expect(result.errors[0].message).toContain("MissingModuleAudit");
+    });
+
+    it("reports Java failures even when no SANY error block is emitted", async () => {
+      const procInfo = createMockProcessInfo(
+        "Error: Could not find or load main class tla2sany.SANY",
+        1,
+      );
+      const result = await parseSanyOutput(procInfo);
+      expect(result.success).toBe(false);
+      expect(result.errors[0].message).toContain("Could not find or load main class");
+    });
+
     it("parses Unix file paths correctly", async () => {
       const output = `Parsing file /home/user/specs/Module.tla
 Semantic processing of module Module

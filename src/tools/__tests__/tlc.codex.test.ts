@@ -202,12 +202,13 @@ describe("TLC Tools - Codex cfgFile Fixes", () => {
 
       const expectedText = `Config file ${cfgPath} does not exist on disk.`;
       for (const response of responses) {
-        expect(response.content[0].text).toBe(expectedText);
+        expect(response.content[0].text).toContain(expectedText);
+        expect(response.isError).toBe(true);
       }
     });
 
     // @tests-invariant INV-CODEX-001
-    it("error response has no isError field", async () => {
+    it("error response sets isError", async () => {
       await setupWithSpec();
       (fs.existsSync as jest.Mock).mockImplementation((p: string) => {
         if (p === "/tmp/nonexistent.cfg") return false;
@@ -219,7 +220,7 @@ describe("TLC Tools - Codex cfgFile Fixes", () => {
         cfgFile: "/tmp/nonexistent.cfg",
       });
 
-      expect(response).not.toHaveProperty("isError");
+      expect(response.isError).toBe(true);
     });
   });
 
@@ -238,11 +239,14 @@ describe("TLC Tools - Codex cfgFile Fixes", () => {
 
       expect(runTlcAndWait).toHaveBeenCalledWith(
         "/mock/spec.tla",
-        "custom.cfg",
+        "/workspace/custom.cfg",
         ["-cleanup", "-modelcheck"],
         [],
         MINIMAL_CONFIG.toolsDir,
         undefined,
+        undefined,
+        undefined,
+        expect.any(Function),
       );
     });
 
@@ -258,11 +262,14 @@ describe("TLC Tools - Codex cfgFile Fixes", () => {
       // Should use spec.cfg (from mockTlcSuccess's getSpecFiles)
       expect(runTlcAndWait).toHaveBeenCalledWith(
         "/mock/spec.tla",
-        "spec.cfg",
+        "/mock/spec.cfg",
         ["-cleanup", "-modelcheck"],
         [],
         MINIMAL_CONFIG.toolsDir,
         undefined,
+        undefined,
+        undefined,
+        expect.any(Function),
       );
     });
   });

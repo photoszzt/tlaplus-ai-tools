@@ -66,11 +66,14 @@ describe("TLC Tools", () => {
 
       expect(runTlcAndWait).toHaveBeenCalledWith(
         "/mock/spec.tla",
-        "spec.cfg",
+        "/mock/spec.cfg",
         ["-cleanup", "-modelcheck"],
         [],
         MINIMAL_CONFIG.toolsDir,
         undefined,
+        undefined,
+        undefined,
+        expect.any(Function),
       );
     });
 
@@ -135,11 +138,14 @@ describe("TLC Tools", () => {
 
       expect(runTlcAndWait).toHaveBeenCalledWith(
         "/mock/spec.tla",
-        "custom.cfg",
+        "/mock/custom.cfg",
         ["-cleanup", "-modelcheck"],
         [],
         MINIMAL_CONFIG.toolsDir,
         undefined,
+        undefined,
+        undefined,
+        expect.any(Function),
       );
     });
 
@@ -156,11 +162,14 @@ describe("TLC Tools", () => {
 
       expect(runTlcAndWait).toHaveBeenCalledWith(
         "/mock/spec.tla",
-        "spec.cfg",
+        "/mock/spec.cfg",
         ["-cleanup", "-modelcheck", "-workers", "4"],
         [],
         MINIMAL_CONFIG.toolsDir,
         undefined,
+        undefined,
+        undefined,
+        expect.any(Function),
       );
     });
 
@@ -177,11 +186,14 @@ describe("TLC Tools", () => {
 
       expect(runTlcAndWait).toHaveBeenCalledWith(
         "/mock/spec.tla",
-        "spec.cfg",
+        "/mock/spec.cfg",
         ["-cleanup", "-modelcheck"],
         ["-Xmx4G"],
         MINIMAL_CONFIG.toolsDir,
         undefined,
+        undefined,
+        undefined,
+        expect.any(Function),
       );
     });
 
@@ -224,7 +236,7 @@ describe("TLC Tools", () => {
 
       expect(runTlcAndWait).toHaveBeenCalledWith(
         "/mock/spec.tla",
-        "spec.cfg",
+        "/mock/spec.cfg",
         ["-cleanup", "-simulate"],
         ["-Dtlc2.TLC.stopAfter=3"],
         MINIMAL_CONFIG.toolsDir,
@@ -247,7 +259,7 @@ describe("TLC Tools", () => {
 
       expect(runTlcAndWait).toHaveBeenCalledWith(
         "/mock/spec.tla",
-        "spec.cfg",
+        "/mock/spec.cfg",
         ["-cleanup", "-simulate"],
         ["-Dtlc2.TLC.stopAfter=3"],
         MINIMAL_CONFIG.toolsDir,
@@ -271,7 +283,7 @@ describe("TLC Tools", () => {
 
       expect(runTlcAndWait).toHaveBeenCalledWith(
         "/mock/spec.tla",
-        "spec.cfg",
+        "/mock/spec.cfg",
         ["-cleanup", "-simulate"],
         ["-Dtlc2.TLC.stopAfter=3", "-Xmx2G"],
         MINIMAL_CONFIG.toolsDir,
@@ -295,7 +307,7 @@ describe("TLC Tools", () => {
 
       expect(runTlcAndWait).toHaveBeenCalledWith(
         "/mock/spec.tla",
-        "spec.cfg",
+        "/mock/spec.cfg",
         ["-cleanup", "-simulate"],
         ["-Dtlc2.TLC.stopAfter=3"],
         MINIMAL_CONFIG.toolsDir,
@@ -323,7 +335,7 @@ describe("TLC Tools", () => {
 
       expect(runTlcAndWait).toHaveBeenCalledWith(
         "/mock/spec.tla",
-        "spec.cfg",
+        "/mock/spec.cfg",
         ["-cleanup", "-simulate"],
         ["-Dtlc2.TLC.stopAfter=3"],
         MINIMAL_CONFIG.toolsDir,
@@ -368,7 +380,7 @@ describe("TLC Tools", () => {
 
       expect(runTlcAndWait).toHaveBeenCalledWith(
         "/mock/spec.tla",
-        "spec.cfg",
+        "/mock/spec.cfg",
         ["-cleanup", "-simulate", "-invlevel", "5"],
         ["-Dtlc2.TLC.stopAfter=3"],
         MINIMAL_CONFIG.toolsDir,
@@ -392,7 +404,7 @@ describe("TLC Tools", () => {
 
       expect(runTlcAndWait).toHaveBeenCalledWith(
         "/mock/spec.tla",
-        "spec.cfg",
+        "/mock/spec.cfg",
         ["-cleanup", "-simulate", "-invlevel", "10"],
         ["-Dtlc2.TLC.stopAfter=3"],
         MINIMAL_CONFIG.toolsDir,
@@ -418,7 +430,7 @@ describe("TLC Tools", () => {
 
       expect(runTlcAndWait).toHaveBeenCalledWith(
         "/mock/spec.tla",
-        "spec.cfg",
+        "/mock/spec.cfg",
         ["-cleanup", "-simulate", "-invlevel", "10"],
         ["-Dtlc2.TLC.stopAfter=3"],
         MINIMAL_CONFIG.toolsDir,
@@ -443,7 +455,7 @@ describe("TLC Tools", () => {
 
       expect(runTlcAndWait).toHaveBeenCalledWith(
         "/mock/spec.tla",
-        "custom.cfg",
+        "/mock/custom.cfg",
         ["-cleanup", "-simulate", "-invlevel", "5"],
         ["-Dtlc2.TLC.stopAfter=3"],
         MINIMAL_CONFIG.toolsDir,
@@ -493,7 +505,7 @@ describe("TLC Tools", () => {
 
       expect(runTlcAndWait).toHaveBeenCalledWith(
         "/mock/spec.tla",
-        "spec.cfg",
+        "/mock/spec.cfg",
         ["-cleanup", "-fp", "42", "-loadtrace", "tlc", traceFilePath],
         [],
         MINIMAL_CONFIG.toolsDir,

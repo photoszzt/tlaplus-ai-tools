@@ -84,12 +84,12 @@ Call `mcp__tlaplus__tlaplus_mcp_tlc_check` with `fileName` set to the spec path 
 - Invariants are easier to debug than liveness properties
 - Fix invariant violations before checking properties
 
-**If invariants pass**:
+**If exhaustive checking completes successfully with exit code zero**:
 
 - No invariant violation was found in this model configuration; this does not
   prove safety for every configuration
 - Continue with property-specific trace analysis
-- Use `mcp__tlaplus__tlaplus_mcp_tlc_explore` to generate specific behavior traces that help visualize the problematic execution path
+- Replay a saved counterexample using Step 5. Use `mcp__tlaplus__tlaplus_mcp_tlc_explore` for additional sampled behaviors; random exploration does not reproduce a specific counterexample.
 - Proceed to Step 4
 
 ### Step 4: Analyze Property Violations
@@ -103,6 +103,24 @@ If invariants pass but properties fail, re-enable properties one at a time:
    - Missing fairness conditions
    - Incorrect temporal formulas
    - Deadlocks preventing progress
+
+### Step 5: Save and Replay the Counterexample
+
+Checks do not save trace files by default. To capture a counterexample, call
+`mcp__tlaplus__tlaplus_mcp_tlc_check` with the chosen `fileName`, `cfgFile`,
+and `extraOpts: ["-dumpTrace", "tlc", "/absolute/path/trace.tlc"]`.
+Use the actual generated `.tlc` file; do not assume a `.vscode/tlc/` location.
+
+Keep the matching spec, constants, and model configuration. Add an `ALIAS`
+expression to the spec and an `ALIAS <operator>` entry in a replay config to
+show derived values or animation data. Then call
+`mcp__tlaplus__tlaplus_mcp_tlc_trace` with the matching `fileName`, replay
+`cfgFile`, and absolute `traceFile`. Replay interprets the saved behavior;
+it does not verify the whole model. Read `tlc-alias-expressions.md` from the
+knowledge resource when designing the alias.
+
+Distinguish the replayed violation from parser/config or process failures.
+Never infer safety from missing violation text in a failed or incomplete run.
 
 ## Common Causes of Violations
 
@@ -121,7 +139,8 @@ If invariants pass but properties fail, re-enable properties one at a time:
 ## MCP Tools for Debugging
 
 - `mcp__tlaplus__tlaplus_mcp_tlc_check`: Run model checker with config
-- `mcp__tlaplus__tlaplus_mcp_tlc_explore`: Explore state space interactively
+- `mcp__tlaplus__tlaplus_mcp_tlc_explore`: Sample behaviors
+- `mcp__tlaplus__tlaplus_mcp_tlc_trace`: Replay saved counterexamples with ALIAS
 - `mcp__tlaplus__tlaplus_mcp_sany_parse`: Verify syntax after fixes
 
 ## Tips

@@ -40,7 +40,7 @@ Read the file first to confirm it exists and ends with `.tla`.
 
 Call `mcp__tlaplus__tlaplus_mcp_sany_parse` with `fileName` set to `SPEC_PATH`.
 
-- If parsing fails: print the errors to the user and **stop**. Do not proceed.
+- If `isError` is true or parsing fails: print the errors to the user and **stop**. Do not proceed.
 - If parsing succeeds: print `Parse: OK` and continue.
 
 **Step 3: Apply CFG Selection Algorithm**
@@ -59,7 +59,8 @@ Call `mcp__tlaplus__tlaplus_mcp_tlc_smoke` with:
 Use the tool's default three-second simulation; do not pass a `seconds` argument.
 
 - If violations found: report them to the user and ask "Smoke test found violations. Would you like to proceed to full model check anyway, or fix the issues first?"
-- If no violations: print `Smoke test: Passed` and continue.
+- If there is a parser/config/process error, timeout, or cancellation: report an incomplete smoke test and stop.
+- Only if exit code is zero and the simulation completed with no violations: print `Smoke test: Passed` and continue.
 
 **Step 5: Full Model Check**
 
@@ -68,7 +69,11 @@ Call `mcp__tlaplus__tlaplus_mcp_tlc_check` with:
 - `fileName` set to `SPEC_PATH`
 - `cfgFile` set to `FINAL_CFG`
 
-Report: total states explored, distinct states, diameter, any violations (include full counterexample traces), and final result (pass/fail).
+Inspect `isError`, exit code, and completion output. Report total states explored,
+distinct states, diameter, and violations with full counterexamples. Mark success
+only after completed exhaustive checking with exit code zero and no violations
+or fingerprint-collision warnings. Report process/config/parser failures, timeout,
+and cancellation as incomplete checks, even if no violation text is present.
 
 If TLC reports OutOfMemoryError or runs excessively long, suggest reducing constant values, adding state constraints, or using `$tla-smoke` for quick feedback.
 
@@ -80,8 +85,8 @@ Summarize the full workflow:
 Model Checking Summary for <SPEC_PATH>
   Parse:      OK
   Config:     <CFG_PATH>
-  Smoke test: <passed/violations found>
-  Full check: <passed/violations found>
+  Smoke test: <passed/violations found/incomplete>
+  Full check: <passed/violations found/incomplete>
 
   States explored: <N>
   Distinct states: <N>

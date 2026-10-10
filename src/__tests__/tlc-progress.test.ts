@@ -20,6 +20,32 @@ describe("TLC Progress Notifications", () => {
     (getModuleSearchPaths as jest.Mock).mockReturnValue([]);
   });
 
+  it.each([
+    { timedOut: true, aborted: false, expected: 124 },
+    { timedOut: false, aborted: true, expected: 130 },
+  ])("never reports success after interruption: %j", async ({ timedOut, aborted, expected }) => {
+    mockRunProcess.mockResolvedValue({
+      exitCode: 0,
+      stdout: "",
+      stderr: "",
+      combined: "Partial output",
+      timedOut,
+      aborted,
+      killed: true,
+    });
+    const result = await runTlcAndWait(
+      "/path/to/spec.tla",
+      "/external/spec.cfg",
+      [],
+      [],
+      "/tools",
+      undefined,
+      1000,
+    );
+    expect(result.exitCode).toBe(expected);
+    expect(result.output).toContain("Partial output");
+  });
+
   it("should accept progress callback and process output correctly", async () => {
     const progressCallback = jest.fn();
 
