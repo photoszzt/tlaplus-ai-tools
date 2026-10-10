@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { localhostHostValidation } from "@modelcontextprotocol/sdk/server/middleware/hostHeaderValidation.js";
 import express from "express";
 import * as fs from "fs";
 import * as http from "http";
@@ -103,6 +104,22 @@ export class TLAPlusMCPServer {
     }
 
     const app = express();
+    app.use(localhostHostValidation());
+    app.use((req, res, next) => {
+      const origin = req.headers.origin;
+      const allowedOrigins = ["localhost", "127.0.0.1", "[::1]"].map(
+        (host) => new URL(`http://${host}:${req.socket.localPort}`).origin,
+      );
+      if (origin !== undefined && !allowedOrigins.includes(origin)) {
+        res.status(403).json({
+          jsonrpc: "2.0",
+          error: { code: -32000, message: "Invalid Origin header" },
+          id: null,
+        });
+        return;
+      }
+      next();
+    });
     app.use(express.json());
 
     // POST /mcp - Handle MCP requests (stateless mode)
@@ -205,7 +222,7 @@ export class TLAPlusMCPServer {
         }
       };
 
-      const httpServer = app.listen(this.config.port, () => {
+      const httpServer = app.listen(this.config.port, "127.0.0.1", () => {
         const actualPort = (httpServer.address() as { port: number })?.port || this.config.port;
         this.logger.info(`TLA+ MCP server listening at http://localhost:${actualPort}/mcp`);
         this.logger.debug(`Configuration: ${JSON.stringify(this.config, null, 2)}`);

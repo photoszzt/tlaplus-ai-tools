@@ -47,8 +47,8 @@ export async function registerKnowledgeBaseResources(
 
       // Register the resource
       server.resource(
-        resourceUri,
         fileName,
+        resourceUri,
         {
           title: metadata.title || fileName,
           description: metadata.description || `TLA+ knowledge base article: ${fileName}`,
@@ -94,8 +94,8 @@ export async function registerKnowledgeBaseFromCache(
 ): Promise<void> {
   for (const entry of entries) {
     server.resource(
-      entry.resourceUri,
       entry.fileName,
+      entry.resourceUri,
       {
         title: entry.title,
         description: entry.description,

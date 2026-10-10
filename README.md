@@ -220,6 +220,17 @@ tlcDefaults:
 
 All settings are optional - the plugin auto-detects paths by default.
 
+### Local HTTP Transport
+
+Run `node dist/index.js --http --port 3000` to serve MCP at
+`http://127.0.0.1:3000/mcp`. HTTP mode binds to loopback and accepts only
+loopback Host headers. Clients can omit Origin; when present, it must match
+the server's HTTP origin using `localhost`, `127.0.0.1`, or `[::1]` and its port.
+Foreign or opaque Origins receive HTTP 403 before the request body is parsed.
+
+Remote access requires a tunnel or a local authenticated proxy. A proxy must
+forward a loopback Host header and enforce its own browser Origin policy.
+
 ## Examples
 
 ### Counter Specification
