@@ -1,0 +1,27 @@
+# Unsupported optional capabilities / prescribed test_* and test:// fixtures.
+# These remain failures on the application server, not a full-suite pass.
+# Logging/setLevel is supported and intentionally absent from this baseline.
+server:
+  - completion-complete
+  - tools-call-image
+  - tools-call-audio
+  - tools-call-embedded-resource
+  - tools-call-mixed-content
+  - tools-call-with-logging
+  - tools-call-with-progress
+  - tools-call-sampling
+  - tools-call-elicitation
+  - elicitation-sep1034-defaults
+  - elicitation-sep1330-enums
+  - resources-read-text
+  - resources-read-binary
+  - resources-templates-read
+  - resources-subscribe
+  - resources-unsubscribe
+  - prompts-list
+  - prompts-get-simple
+  - prompts-get-with-args
+  - prompts-get-embedded-resource
+  - prompts-get-with-image
+  # Stateless application: no optional session ID to exercise multiple streams.
+  - server-sse-multiple-streams:server-sse-multiple-streams-session

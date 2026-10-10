@@ -479,6 +479,7 @@ describe("REQ-REVIEW-005: KB Caching", () => {
     // Mock all dependencies that server.ts imports
     jest.mock("@modelcontextprotocol/sdk/server/mcp.js", () => ({
       McpServer: jest.fn().mockImplementation(() => ({
+        server: { setRequestHandler: jest.fn() },
         connect: jest.fn().mockResolvedValue(undefined),
         close: jest.fn().mockResolvedValue(undefined),
         tool: jest.fn(),
@@ -623,6 +624,7 @@ describe("REQ-REVIEW-006: HTTP Error Handler", () => {
     // Mock all server dependencies
     jest.mock("@modelcontextprotocol/sdk/server/mcp.js", () => ({
       McpServer: jest.fn().mockImplementation(() => ({
+        server: { setRequestHandler: jest.fn() },
         connect: jest.fn().mockResolvedValue(undefined),
         close: jest.fn().mockResolvedValue(undefined),
         tool: jest.fn(),
@@ -716,6 +718,7 @@ describe("REQ-REVIEW-006: HTTP Error Handler", () => {
 
     jest.mock("@modelcontextprotocol/sdk/server/mcp.js", () => ({
       McpServer: jest.fn().mockImplementation(() => ({
+        server: { setRequestHandler: jest.fn() },
         connect: jest.fn().mockResolvedValue(undefined),
         close: jest.fn().mockResolvedValue(undefined),
         tool: jest.fn(),

@@ -36,6 +36,7 @@ describe("TLAPlusMCPServer", () => {
 
     // Mock McpServer
     mockMcpServer = {
+      server: { setRequestHandler: jest.fn() },
       connect: jest.fn().mockResolvedValue(undefined),
       close: jest.fn().mockResolvedValue(undefined),
     };
@@ -114,6 +115,7 @@ describe("TLAPlusMCPServer", () => {
         {
           capabilities: {
             resources: {},
+            logging: {},
           },
         },
       );
@@ -130,7 +132,11 @@ describe("TLAPlusMCPServer", () => {
       const server = new TLAPlusMCPServer(MINIMAL_CONFIG);
       await server.start();
 
-      expect(registerTlcTools).toHaveBeenCalledWith(mockMcpServer, MINIMAL_CONFIG);
+      expect(registerTlcTools).toHaveBeenCalledWith(
+        mockMcpServer,
+        MINIMAL_CONFIG,
+        expect.any(Function),
+      );
     });
 
     it("registers animation tools", async () => {

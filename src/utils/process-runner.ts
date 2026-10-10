@@ -10,6 +10,7 @@ export interface RunProcessOptions {
   killGraceMs?: number;
   signal?: AbortSignal;
   maxOutputBytes?: number;
+  onOutput?: (chunk: Buffer, stream: "stdout" | "stderr") => void;
 }
 
 export interface RunProcessResult {
@@ -236,12 +237,23 @@ export async function runProcess(options: RunProcessOptions): Promise<RunProcess
       const buf = toBuffer(chunk);
       appendOutput(buffers, "stdout", buf, maxOutputBytes);
       appendOutput(buffers, "combined", buf, maxOutputBytes);
+      notifyOutput(buf, "stdout");
     };
 
     const onStderrData = (chunk: Buffer | string) => {
       const buf = toBuffer(chunk);
       appendOutput(buffers, "stderr", buf, maxOutputBytes);
       appendOutput(buffers, "combined", buf, maxOutputBytes);
+      notifyOutput(buf, "stderr");
+    };
+
+    const notifyOutput = (chunk: Buffer, stream: "stdout" | "stderr") => {
+      try {
+        options.onOutput?.(chunk, stream);
+      } catch {
+        // An observer failure must not interrupt the subprocess.
+        onStreamError(new Error("Output observer failed"));
+      }
     };
 
     const onAbort = () => {
