@@ -20,7 +20,7 @@ jobs:
           java-version: "11"
       - run: npm ci
       - run: npm run setup
-      - run: npm test -- --runInBand src/__tests__/integration/tlc-notifications.integration.test.ts
+      - run: npm test -- --runInBand
       - run: npm run test:conformance
       - uses: actions/upload-artifact@v4
         if: always()

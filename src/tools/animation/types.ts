@@ -141,7 +141,7 @@ export type RenderUseCase = "live" | "static" | "trace";
  * @implements REQ-ARCH-005
  * NORMATIVE: SC-ANIM-023
  */
-export type RenderProtocol = "kitty" | "iterm2" | "ascii" | "browser";
+export type RenderProtocol = "kitty" | "iterm2" | "ascii" | "browser" | "mcp";
 
 /**
  * Fallback preference
@@ -271,7 +271,20 @@ export interface BrowserRenderResult {
 /**
  * Union type for all successful render results
  */
-export type RenderResult = TerminalRenderResult | AsciiRenderResult | BrowserRenderResult;
+export interface NativeRenderResult {
+  protocol: "mcp";
+  frameIndex: number;
+  width: number;
+  height: number;
+  png: Buffer;
+  svg?: string;
+}
+
+export type RenderResult =
+  | TerminalRenderResult
+  | AsciiRenderResult
+  | BrowserRenderResult
+  | NativeRenderResult;
 
 /**
  * Frame count response for trace navigation
@@ -429,6 +442,11 @@ export function isRenderResult(value: unknown): value is RenderResult {
   }
   if (obj.protocol === "kitty" || obj.protocol === "iterm2") {
     return typeof obj.output === "string";
+  }
+  if (obj.protocol === "mcp") {
+    return (
+      Buffer.isBuffer(obj.png) && typeof obj.width === "number" && typeof obj.height === "number"
+    );
   }
   return false;
 }

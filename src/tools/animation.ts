@@ -9,12 +9,16 @@
  */
 
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpError, ErrorCode, type CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { randomUUID } from "crypto";
+import * as fs from "fs/promises";
 import { ServerConfig } from "../types";
 import { DetectionService } from "./animation/DetectionService";
-import { RenderService } from "./animation/RenderService";
+import { RenderService, NATIVE_SOURCE_LIMIT } from "./animation/RenderService";
 import { FrameCountService } from "./animation/FrameCountService";
-import { isAnimationError } from "./animation/types";
+import { isAnimationError, type NativeRenderResult } from "./animation/types";
+import { resolveAndValidatePath } from "../utils/paths";
 import { createAnimationError } from "./animation/errors";
 import { registerTool } from "./shared/tool-registration";
 
@@ -65,7 +69,7 @@ const DetectRequestSchema = z.object({
  */
 const RenderRequestSchema = z
   .object({
-    protocol: z.enum(["kitty", "iterm2", "ascii", "browser"]),
+    protocol: z.enum(["kitty", "iterm2", "ascii", "browser", "mcp"]),
     useCase: z.enum(["live", "static", "trace"]),
     frameIndex: z.number().nonnegative(),
     animView: AnimViewSchema.optional(),
@@ -83,6 +87,39 @@ const RenderRequestSchema = z
     },
     { message: "Exactly one of animView, svgContent, or svgFilePath must be provided" },
   );
+
+async function readNativeSource(
+  fileName: string,
+  workingDir: string | null,
+  signal?: AbortSignal,
+): Promise<string> {
+  const filePath = resolveAndValidatePath(fileName, workingDir);
+  if (!(await fs.lstat(filePath)).isFile())
+    throw new Error("SVG source must be a regular file, not a symlink");
+  const realPath = resolveAndValidatePath(await fs.realpath(filePath), workingDir);
+  if (signal?.aborted) throw new Error("Animation render was cancelled");
+  const file = await fs.open(
+    realPath,
+    fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0) | (fs.constants.O_NONBLOCK || 0),
+  );
+  try {
+    const stat = await file.stat();
+    if (!stat.isFile() || stat.size > NATIVE_SOURCE_LIMIT)
+      throw new Error("SVG source must be a regular file of at most 1MB");
+    const buffer = Buffer.alloc(NATIVE_SOURCE_LIMIT + 1);
+    let bytesRead = 0;
+    while (bytesRead < buffer.length) {
+      if (signal?.aborted) throw new Error("Animation render was cancelled");
+      const next = await file.read(buffer, bytesRead, buffer.length - bytesRead, bytesRead);
+      if (!next.bytesRead) break;
+      bytesRead += next.bytesRead;
+    }
+    if (bytesRead > NATIVE_SOURCE_LIMIT) throw new Error("SVG source exceeds 1MB limit");
+    return buffer.subarray(0, bytesRead).toString("utf8");
+  } finally {
+    await file.close();
+  }
+}
 
 /**
  * Zod schema for frameCount operation input
@@ -241,13 +278,124 @@ export async function handleFrameCount(
  * Register animation tools with the MCP server
  * @implements REQ-ARCH-001 (MCP tool with detect/render/frameCount operations)
  * @param server - MCP server instance
- * @param _config - Server configuration (unused, reserved for future use)
+ * @param config - Server configuration for native SVG source path confinement
  */
 // @implements REQ-REVIEW-002, SCN-REVIEW-002-01
 export async function registerAnimationTools(
   server: McpServer,
-  _config: ServerConfig,
+  config: ServerConfig,
 ): Promise<void> {
+  const frames = new Map<string, NativeRenderResult>();
+  const persistent = !config.http || Boolean(config.httpSession);
+  let closed = false;
+  const frameUri = (id: string, format: string) => `tlaplus://animation/${id}/${format}`;
+  const formats = (frame: NativeRenderResult) =>
+    frame.svg ? ["frame.png", "frame.svg"] : ["frame.png"];
+  const previousClose = server.server.onclose;
+  server.server.onclose = () => {
+    closed = true;
+    frames.clear();
+    previousClose?.();
+  };
+  server.resource(
+    "animation-frames",
+    new ResourceTemplate("tlaplus://animation/{frameId}/{format}", {
+      list: async () => ({
+        resources: [...frames].flatMap(([id, frame]) =>
+          formats(frame).map((format) => ({
+            uri: frameUri(id, format),
+            name: `Frame ${frame.frameIndex} ${format}`,
+            mimeType: format === "frame.png" ? "image/png" : "image/svg+xml",
+          })),
+        ),
+      }),
+      complete: {
+        frameId: (value) => [...frames.keys()].filter((id) => id.startsWith(value)),
+        format: (value, context) => {
+          const frame = frames.get(context?.arguments?.frameId ?? "");
+          return (frame ? formats(frame) : []).filter((format) => format.startsWith(value));
+        },
+      },
+    }),
+    {
+      description:
+        "Recent animation frames rendered on this connection; at most eight frames are retained.",
+    },
+    async (uri, variables) => {
+      const frame =
+        typeof variables.frameId === "string" ? frames.get(variables.frameId) : undefined;
+      if (
+        !frame ||
+        typeof variables.format !== "string" ||
+        !formats(frame).includes(variables.format)
+      ) {
+        throw new McpError(ErrorCode.InvalidParams, "Unknown or expired animation frame");
+      }
+      return {
+        contents:
+          variables.format === "frame.png"
+            ? [{ uri: uri.href, mimeType: "image/png", blob: frame.png.toString("base64") }]
+            : [{ uri: uri.href, mimeType: "image/svg+xml", text: frame.svg ?? "" }],
+      };
+    },
+  );
+  const renderNative = async (params: unknown, signal?: AbortSignal): Promise<CallToolResult> => {
+    try {
+      if (closed || signal?.aborted) throw new Error("Animation render was cancelled");
+      const input = RenderRequestSchema.parse(params);
+      if (!Number.isSafeInteger(input.frameIndex))
+        throw new Error("Native frameIndex must be a nonnegative safe integer");
+      const source = input.svgFilePath
+        ? {
+            ...input,
+            svgContent: await readNativeSource(input.svgFilePath, config.workingDir, signal),
+            svgFilePath: undefined,
+          }
+        : input;
+      const result = await new RenderService().render({ ...source, operation: "render" });
+      if (closed || signal?.aborted) throw new Error("Animation render was cancelled");
+      if (isAnimationError(result)) return formatResponse(result, true);
+      if (result.protocol !== "mcp") throw new Error("Native rendering requires protocol mcp");
+      const id = randomUUID();
+      if (persistent) {
+        frames.set(id, result);
+        if (frames.size > 8) {
+          const oldest = frames.keys().next().value;
+          if (oldest !== undefined) frames.delete(oldest);
+        }
+        void server.server.sendResourceListChanged().catch(() => {});
+      }
+      const pngUri = frameUri(id, "frame.png"),
+        svgUri = result.svg ? frameUri(id, "frame.svg") : undefined;
+      const content: CallToolResult["content"] = [
+        {
+          type: "text",
+          text: JSON.stringify({
+            frameIndex: result.frameIndex,
+            width: result.width,
+            height: result.height,
+            ...(persistent ? { pngUri, svgUri } : {}),
+            embeddedOnly: !persistent,
+            svgOmitted: !result.svg,
+          }),
+        },
+        { type: "image", mimeType: "image/png", data: result.png.toString("base64") },
+      ];
+      if (result.svg && svgUri)
+        content.push({
+          type: "resource",
+          resource: { uri: svgUri, mimeType: "image/svg+xml", text: result.svg },
+        });
+      return { content };
+    } catch (error) {
+      return formatResponse(
+        createAnimationError("RENDER_FAILED", {
+          specificError: error instanceof Error ? error.message : String(error),
+        }),
+        true,
+      );
+    }
+  };
   // Tool 1: Detect terminal graphics capabilities
   registerTool(
     server,
@@ -269,10 +417,10 @@ export async function registerAnimationTools(
   registerTool(
     server,
     "tlaplus_mcp_animation_render",
-    "Render a single animation frame to the specified protocol format (Kitty, iTerm2, ASCII art, or browser fallback). Accepts animation data as AnimView record, SVG content string, or SVG file path. Exactly one source must be provided. For trace visualization, call frameCount first to get the file list, then render each frame with explicit svgFilePath.",
+    "Render an animation frame as a native MCP PNG image with an inert SVG resource (protocol mcp), or as Kitty, iTerm2, ASCII, or browser output. Accepts exactly one AnimView, SVG string, or SVG file path. Native frames are limited to 4194304 pixels and 1MB per PNG/SVG; unsafe SVG is omitted. Resources retain the latest eight frames on this connection. For traces, call frameCount first, then render an explicit SVG file.",
     {
       protocol: z
-        .enum(["kitty", "iterm2", "ascii", "browser"])
+        .enum(["kitty", "iterm2", "ascii", "browser", "mcp"])
         .describe("Target rendering protocol"),
       useCase: z
         .enum(["live", "static", "trace"])
@@ -294,19 +442,24 @@ export async function registerAnimationTools(
         .optional()
         .describe("Fallback preference when graphics not available"),
     },
-    async (params: {
-      protocol: "kitty" | "iterm2" | "ascii" | "browser";
-      useCase: "live" | "static" | "trace";
-      frameIndex: number;
-      animView?: unknown;
-      svgContent?: string;
-      svgFilePath?: string;
-      traceDirectory?: string;
-      filePattern?: string;
-      asciiConfig?: { columns?: number; rows?: number; colorEnabled?: boolean };
-      fallbackPreference?: "ascii" | "browser" | "prompt" | "none";
-    }) => {
-      return handleRender(params);
+    async (
+      params: {
+        protocol: "kitty" | "iterm2" | "ascii" | "browser" | "mcp";
+        useCase: "live" | "static" | "trace";
+        frameIndex: number;
+        animView?: unknown;
+        svgContent?: string;
+        svgFilePath?: string;
+        traceDirectory?: string;
+        filePattern?: string;
+        asciiConfig?: { columns?: number; rows?: number; colorEnabled?: boolean };
+        fallbackPreference?: "ascii" | "browser" | "prompt" | "none";
+      },
+      context?: { signal?: AbortSignal },
+    ) => {
+      return params.protocol === "mcp"
+        ? renderNative(params, context?.signal)
+        : handleRender(params);
     },
   );
 

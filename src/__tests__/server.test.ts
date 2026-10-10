@@ -11,6 +11,8 @@ jest.mock("../tools/sany");
 jest.mock("../tools/tlc");
 jest.mock("../tools/knowledge");
 jest.mock("../tools/animation");
+jest.mock("../tools/workflows");
+jest.mock("../tools/prepare-config");
 
 // Mock express
 jest.mock("express");
@@ -20,7 +22,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { registerSanyTools } from "../tools/sany";
 import { registerTlcTools } from "../tools/tlc";
-import { registerKnowledgeBaseResources } from "../tools/knowledge";
+import { KnowledgeCatalog } from "../tools/knowledge";
 import { registerAnimationTools } from "../tools/animation";
 import express from "express";
 
@@ -30,15 +32,18 @@ describe("TLAPlusMCPServer", () => {
   let mockHttpTransport: any;
   let mockExpressApp: any;
   let mockHttpServer: any;
+  let mockCatalog: any;
+  let mockSdkClose: jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
     // Mock McpServer
+    mockSdkClose = jest.fn().mockResolvedValue(undefined);
     mockMcpServer = {
       server: { setRequestHandler: jest.fn() },
       connect: jest.fn().mockResolvedValue(undefined),
-      close: jest.fn().mockResolvedValue(undefined),
+      close: mockSdkClose,
     };
     (McpServer as jest.Mock).mockImplementation(() => mockMcpServer);
 
@@ -80,7 +85,8 @@ describe("TLAPlusMCPServer", () => {
     // Mock tool registration
     (registerSanyTools as jest.Mock).mockResolvedValue(undefined);
     (registerTlcTools as jest.Mock).mockResolvedValue(undefined);
-    (registerKnowledgeBaseResources as jest.Mock).mockResolvedValue(undefined);
+    mockCatalog = { register: jest.fn(), refresh: jest.fn().mockResolvedValue(undefined) };
+    (KnowledgeCatalog.fromDirectory as jest.Mock).mockResolvedValue(mockCatalog);
     (registerAnimationTools as jest.Mock).mockResolvedValue(undefined);
   });
 
@@ -150,14 +156,15 @@ describe("TLAPlusMCPServer", () => {
       const server = new TLAPlusMCPServer(FULL_CONFIG);
       await server.start();
 
-      expect(registerKnowledgeBaseResources).toHaveBeenCalledWith(mockMcpServer, FULL_CONFIG.kbDir);
+      expect(KnowledgeCatalog.fromDirectory).toHaveBeenCalledWith(FULL_CONFIG.kbDir);
+      expect(mockCatalog.register).toHaveBeenCalledWith(mockMcpServer);
     });
 
     it("skips knowledge base registration when kbDir not provided", async () => {
       const server = new TLAPlusMCPServer(MINIMAL_CONFIG);
       await server.start();
 
-      expect(registerKnowledgeBaseResources).not.toHaveBeenCalled();
+      expect(KnowledgeCatalog.fromDirectory).not.toHaveBeenCalled();
     });
   });
 
@@ -355,7 +362,7 @@ describe("TLAPlusMCPServer", () => {
         closeCallback!();
 
         expect(mockHttpTransport.close).toHaveBeenCalled();
-        expect(mockMcpServer.close).toHaveBeenCalled();
+        expect(mockSdkClose).toHaveBeenCalled();
       });
 
       it("returns 500 on error", async () => {

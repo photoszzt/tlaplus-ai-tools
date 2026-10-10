@@ -1,7 +1,12 @@
 import * as fs from "fs";
 import * as path from "path";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { parseMarkdownFrontmatter, removeMarkdownFrontmatter } from "../utils/markdown";
+
+export { KnowledgeCatalog } from "./knowledge-catalog";
+
+export const KNOWLEDGE_URI_TEMPLATE = "tlaplus://knowledge/{article}";
 
 /**
  * Cached knowledge base entry for HTTP mode pre-loading.
@@ -14,6 +19,45 @@ export interface KnowledgeBaseEntry {
   title: string;
   description: string;
   content: string;
+}
+
+export function knowledgeResourceContent(entry: KnowledgeBaseEntry) {
+  return {
+    contents: [
+      {
+        uri: entry.resourceUri,
+        mimeType: "text/markdown",
+        text: removeMarkdownFrontmatter(entry.content),
+      },
+    ],
+  };
+}
+
+/** Register a template against either an immutable cache or a live catalog snapshot. */
+export function registerKnowledgeTemplate(
+  server: McpServer,
+  entries: KnowledgeBaseEntry[] | (() => KnowledgeBaseEntry[]),
+) {
+  const snapshot = typeof entries === "function" ? entries : () => entries;
+  return server.registerResource(
+    "knowledge-article",
+    new ResourceTemplate(KNOWLEDGE_URI_TEMPLATE, {
+      list: undefined,
+      complete: {
+        article: async (prefix) =>
+          snapshot()
+            .map((entry) => entry.fileName)
+            .filter((fileName) => fileName.startsWith(prefix))
+            .sort(),
+      },
+    }),
+    { title: "TLA+ knowledge article", mimeType: "text/markdown" },
+    async (uri) => {
+      const entry = snapshot().find((candidate) => candidate.resourceUri === uri.href);
+      if (!entry) throw new McpError(ErrorCode.InvalidParams, "Unknown knowledge article");
+      return knowledgeResourceContent(entry);
+    },
+  );
 }
 
 /**

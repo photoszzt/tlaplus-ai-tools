@@ -22,6 +22,10 @@ import {
   KnowledgeBaseEntry,
 } from "./tools/knowledge";
 import { registerAnimationTools } from "./tools/animation";
+import { registerWorkflowPrompts } from "./tools/workflows";
+import { registerPrepareConfigTool } from "./tools/prepare-config";
+import { KnowledgeCatalog, registerKnowledgeTemplate } from "./tools/knowledge";
+import { registerHttpSessionRoutes } from "./utils/http-sessions";
 
 /**
  * Read the package version from package.json at module load time.
@@ -54,6 +58,10 @@ const FATAL_ERROR_CODES = new Set(["EADDRINUSE", "EACCES", "ENOSPC", "EMFILE", "
 export class TLAPlusMCPServer {
   private logger: Logger;
   private mcpLogLevel: LoggingLevel = "info";
+  private catalog?: Promise<KnowledgeCatalog>;
+  private httpServer?: http.Server;
+  private closeSessions?: () => Promise<void>;
+  private stdioServer?: McpServer;
   // @implements REQ-REVIEW-005, SCN-REVIEW-005-01
   private cachedKnowledgeBase: KnowledgeBaseEntry[] | null = null;
 
@@ -80,6 +88,7 @@ export class TLAPlusMCPServer {
     this.logger.info("Starting TLA+ MCP server in stdio mode...");
 
     const server = await this.createMCPServer();
+    this.stdioServer = server;
     const transport = new StdioServerTransport();
 
     await server.connect(transport);
@@ -97,7 +106,7 @@ export class TLAPlusMCPServer {
   private async startHttp(): Promise<void> {
     // Pre-load knowledge base content (read files once at startup)
     // @implements REQ-REVIEW-005, SCN-REVIEW-005-01
-    if (this.config.kbDir) {
+    if (this.config.kbDir && !this.config.httpSession) {
       try {
         this.cachedKnowledgeBase = await this.loadKnowledgeBase(this.config.kbDir);
         this.logger.debug(`Knowledge base pre-loaded: ${this.cachedKnowledgeBase.length} articles`);
@@ -113,83 +122,95 @@ export class TLAPlusMCPServer {
     applyHttpSecurity(app);
     app.use(express.json());
 
-    // POST /mcp - Handle MCP requests (stateless mode)
-    app.post("/mcp", async (req, res) => {
-      let serverInstance: McpServer | undefined;
-      try {
-        serverInstance = await this.createMCPServer();
+    if (this.config.httpSession) {
+      this.closeSessions = registerHttpSessionRoutes(
+        app,
+        () => this.createMCPServer(true),
+        (error) =>
+          this.logger.error(
+            "HTTP session error:",
+            error instanceof Error ? error : new Error(String(error)),
+          ),
+      );
+    } else {
+      // POST /mcp - Handle MCP requests (stateless mode)
+      app.post("/mcp", async (req, res) => {
+        let serverInstance: McpServer | undefined;
+        try {
+          serverInstance = await this.createMCPServer();
 
-        // Handle duplicate protocol version headers (fixes LiteLLM issues)
-        const protocolVersion = req.headers["mcp-protocol-version"];
-        if (
-          protocolVersion &&
-          typeof protocolVersion === "string" &&
-          protocolVersion.includes(",")
-        ) {
-          req.headers["mcp-protocol-version"] = protocolVersion.split(",")[0].trim();
-        }
+          // Handle duplicate protocol version headers (fixes LiteLLM issues)
+          const protocolVersion = req.headers["mcp-protocol-version"];
+          if (
+            protocolVersion &&
+            typeof protocolVersion === "string" &&
+            protocolVersion.includes(",")
+          ) {
+            req.headers["mcp-protocol-version"] = protocolVersion.split(",")[0].trim();
+          }
 
-        const transport = new StreamableHTTPServerTransport({
-          sessionIdGenerator: undefined, // Stateless mode
-        });
+          const transport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: undefined, // Stateless mode
+          });
 
-        res.on("close", () => {
-          this.logger.debug("HTTP request closed");
-          transport.close();
+          res.on("close", () => {
+            this.logger.debug("HTTP request closed");
+            transport.close();
+            if (serverInstance !== undefined) {
+              serverInstance.close().catch((error) => {
+                this.logger.error("Error closing MCP server instance:", error);
+              });
+              serverInstance = undefined;
+            }
+          });
+
+          await serverInstance.connect(transport);
+          await transport.handleRequest(req, res, req.body);
+        } catch (error) {
           if (serverInstance !== undefined) {
-            serverInstance.close().catch((error) => {
-              this.logger.error("Error closing MCP server instance:", error);
+            serverInstance.close().catch((closeError) => {
+              this.logger.error("Error closing MCP server instance after failure:", closeError);
             });
             serverInstance = undefined;
           }
+          this.logger.error("Error handling MCP request:", error as Error);
+          if (!res.headersSent) {
+            res.status(500).json({
+              jsonrpc: "2.0",
+              error: {
+                code: -32603,
+                message: "Internal server error",
+              },
+              id: null,
+            });
+          }
+        }
+      });
+
+      // GET /mcp - Return 405 (stateless mode doesn't support SSE)
+      app.get("/mcp", (req, res) => {
+        res.status(405).json({
+          jsonrpc: "2.0",
+          error: {
+            code: -32000,
+            message: "Method not allowed. This server operates in stateless mode.",
+          },
+          id: null,
         });
-
-        await serverInstance.connect(transport);
-        await transport.handleRequest(req, res, req.body);
-      } catch (error) {
-        if (serverInstance !== undefined) {
-          serverInstance.close().catch((closeError) => {
-            this.logger.error("Error closing MCP server instance after failure:", closeError);
-          });
-          serverInstance = undefined;
-        }
-        this.logger.error("Error handling MCP request:", error as Error);
-        if (!res.headersSent) {
-          res.status(500).json({
-            jsonrpc: "2.0",
-            error: {
-              code: -32603,
-              message: "Internal server error",
-            },
-            id: null,
-          });
-        }
-      }
-    });
-
-    // GET /mcp - Return 405 (stateless mode doesn't support SSE)
-    app.get("/mcp", (req, res) => {
-      res.status(405).json({
-        jsonrpc: "2.0",
-        error: {
-          code: -32000,
-          message: "Method not allowed. This server operates in stateless mode.",
-        },
-        id: null,
       });
-    });
 
-    // DELETE /mcp - Return 405 (stateless mode doesn't support session termination)
-    app.delete("/mcp", (req, res) => {
-      res.status(405).json({
-        jsonrpc: "2.0",
-        error: {
-          code: -32000,
-          message: "Method not allowed. This server operates in stateless mode.",
-        },
-        id: null,
+      // DELETE /mcp - Return 405 (stateless mode doesn't support session termination)
+      app.delete("/mcp", (req, res) => {
+        res.status(405).json({
+          jsonrpc: "2.0",
+          error: {
+            code: -32000,
+            message: "Method not allowed. This server operates in stateless mode.",
+          },
+          id: null,
+        });
       });
-    });
+    }
 
     // @implements REQ-REVIEW-006, SCN-REVIEW-006-01, SCN-REVIEW-006-02
     // Two-phase error handling: startup errors reject the promise,
@@ -226,6 +247,7 @@ export class TLAPlusMCPServer {
 
       httpServer.on("error", startupErrorHandler);
     });
+    this.httpServer = _server;
     // No duplicate server.on('error') -- removed per SCN-REVIEW-006-01
   }
 
@@ -235,7 +257,9 @@ export class TLAPlusMCPServer {
    * @implements REQ-REVIEW-011, SCN-REVIEW-011-01
    * @implements REQ-REVIEW-005, SCN-REVIEW-005-02
    */
-  async createMCPServer(): Promise<McpServer> {
+  async createMCPServer(
+    persistent = !this.config.http || Boolean(this.config.httpSession),
+  ): Promise<McpServer> {
     const server = new McpServer(
       {
         name: "TLA+ MCP Tools",
@@ -250,8 +274,10 @@ export class TLAPlusMCPServer {
       },
     );
 
+    let logLevel: LoggingLevel = "info";
     server.server.setRequestHandler(SetLevelRequestSchema, async (request) => {
-      this.mcpLogLevel = request.params.level;
+      if (persistent) logLevel = request.params.level;
+      else this.mcpLogLevel = request.params.level;
       return {};
     });
 
@@ -261,7 +287,7 @@ export class TLAPlusMCPServer {
 
     // Register TLC tools (check, smoke, explore, trace)
     await registerTlcTools(server, this.config, (level, message, context) =>
-      this.sendLog(level, message, context),
+      this.sendLog(level, message, context, persistent ? logLevel : this.mcpLogLevel),
     );
     this.logger.debug("TLC tools registered");
 
@@ -269,11 +295,25 @@ export class TLAPlusMCPServer {
     await registerAnimationTools(server, this.config);
     this.logger.debug("Animation tools registered");
 
+    await registerWorkflowPrompts(server, this.config);
+    registerPrepareConfigTool(server);
+
     // Register knowledge base resources:
     // Use cached content if available (HTTP mode), otherwise read from disk (stdio mode)
     // @implements REQ-REVIEW-005, SCN-REVIEW-005-01, SCN-REVIEW-005-02
-    if (this.cachedKnowledgeBase) {
+    if (persistent && this.config.kbDir) {
+      this.catalog ??= KnowledgeCatalog.fromDirectory(this.config.kbDir);
+      try {
+        const catalog = await this.catalog;
+        await catalog.refresh();
+        catalog.register(server);
+      } catch (error) {
+        this.catalog = undefined;
+        this.logger.warn("Knowledge base unavailable:", error);
+      }
+    } else if (this.cachedKnowledgeBase) {
       await registerKnowledgeBaseFromCache(server, this.cachedKnowledgeBase);
+      registerKnowledgeTemplate(server, this.cachedKnowledgeBase);
       this.logger.debug("Knowledge base resources registered (from cache)");
     } else if (this.config.kbDir) {
       await registerKnowledgeBaseResources(server, this.config.kbDir);
@@ -282,20 +322,46 @@ export class TLAPlusMCPServer {
       this.logger.info("Knowledge base directory not configured, skipping resource registration");
     }
 
+    const sdkClose = server.close.bind(server);
+    const onClose = server.server.onclose;
+    let disposed = false;
+    server.server.onclose = () => {
+      if (disposed) return;
+      disposed = true;
+      onClose?.();
+    };
+    server.close = async () => {
+      // SDK close has no onclose event until a transport exists.
+      if (!server.server.transport) server.server.onclose?.();
+      await sdkClose();
+    };
     return server;
   }
 
-  async sendLog(level: LoggingLevel, message: string, context?: ToolContext): Promise<void> {
+  async sendLog(
+    level: LoggingLevel,
+    message: string,
+    context?: ToolContext,
+    minimum = this.mcpLogLevel,
+  ): Promise<void> {
     if (!context?.sendNotification || context.signal?.aborted) return;
-    if (
-      LoggingLevelSchema.options.indexOf(level) <
-      LoggingLevelSchema.options.indexOf(this.mcpLogLevel)
-    )
+    if (LoggingLevelSchema.options.indexOf(level) < LoggingLevelSchema.options.indexOf(minimum))
       return;
     await context.sendNotification({
       method: "notifications/message",
       params: { level, logger: "tlc", data: { message } },
     });
+  }
+
+  async close(): Promise<void> {
+    await this.closeSessions?.();
+    await this.stdioServer?.close();
+    if (this.httpServer) {
+      const listener = this.httpServer;
+      this.httpServer = undefined;
+      listener.closeAllConnections();
+      await new Promise<void>((resolve) => listener.close(() => resolve()));
+    }
   }
 
   /**

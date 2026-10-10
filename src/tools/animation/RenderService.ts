@@ -10,6 +10,7 @@
 import * as fs from "fs/promises";
 import * as path from "path";
 import * as os from "os";
+import { XMLParser, XMLValidator } from "fast-xml-parser";
 
 import {
   RenderInput,
@@ -17,6 +18,7 @@ import {
   TerminalRenderResult,
   AsciiRenderResult,
   BrowserRenderResult,
+  NativeRenderResult,
   FrameCountResult,
   AnimationError,
   AnimView,
@@ -35,6 +37,137 @@ import { createAnimationError, ErrorService, errorService } from "./errors";
  * NORMATIVE: CON-ANIM-005, SC-ANIM-024
  */
 const FRAME_SIZE_LIMIT = 1024 * 1024;
+export const NATIVE_SOURCE_LIMIT = FRAME_SIZE_LIMIT;
+const MAX_NATIVE_PIXELS = 4 * 1024 * 1024;
+const MAX_NATIVE_DIMENSION = 4096;
+
+const nativeNumericAttributes = new Set([
+  "x",
+  "y",
+  "width",
+  "height",
+  "cx",
+  "cy",
+  "r",
+  "rx",
+  "ry",
+  "x1",
+  "y1",
+  "x2",
+  "y2",
+  "font-size",
+  "stroke-width",
+  "opacity",
+  "fill-opacity",
+  "stroke-opacity",
+]);
+const nativeColor = /^(?:[a-z]+|#[\da-f]{3,8}|(?:rgb|rgba|hsl|hsla)\([\d.,% +-]+\))$/i;
+
+function safeNativeAttribute(name: string, value: unknown): boolean {
+  if (name === "id") return typeof value === "string" && /^[A-Za-z_][\w.-]*$/.test(value);
+  if (name === "version") return typeof value === "string" && /^\d(?:\.\d)?$/.test(value);
+  if (name === "preserveAspectRatio") return typeof value === "string" && /^[\w ]+$/.test(value);
+  if (nativeNumericAttributes.has(name))
+    return typeof value === "number"
+      ? Number.isFinite(value)
+      : typeof value === "string" && /^[-+]?\d+(?:\.\d+)?$/.test(value);
+  if (name === "fill" || name === "stroke")
+    return typeof value === "string" && nativeColor.test(value);
+  if (name === "d")
+    return typeof value === "string" && /^[MmZzLlHhVvCcSsQqTtAa\d.eE,+ -]*$/.test(value);
+  if (name === "transform")
+    return (
+      typeof value === "string" &&
+      /^(?:(?:matrix|translate|scale|rotate|skewX|skewY)\([-\d.eE,+ ]+\)\s*)+$/.test(value)
+    );
+  if (
+    [
+      "text-anchor",
+      "font-family",
+      "font-weight",
+      "stroke-linecap",
+      "stroke-linejoin",
+      "fill-rule",
+    ].includes(name)
+  ) {
+    return typeof value === "string" && /^[\w ,-]+$/.test(value);
+  }
+  return false;
+}
+
+function nativeSvgIsInert(node: unknown): boolean {
+  if (Array.isArray(node)) return node.every(nativeSvgIsInert);
+  if (typeof node !== "object" || node === null)
+    return typeof node === "string" || typeof node === "number";
+  return Object.entries(node).every(([key, value]) => {
+    if (key === "#text") return typeof value === "string" || typeof value === "number";
+    if (key === "@_xmlns") return value === "http://www.w3.org/2000/svg";
+    if (key === "@_viewBox") return typeof value === "string" && /^[\d.eE,+ -]+$/.test(value);
+    if (key.startsWith("@_")) return safeNativeAttribute(key.slice(2), value);
+    return (
+      ["svg", "g", "rect", "circle", "line", "path", "text", "title", "desc"].includes(key) &&
+      nativeSvgIsInert(value)
+    );
+  });
+}
+
+function nativeDimensions(width: number, height: number): void {
+  if (
+    !Number.isInteger(width) ||
+    !Number.isInteger(height) ||
+    width <= 0 ||
+    height <= 0 ||
+    width > MAX_NATIVE_DIMENSION ||
+    height > MAX_NATIVE_DIMENSION ||
+    width * height > MAX_NATIVE_PIXELS
+  ) {
+    throw new Error(
+      "Native frame dimensions must be positive integers, at most 4096 per side, and at most 4194304 pixels",
+    );
+  }
+}
+
+function readNativeSvg(svg: string): { width: number; height: number; inert: boolean } {
+  if (Buffer.byteLength(svg, "utf8") > NATIVE_SOURCE_LIMIT)
+    throw new Error("SVG source exceeds 1MB limit");
+  if (/<!/i.test(svg) || XMLValidator.validate(svg) !== true)
+    throw new Error("Invalid SVG or unsupported XML declaration");
+  const parsed: unknown = new XMLParser({
+    ignoreAttributes: false,
+    ignoreDeclaration: true,
+    processEntities: false,
+    parseTagValue: false,
+  }).parse(svg);
+  if (
+    typeof parsed !== "object" ||
+    parsed === null ||
+    !("svg" in parsed) ||
+    Object.keys(parsed).length !== 1 ||
+    Array.isArray(parsed.svg)
+  )
+    throw new Error("SVG source must have an svg root");
+  const root = parsed.svg;
+  const attrs = new Map(Object.entries(typeof root === "object" && root !== null ? root : {}));
+  const dimension = (key: "@_width" | "@_height", fallback: number) => {
+    const value: unknown = attrs.get(key);
+    if (value === undefined) return fallback;
+    if (typeof value !== "string" || !/^\d+(?:\.\d+)?(?:px)?$/.test(value))
+      throw new Error("SVG dimensions must be numeric pixels");
+    return Number.parseFloat(value);
+  };
+  let boxWidth = 200,
+    boxHeight = 100;
+  const viewBox: unknown = attrs.get("@_viewBox");
+  if (typeof viewBox === "string") {
+    const box = viewBox.trim().split(/[ ,]+/).map(Number);
+    if (box.length !== 4 || !box.every(Number.isFinite)) throw new Error("Invalid SVG viewBox");
+    [boxWidth, boxHeight] = box.slice(2);
+  }
+  const width = dimension("@_width", boxWidth),
+    height = dimension("@_height", boxHeight);
+  nativeDimensions(width, height);
+  return { width, height, inert: nativeSvgIsInert(parsed) };
+}
 
 /**
  * Default file pattern for trace files
@@ -1011,7 +1144,8 @@ export class RenderService {
     if (
       input.fallbackPreference === "none" &&
       input.protocol !== "kitty" &&
-      input.protocol !== "iterm2"
+      input.protocol !== "iterm2" &&
+      input.protocol !== "mcp"
     ) {
       return this.errors.noFallbackAvailable();
     }
@@ -1019,6 +1153,8 @@ export class RenderService {
     // Step 2 & 3: Route to appropriate renderer based on protocol
     try {
       switch (input.protocol) {
+        case "mcp":
+          return await this.renderNative(input);
         case "kitty":
         case "iterm2":
           return await this.renderTerminalGraphics(input);
@@ -1033,6 +1169,61 @@ export class RenderService {
       const message = error instanceof Error ? error.message : String(error);
       return this.errors.renderFailed(message);
     }
+  }
+
+  private async renderNative(input: RenderInput): Promise<NativeRenderResult | AnimationError> {
+    let view: AnimView;
+    let svg: string | undefined;
+    if (input.animView) {
+      if (Buffer.byteLength(JSON.stringify(input.animView), "utf8") > NATIVE_SOURCE_LIMIT) {
+        throw new Error("AnimView source exceeds 1MB limit");
+      }
+      nativeDimensions(input.animView.width, input.animView.height);
+      view = input.animView;
+    } else {
+      const source =
+        input.svgContent ??
+        (input.svgFilePath
+          ? (await this.fileSystem.readFile(input.svgFilePath)).toString("utf8")
+          : "");
+      const dimensions = readNativeSvg(source);
+      view = { ...svgToAnimView(source), width: dimensions.width, height: dimensions.height };
+      if (dimensions.inert) {
+        svg = source.replace(
+          /(<svg\b[^>]*?)(\/?>)/,
+          (_match, opening: string, closing: string) =>
+            opening.replace(/\s(?:width|height|xmlns)\s*=\s*(?:"[^"]*"|'[^']*')/g, "") +
+            ` xmlns="http://www.w3.org/2000/svg" width="${dimensions.width}" height="${dimensions.height}"${closing}`,
+        );
+      }
+    }
+    const safeView: AnimView = {
+      ...view,
+      elements: view.elements.map((element) => ({
+        ...Object.fromEntries(
+          Object.entries(element).filter(([name, value]) => safeNativeAttribute(name, value)),
+        ),
+        shape: element.shape,
+        ...(element.shape === "text" ? { text: String(element.text ?? "") } : {}),
+      })),
+    };
+    if (input.animView) svg = animViewToSvg(safeView);
+    if (svg && Buffer.byteLength(svg, "utf8") > NATIVE_SOURCE_LIMIT)
+      throw new Error("SVG frame exceeds 1MB limit");
+    // Unsupported SVG elements/attributes never reach the native SVG decoder.
+    const png = svg
+      ? await this.rasterizer.rasterizeSvg(svg)
+      : await this.rasterizer.rasterizeAnimView(safeView);
+    if (png.length > FRAME_SIZE_LIMIT)
+      return this.errors.frameTooLarge(png.length, view.width, view.height);
+    return {
+      protocol: "mcp",
+      frameIndex: input.frameIndex,
+      width: view.width,
+      height: view.height,
+      png,
+      ...(svg ? { svg } : {}),
+    };
   }
 
   /**

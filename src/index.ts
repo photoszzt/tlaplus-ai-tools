@@ -40,6 +40,13 @@ async function main() {
     // Start the server
     const server = new TLAPlusMCPServer(config);
     await server.start();
+    for (const signal of ["SIGINT", "SIGTERM"] as const) {
+      process.once(signal, () => {
+        void server.close().then(() => {
+          process.exitCode = 0;
+        });
+      });
+    }
   } catch (error) {
     console.error("Fatal error:", error instanceof Error ? error.message : String(error));
     process.exit(1);

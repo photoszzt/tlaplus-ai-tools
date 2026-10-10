@@ -35,8 +35,19 @@ export function parseMarkdownFrontmatter(content: string): MarkdownMetadata {
   // We only need to support 'title:' and 'description:' for now
   const lines = frontmatterSection.split(/\r?\n/);
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     const trimmedLine = line.trim();
+
+    if (/^(title|description):\s*>-$/.test(line)) {
+      const key = line.startsWith("title:") ? "title" : "description";
+      const block: string[] = [];
+      while (i + 1 < lines.length && (/^\s/.test(lines[i + 1]) || !lines[i + 1].trim())) {
+        block.push(lines[++i].trim());
+      }
+      metadata[key] = block.join(" ").trim();
+      continue;
+    }
 
     // Parse 'title: value'
     if (trimmedLine.startsWith("title:")) {

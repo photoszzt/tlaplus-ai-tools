@@ -4,6 +4,7 @@
 export interface ServerConfig {
   // Transport
   http: boolean;
+  httpSession?: boolean;
   port: number;
 
   // Paths
