@@ -9,6 +9,7 @@ import { ServerConfig } from "./types";
  */
 const KNOWN_FLAGS: string[] = [
   "--http",
+  "--http-session",
   "--port",
   "--working-dir",
   "--tools-dir",
@@ -62,6 +63,10 @@ export function parseArgs(argv: string[]): ServerConfig {
     switch (arg) {
       case "--http":
         config.http = true;
+        break;
+
+      case "--http-session":
+        config.httpSession = true;
         break;
 
       // @implements REQ-REVIEW-008, SCN-REVIEW-008-01, SCN-REVIEW-008-02
@@ -120,6 +125,7 @@ export function parseArgs(argv: string[]): ServerConfig {
     }
   }
 
+  if (config.httpSession && !config.http) throw new Error("--http-session requires --http");
   return config;
 }
 
@@ -137,6 +143,7 @@ USAGE:
 
 OPTIONS:
   --http                    Enable local HTTP transport on 127.0.0.1 (default: stdio)
+  --http-session            Keep HTTP sessions for subscriptions and client interactions
   --port <number>           HTTP server port (default: 3000, use 0 for random)
   --working-dir <path>      Working directory for TLA+ files (restricts file access)
   --tools-dir <path>        Path to TLA+ tools directory (auto-detected if omitted)

@@ -1,4 +1,4 @@
-# Unsupported optional capabilities / prescribed test_* and test:// fixtures.
+# Prescribed test_* and test:// scenarios remain separate from production APIs.
 # These remain failures on the application server, not a full-suite pass.
 # Logging/setLevel is supported and intentionally absent from this baseline.
 server:
@@ -18,7 +18,6 @@ server:
   - resources-templates-read
   - resources-subscribe
   - resources-unsubscribe
-  - prompts-list
   - prompts-get-simple
   - prompts-get-with-args
   - prompts-get-embedded-resource

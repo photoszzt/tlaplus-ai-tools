@@ -6,6 +6,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import { EventEmitter } from "events";
+jest.mock("../tools/workflows");
+jest.mock("../tools/prepare-config");
 
 // ---------------------------------------------------------------------------
 // REQ-REVIEW-001: Shared Error Formatting Module

@@ -25,10 +25,15 @@ function run(command, args, cwd = repo) {
   });
 }
 
-async function start(entry) {
+async function start(entry, extraArgs = []) {
   const child = spawn(
     process.execPath,
-    ["--import", "tsx", entry, ...(entry.endsWith("index.ts") ? ["--http", "--port", "0"] : [])],
+    [
+      "--import",
+      "tsx",
+      entry,
+      ...(entry.endsWith("index.ts") ? ["--http", "--port", "0", ...extraArgs] : []),
+    ],
     {
       cwd: repo,
       stdio: ["ignore", "pipe", "inherit"],
@@ -86,11 +91,24 @@ try {
   await run(process.execPath, [npmCli, "ci", "--ignore-scripts"], suite);
   const cli = path.join(suite, "src/index.ts");
   const tsx = path.join(suite, "node_modules/tsx/dist/cli.mjs");
+  const baseline = path.join(repo, "src/__tests__/fixtures/conformance-baseline.yml");
+  const sessionBaseline = path.join(scratch, "session-baseline.yml");
+  await writeFile(
+    sessionBaseline,
+    (await readFile(baseline, "utf8"))
+      .split("\n")
+      .filter((line) => !line.includes("server-sse-multiple-streams-session"))
+      .join("\n"),
+  );
   for (const [name, entry] of [
     ["application", path.join(repo, "src/index.ts")],
+    ["application-sessions", path.join(repo, "src/index.ts")],
     ["fixtures", path.join(repo, "src/__tests__/fixtures/conformance-server.ts")],
   ]) {
-    const { child, url } = await start(entry);
+    const { child, url } = await start(
+      entry,
+      name === "application-sessions" ? ["--http-session"] : [],
+    );
     try {
       const args = [
         tsx,
@@ -105,10 +123,10 @@ try {
         "--output-dir",
         path.join(results, name),
       ];
-      if (name === "application")
+      if (name !== "fixtures")
         args.push(
           "--expected-failures",
-          path.join(repo, "src/__tests__/fixtures/conformance-baseline.yml"),
+          name === "application-sessions" ? sessionBaseline : baseline,
         );
       await run(process.execPath, args, suite);
     } finally {
@@ -121,7 +139,9 @@ try {
       {
         suiteRef: ref,
         specVersion: "2025-11-25",
-        applicationBaseline: "21 optional/fixture failures remain expected; not full conformance",
+        applicationBaseline:
+          "20 prescribed fixture scenarios remain expected; not full conformance",
+        applicationSessions: "Production session mode; no optional session gate in its baseline",
         fixtures: "Full active suite; no expected failures",
         packageVersion: JSON.parse(await readFile(path.join(repo, "package.json"), "utf8")).version,
       },

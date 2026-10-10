@@ -231,6 +231,55 @@ Foreign or opaque Origins receive HTTP 403 before the request body is parsed.
 Remote access requires a tunnel or a local authenticated proxy. A proxy must
 forward a loopback Host header and enforce its own browser Origin policy.
 
+Add `--http-session` to enable persistent MCP sessions, GET event streams, and
+DELETE session termination. This mode supports subscriptions and client
+elicitation/sampling. The default HTTP mode remains stateless. Session mode
+allows 32 concurrent sessions and expires sessions after 30 minutes without
+activity when no POST request is active. Session termination cancels pending
+tool requests and releases connection resources. Sessions do not survive a
+server restart.
+
+### Workflows, Resources, and Client Interactions
+
+MCP clients can list/get prompts named after the maintained skills, such as
+`tla-check`, `tla-review`, and `tla-create-animations`. Optional `fileName` and
+`cfgFile` arguments offer completion for files in the configured working
+directory. Prompt messages include the workflow instructions and use the
+registered MCP tool names. Supporting files are available through
+`tlaplus://skills/{skill}/{file}`; URL-encode relative paths containing slashes.
+The shared config-selection instructions are at
+`tlaplus://skills/shared/cfg-selection-algorithm.md`.
+
+Knowledge resources also support `tlaplus://knowledge/{article}` with article
+name completion. Stdio and session HTTP clients can subscribe to article
+changes. Reads use the refreshed catalog, and notifications identify changed
+URIs without sending article contents. Adding/removing articles changes the
+resource list. Default stateless HTTP uses the startup knowledge snapshot and
+does not advertise subscriptions.
+
+Use `tlaplus_mcp_animation_render` with `protocol: "mcp"` for a PNG image and
+frame metadata, plus an embedded SVG when its content is inert. PNG and SVG
+resources use `tlaplus://animation/{frameId}/{format}`, with `frame.png` or
+`frame.svg` as the format. Stdio/session HTTP retains the latest eight frames
+on that connection; another connection cannot read them. Stateless HTTP returns
+the image and SVG inline without retaining downloadable resources. Native
+rendering uses the existing optional canvas package and rejects oversized
+images or non-regular file sources. Unsafe SVG content is omitted from SVG
+responses; its supported shapes can still produce a PNG.
+
+`tlaplus_mcp_tlc_prepare_config` returns a draft from `init`, `next`, and
+`invariants`. It does not write files or run TLC. Set `askUser: true` to request
+run mode, worker count, deadlock checking, and invariant selection through a
+non-sensitive form with defaults and titled choices. The client must support
+form elicitation. Decline/cancel stops preparation.
+
+Set `useSampling: true` and provide `specText` to request model advice from a
+client that supports sampling. Only that supplied text is sent; project files
+and other client context are not added. Advice is returned separately as an
+unverified suggestion, and never applied to the draft automatically. Validate
+and complete constant assignments before checking the spec. Audio remains a
+test fixture because the tools do not have an audio workflow.
+
 ### TLC Progress and Logging
 
 TLC tools stream native progress/statistics messages while Java runs. Request
@@ -248,8 +297,9 @@ queue; the latest statistics are retained during bursts.
 
 The server supports `logging/setLevel` and sends safe TLC lifecycle/statistics
 through `notifications/message`. Model state dumps and arbitrary `PrintT`
-output remain in the tool result. Stdio logging levels apply to the connection;
-the stateless HTTP endpoint shares one minimum level across clients.
+output remain in the tool result. Stdio/session HTTP logging levels apply to
+each connection; the stateless HTTP endpoint shares one minimum level across
+clients.
 
 ### Conformance Testing
 
@@ -259,9 +309,10 @@ From a development checkout, run `npm run setup`, then
 reports under `conformance-results/`.
 
 Application results and fixture results are separate. The application baseline
-records 21 optional-capability or prescribed-fixture failures and the
+records 20 prescribed-fixture failures and the
 unexercised optional session-ID gate; a baseline pass
-does not claim complete SDK conformance. The test-only fixture server reuses
+does not claim complete SDK conformance. Session-mode production reports appear
+under `application-sessions/` and exercise the session gate. The test-only fixture server reuses
 production tool/resource registration, HTTP guards, and the live TLC wrapper,
 then adds the required `test_*` tools, prompts, resources, and interactive
 fixtures. Its active suite runs with no expected failures. Production does not

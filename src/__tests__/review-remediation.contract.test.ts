@@ -467,3 +467,5 @@ describe("Contract: REQ-REVIEW-013 Optional Canvas", () => {
     expect(pkg.dependencies?.["@napi-rs/canvas"]).toBeUndefined();
   });
 });
+jest.mock("../tools/workflows");
+jest.mock("../tools/prepare-config");
