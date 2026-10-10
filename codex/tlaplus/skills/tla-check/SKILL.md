@@ -26,7 +26,7 @@ $tla-check test-specs/Counter.tla --workers 4 --heap 2G
 $tla-check test-specs/Counter.tla test-specs/Counter.cfg --depth 100
 ```
 
-All forms work identically. See `shared/path-normalization.md` for path normalization rules.
+All forms work identically. See `codex/tlaplus/shared/path-normalization.md` for path normalization rules.
 
 ## What This Does
 
@@ -63,7 +63,7 @@ Parse the second token from the argument (split by space, take second). If it en
 
 **Step 5: Apply CFG Selection Algorithm**
 
-Apply the CFG Selection Algorithm documented in `shared/cfg-selection-algorithm.md`.
+Apply the CFG Selection Algorithm documented in `codex/tlaplus/shared/cfg-selection-algorithm.md`.
 
 **Step 6: Build MCP Tool Arguments**
 

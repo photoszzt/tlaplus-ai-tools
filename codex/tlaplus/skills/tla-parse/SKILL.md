@@ -32,7 +32,7 @@ $tla-parse @test-specs/Counter.tla
 $tla-parse @Counter.tla
 ```
 
-Both forms work identically. See `shared/path-normalization.md` for path normalization rules.
+Both forms work identically. See `codex/tlaplus/shared/path-normalization.md` for path normalization rules.
 
 ## What This Does
 
@@ -123,7 +123,7 @@ Check that the spec file path was provided as the argument to this skill:
 
 **Step 2: Normalize Path**
 
-Apply path normalization per `shared/path-normalization.md`: if the argument starts with `@`, remove it to get the spec path. Otherwise, use the argument as-is.
+Apply path normalization per `codex/tlaplus/shared/path-normalization.md`: if the argument starts with `@`, remove it to get the spec path. Otherwise, use the argument as-is.
 
 Print "Spec path: <spec_path>"
 

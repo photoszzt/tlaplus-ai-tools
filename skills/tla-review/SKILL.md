@@ -100,7 +100,8 @@ Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke` with:
 
 - `fileName=<SPEC_PATH>`
 - `cfgFile=<FINAL_CFG>`
-- `seconds=3`
+
+Use the tool's default three-second simulation; do not pass a `seconds` argument.
 
 Store result:
 
@@ -113,6 +114,12 @@ Read `resources/knowledgebase/tla-review-guidelines.md` from this plugin's root
 and evaluate its applicable guidelines alongside the checklist below. This is
 the imported upstream guidance; read the current file rather than relying on
 a copied checklist alone.
+
+If model state strings or dynamically constructed record keys contain non-ASCII
+text, flag TLC's fingerprinting and serialization limitations. Read
+`skills/tla-getting-started/references/syntax-basics.md` from the plugin root for
+the upstream evidence. A run reporting fingerprint collisions must not be
+presented as successful verification.
 
 Print comprehensive review summary:
 

@@ -108,6 +108,16 @@ IN body
 - `"text"` - String literal
 - `STRING` - Set of all strings
 
+For TLC model state, prefer ASCII string values and record field names. Upstream
+regression tests document fingerprint collisions and serialization problems with
+non-ASCII strings and field names. In TLC, `Len`, `Tail`, and `SubSeq` on strings count
+UTF-16 code units, so a supplementary character such as an emoji occupies two
+units and can be split by slicing. Use integer or ASCII identifiers when these
+distinctions matter to the properties being checked.
+
+See the upstream tests for [non-ASCII fingerprints](https://github.com/tlaplus/tlaplus/commit/e73e1249f7d1f21c5f1ac8268ca3314226c10a21)
+and [string sequence operations](https://github.com/tlaplus/tlaplus/commit/94d0c5070852b37b801bb8998c436383ab7ee37b).
+
 ### Sequences
 
 - `<<a, b, c>>` - Sequence literal

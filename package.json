@@ -35,7 +35,10 @@
     "scripts/",
     "tsconfig.json",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    ".codex-plugin/",
+    ".mcp-codex.json",
+    "codex/"
   ],
   "main": "dist/index.js",
   "scripts": {

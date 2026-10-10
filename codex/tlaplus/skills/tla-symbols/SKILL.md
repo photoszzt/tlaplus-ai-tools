@@ -28,7 +28,7 @@ $tla-symbols test-specs/Counter.tla
 $tla-symbols test-specs/Counter.tla --extended
 ```
 
-Both forms work identically. See `shared/path-normalization.md` for path normalization rules.
+Both forms work identically. See `codex/tlaplus/shared/path-normalization.md` for path normalization rules.
 
 ## What This Does
 

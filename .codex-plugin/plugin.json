@@ -11,8 +11,8 @@
   "repository": "https://github.com/photoszzt/tlaplus-ai-tools",
   "license": "MIT",
   "keywords": ["tla+", "formal-verification", "model-checking", "mcp", "formal-methods"],
-  "skills": "./skills/",
-  "mcpServers": "./.mcp.json",
+  "skills": "./codex/tlaplus/skills/",
+  "mcpServers": "./.mcp-codex.json",
   "interface": {
     "displayName": "TLA+ AI Tools",
     "shortDescription": "Parse and model check TLA+ specifications.",

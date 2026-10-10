@@ -23,7 +23,7 @@ $tla-smoke test-specs/Counter.tla test-specs/Counter.cfg
 $tla-smoke test-specs/Counter.tla --seconds 10
 ```
 
-All forms work identically. See `shared/path-normalization.md` for path normalization rules.
+All forms work identically. See `codex/tlaplus/shared/path-normalization.md` for path normalization rules.
 
 ## What This Does
 
@@ -60,9 +60,13 @@ Parse the second token from the argument (split by space, take second). If it en
 
 **Step 5: Apply CFG Selection Algorithm**
 
-Apply the CFG Selection Algorithm documented in `shared/cfg-selection-algorithm.md`.
+Apply the CFG Selection Algorithm documented in `codex/tlaplus/shared/cfg-selection-algorithm.md`.
 
 **Step 6: Call MCP Tool**
+
+Set `TIMEOUT_MS = max(120000, (SECONDS + 30) * 1000)` to allow startup time
+and avoid cutting off a longer requested simulation. The tool has no `seconds`
+argument; its default three-second stop time is overridden by `extraJavaOpts`.
 
 Invoke TLC smoke test:
 
@@ -70,7 +74,8 @@ Invoke TLC smoke test:
 mcp__tlaplus__tlaplus_mcp_tlc_smoke
   --fileName "<SPEC_PATH>"
   --cfgFile "<FINAL_CFG>"
-  --seconds <SECONDS>
+  --extraJavaOpts ["-Dtlc2.TLC.stopAfter=<SECONDS>"]
+  --timeoutMs <TIMEOUT_MS>
 ```
 
 **Step 7: Report Results**

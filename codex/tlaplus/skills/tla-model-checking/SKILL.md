@@ -15,7 +15,7 @@ Orchestrate the full model checking workflow: parse, configure, smoke test, and 
 
 **IMPORTANT: Always use the TLA+ MCP tools named in this skill. Never fall back to running Java or TLC commands via Bash.**
 
-**Reference**: For detailed educational content on TLC configuration syntax, performance tuning, debugging, and best practices, read `skills/tla-model-checking/reference.md` on demand.
+**Reference**: For detailed educational content on TLC configuration syntax, performance tuning, debugging, and best practices, read `codex/tlaplus/skills/tla-model-checking/reference.md` on demand.
 
 ## Usage
 
@@ -24,7 +24,7 @@ $tla-model-checking @Counter.tla
 $tla-model-checking specs/MySpec.tla
 ```
 
-Both forms work identically. See `shared/path-normalization.md` for path normalization rules.
+Both forms work identically. See `codex/tlaplus/shared/path-normalization.md` for path normalization rules.
 
 ## Implementation
 
@@ -45,7 +45,7 @@ Call `mcp__tlaplus__tlaplus_mcp_sany_parse` with `fileName` set to `SPEC_PATH`.
 
 **Step 3: Apply CFG Selection Algorithm**
 
-Apply the CFG Selection Algorithm documented in `shared/cfg-selection-algorithm.md`.
+Apply the CFG Selection Algorithm documented in `codex/tlaplus/shared/cfg-selection-algorithm.md`.
 
 Store the final cfg path in `FINAL_CFG`.
 
@@ -55,7 +55,8 @@ Call `mcp__tlaplus__tlaplus_mcp_tlc_smoke` with:
 
 - `fileName` set to `SPEC_PATH`
 - `cfgFile` set to `FINAL_CFG`
-- `seconds` set to `3`
+
+Use the tool's default three-second simulation; do not pass a `seconds` argument.
 
 - If violations found: report them to the user and ask "Smoke test found violations. Would you like to proceed to full model check anyway, or fix the issues first?"
 - If no violations: print `Smoke test: Passed` and continue.

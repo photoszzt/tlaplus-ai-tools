@@ -63,7 +63,8 @@ Call `mcp__plugin_tlaplus_tlaplus__tlaplus_mcp_tlc_smoke` with:
 
 - `fileName` set to `SPEC_PATH`
 - `cfgFile` set to `FINAL_CFG`
-- `seconds` set to `3`
+
+Use the tool's default three-second simulation; do not pass a `seconds` argument.
 
 - If violations found: report them to the user and ask "Smoke test found violations. Would you like to proceed to full model check anyway, or fix the issues first?"
 - If no violations: print `Smoke test: Passed` and continue.
