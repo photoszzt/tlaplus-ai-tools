@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
-import { mkdtemp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, writeFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,6 +9,22 @@ const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ref = "c37eec888e1c6ff140af79987a40008548b7cc5f";
 const npmCli = process.env.npm_execpath;
 if (!npmCli) throw new Error("Run this command through npm run test:conformance");
+const flags = process.argv.slice(2);
+if (flags.length > 1 || flags.some((flag) => !["--production", "--fixtures"].includes(flag))) {
+  throw new Error("Usage: npm run test:conformance -- [--production|--fixtures]");
+}
+const mode =
+  flags[0] === "--production" ? "production" : flags[0] === "--fixtures" ? "fixtures" : "audit";
+const productionScenarios = [
+  "server-initialize",
+  "logging-set-level",
+  "ping",
+  "tools-list",
+  "resources-list",
+  "prompts-list",
+  "dns-rebinding-protection",
+];
+const sessionScenarios = ["server-session-lifecycle", "server-sse-multiple-streams"];
 const scratch = await mkdtemp(path.join(tmpdir(), "tlaplus-conformance-"));
 const suite = path.join(scratch, "suite");
 const results = path.join(repo, "conformance-results");
@@ -105,30 +121,60 @@ try {
     ["application-sessions", path.join(repo, "src/index.ts")],
     ["fixtures", path.join(repo, "src/__tests__/fixtures/conformance-server.ts")],
   ]) {
+    if (mode === "production" && name === "fixtures") continue;
+    if (mode === "fixtures" && name !== "fixtures") continue;
     const { child, url } = await start(
       entry,
       name === "application-sessions" ? ["--http-session"] : [],
     );
     try {
-      const args = [
-        tsx,
-        cli,
-        "server",
-        "--url",
-        url,
-        "--suite",
-        "active",
-        "--spec-version",
-        "2025-11-25",
-        "--output-dir",
-        path.join(results, name),
-      ];
-      if (name !== "fixtures")
-        args.push(
-          "--expected-failures",
-          name === "application-sessions" ? sessionBaseline : baseline,
+      const scenarios =
+        mode === "production"
+          ? [...productionScenarios, ...(name === "application-sessions" ? sessionScenarios : [])]
+          : [undefined];
+      for (const scenario of scenarios) {
+        const outputDir = path.join(
+          results,
+          mode === "production" ? `${name}-selected` : name,
+          ...(scenario ? [scenario] : []),
         );
-      await run(process.execPath, args, suite);
+        await mkdir(outputDir, { recursive: true });
+        const previousReports = new Set(await readdir(outputDir));
+        const args = [
+          tsx,
+          cli,
+          "server",
+          "--url",
+          url,
+          ...(scenario ? ["--scenario", scenario] : ["--suite", "active"]),
+          "--spec-version",
+          "2025-11-25",
+          "--output-dir",
+          outputDir,
+        ];
+        if (mode === "audit" && name !== "fixtures")
+          args.push(
+            "--expected-failures",
+            name === "application-sessions" ? sessionBaseline : baseline,
+          );
+        await run(process.execPath, args, suite);
+        if (mode === "production") {
+          const reports = (await readdir(outputDir, { withFileTypes: true })).filter(
+            (entry) => entry.isDirectory() && !previousReports.has(entry.name),
+          );
+          if (reports.length !== 1) throw new Error(`Expected one fresh report for ${scenario}`);
+          const checks = JSON.parse(
+            await readFile(path.join(outputDir, reports[0].name, "checks.json"), "utf8"),
+          );
+          if (
+            !Array.isArray(checks) ||
+            !checks.some((check) => check.status === "SUCCESS") ||
+            checks.some((check) => !["SUCCESS", "INFO"].includes(check.status))
+          ) {
+            throw new Error(`Unsuccessful or unexercised production scenario: ${scenario}`);
+          }
+        }
+      }
     } finally {
       await stop(child);
     }
@@ -138,11 +184,25 @@ try {
     JSON.stringify(
       {
         suiteRef: ref,
+        mode,
         specVersion: "2025-11-25",
-        applicationBaseline:
-          "20 prescribed fixture scenarios remain expected; not full conformance",
-        applicationSessions: "Production session mode; no optional session gate in its baseline",
-        fixtures: "Full active suite; no expected failures",
+        ...(mode === "production"
+          ? {
+              productionScenarios,
+              sessionScenarios,
+              coverage:
+                "Selected production scenarios only; no expected failures; fixture-named tool cases excluded",
+            }
+          : {}),
+        ...(mode === "audit"
+          ? {
+              applicationBaseline:
+                "20 prescribed fixture scenarios remain expected; not full conformance",
+              applicationSessions:
+                "Production session mode; no optional session gate in its baseline",
+            }
+          : {}),
+        ...(mode !== "production" ? { fixtures: "Full active suite; no expected failures" } : {}),
         packageVersion: JSON.parse(await readFile(path.join(repo, "package.json"), "utf8")).version,
       },
       null,
@@ -151,7 +211,11 @@ try {
   );
   console.log(`Conformance reports: ${results}`);
   console.log(
-    "Application baseline checked; fixture conformance passed. These are separate results.",
+    mode === "production"
+      ? "Selected production conformance passed with no expected failures."
+      : mode === "fixtures"
+        ? "Full fixture conformance passed with no expected failures."
+        : "Application baseline checked; fixture conformance passed. These are separate results.",
   );
 } catch (error) {
   console.error(error);

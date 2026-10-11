@@ -308,6 +308,19 @@ From a development checkout, run `npm run setup`, then
 `c37eec888e1c6ff140af79987a40008548b7cc5f` against MCP `2025-11-25` and writes
 reports under `conformance-results/`.
 
+CI runs `npm run test:conformance:production` and
+`npm run test:conformance:fixtures` as separate jobs. Production checks cover
+initialization, logging levels, ping, tool/resource/prompt discovery, and
+DNS-rebinding protection in both HTTP modes. Session mode also checks session
+lifecycle and multiple event streams. These selected scenarios use no expected
+failures; failed, warned, or skipped checks fail CI. Named fixture tool scenarios are excluded
+from production coverage, including those that can pass on an unknown-tool
+error. Real TLA+ behavior tests run separately. Fixture CI runs the full active
+suite with no expected failures.
+
+The default `npm run test:conformance` retains the full audit with its explicit
+production baseline. It does not run as the production CI gate.
+
 Application results and fixture results are separate. The application baseline
 records 20 prescribed-fixture failures and the
 unexercised optional session-ID gate; a baseline pass

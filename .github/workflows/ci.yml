@@ -8,7 +8,12 @@ on:
 
 jobs:
   conformance:
+    name: MCP conformance (${{ matrix.target }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [production, fixtures]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,12 +25,15 @@ jobs:
           java-version: "11"
       - run: npm ci
       - run: npm run setup
-      - run: npm test -- --runInBand
-      - run: npm run test:conformance
+      - name: Run production behavior tests
+        if: matrix.target == 'production'
+        run: npm test -- --runInBand
+      - name: Run strict conformance checks
+        run: npm run test:conformance:${{ matrix.target }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: conformance-results
+          name: conformance-${{ matrix.target }}
           path: conformance-results/
 
   test:
