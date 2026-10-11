@@ -73,7 +73,7 @@ describe("Persistent HTTP sessions through real MCP clients", () => {
     await closeSessions();
     listener.closeAllConnections();
     await new Promise<void>((resolve) => listener.close(() => resolve()));
-    fs.rmSync(dir, { recursive: true, force: true });
+    await fs.promises.rm(dir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
   });
 
   async function connect(interactive = false, disableGet = false) {
