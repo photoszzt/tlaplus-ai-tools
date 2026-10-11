@@ -127,7 +127,10 @@ describeWithCanvas("Native animation through the real MCP SDK", () => {
       }
       const local = path.join(dir, "frame.svg");
       fs.writeFileSync(local, svg);
-      expect((await render({ svgContent: undefined, svgFilePath: local })).isError).not.toBe(true);
+      const localResult = await render({ svgContent: undefined, svgFilePath: local });
+      expect(localResult.content).toEqual(
+        expect.arrayContaining([expect.objectContaining({ type: "image", mimeType: "image/png" })]),
+      );
       if (process.platform !== "win32") {
         const localAlias = path.join(dir, "local-alias.svg");
         fs.symlinkSync(local, localAlias);

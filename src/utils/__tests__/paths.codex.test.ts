@@ -8,7 +8,9 @@ import * as path from "path";
 const mockRealpathSync = jest.fn();
 
 jest.mock("fs", () => ({
-  realpathSync: (...args: unknown[]) => mockRealpathSync(...args),
+  realpathSync: Object.assign((...args: unknown[]) => mockRealpathSync(...args), {
+    native: (...args: unknown[]) => mockRealpathSync(...args),
+  }),
   promises: {
     stat: jest.fn(),
     access: jest.fn(),

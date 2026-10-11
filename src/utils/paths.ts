@@ -25,8 +25,10 @@ export function resolveAndValidatePath(filePath: string, workingDir: string | nu
 
   // Attempt symlink-aware containment check
   try {
-    const realAbsolute = fs.realpathSync(absolute);
-    const realWorkingDir = fs.realpathSync(workingDir);
+    // Windows native resolution expands 8.3 aliases consistently with fs.promises.realpath.
+    const canonicalize = process.platform === "win32" ? fs.realpathSync.native : fs.realpathSync;
+    const realAbsolute = canonicalize(absolute);
+    const realWorkingDir = canonicalize(workingDir);
     const relative = path.relative(realWorkingDir, realAbsolute);
 
     if (relative === ".." || relative.startsWith(".." + path.sep) || path.isAbsolute(relative)) {
