@@ -277,8 +277,18 @@ Set `useSampling: true` and provide `specText` to request model advice from a
 client that supports sampling. Only that supplied text is sent; project files
 and other client context are not added. Advice is returned separately as an
 unverified suggestion, and never applied to the draft automatically. Validate
-and complete constant assignments before checking the spec. Audio remains a
-test fixture because the tools do not have an audio workflow.
+and complete constant assignments before checking the spec.
+
+`tlaplus_mcp_trace_audio` sonifies a caller-supplied `values` array of 1–32 finite
+numbers. Each value produces a quiet 150 ms tone in a mono 8 kHz PCM16 WAV.
+Pitches range from 220 to 880 Hz relative to the supplied sequence; constant
+sequences use 550 Hz. The tool does not parse TLC traces or establish correctness.
+
+The `tla-create-animations` prompt accepts optional inline `svgContent` and adds
+a native PNG alongside its maintained workflow instructions. It uses the same
+bounded native renderer as animation tools (1 MB source/output, 4096 pixels per
+axis, and 4 megapixels). Invalid inputs and unavailable native rendering fail the
+prompt request. No image files or cached frames are required.
 
 ### TLC Progress and Logging
 
@@ -314,9 +324,24 @@ initialization, logging levels, ping, tool/resource/prompt discovery, and
 DNS-rebinding protection in both HTTP modes. Session mode also checks session
 lifecycle and multiple event streams. These selected scenarios use no expected
 failures; failed, warned, or skipped checks fail CI. Named fixture tool scenarios are excluded
-from production coverage, including those that can pass on an unknown-tool
-error. Real TLA+ behavior tests run separately. Fixture CI runs the full active
-suite with no expected failures.
+from the official production selection, including those that can pass on an
+unknown-tool error. A separate production driver maps all 20 baseline scenario
+identifiers to real TLA+ API requests and validates their wire messages with the
+pinned upstream schema validator. It checks animation PNG/SVG output, resources,
+WAV audio, image-bearing workflow prompts and completion, TLC logging and progress, configuration drafts
+and validation errors. Session mode also checks sampling, elicitation defaults
+and enums, cached binary resources, and live subscribe/unsubscribe behavior.
+
+These custom results are written to `application-capabilities/production-capabilities.json`
+and `application-sessions-capabilities/production-capabilities.json`. They report
+unsupported capabilities separately, never as passes. All 20 mapped capabilities
+are supported in session mode, plus two checks for text output and validation
+errors. Stateless HTTP cannot retain
+sampling/elicitation capabilities, cached frames, or resource subscriptions.
+Every supported case must satisfy behavioral assertions and positive upstream
+wire validation; missing notifications and tool errors fail the check. The driver
+uses temporary Counter files and a temporary knowledge article. Fixture CI runs
+the full active suite with no expected failures.
 
 The default `npm run test:conformance` retains the full audit with its explicit
 production baseline. It does not run as the production CI gate.

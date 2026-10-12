@@ -27,14 +27,41 @@ const productionScenarios = [
 const sessionScenarios = ["server-session-lifecycle", "server-sse-multiple-streams"];
 const scratch = await mkdtemp(path.join(tmpdir(), "tlaplus-conformance-"));
 const suite = path.join(scratch, "suite");
+const workingDir = path.join(scratch, "workspace");
+const kbDir = path.join(scratch, "knowledge");
+await mkdir(workingDir);
+await mkdir(kbDir);
+await writeFile(
+  path.join(kbDir, ".production-conformance-fixture"),
+  "Temporary production conformance inputs\n",
+);
+await writeFile(
+  path.join(workingDir, "Counter.tla"),
+  "---- MODULE Counter ----\nEXTENDS Integers\nVARIABLE x\nInit == x = 0\nNext == x' = 1 - x\n====\n",
+);
+await writeFile(path.join(workingDir, "Counter.cfg"), "INIT Init\nNEXT Next\n");
+await writeFile(
+  path.join(kbDir, "production-check.md"),
+  "---\ntitle: Production check\ndescription: Temporary conformance article\n---\nProduction conformance article.\n",
+);
 const results = path.join(repo, "conformance-results");
 await mkdir(results, { recursive: true });
 
-function run(command, args, cwd = repo) {
+function run(command, args, cwd = repo, timeoutMs) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, { cwd, stdio: "inherit" });
-    child.once("error", reject);
+    const timer = timeoutMs
+      ? setTimeout(() => {
+          child.kill("SIGKILL");
+          reject(new Error(`${command} timed out after ${timeoutMs}ms`));
+        }, timeoutMs)
+      : undefined;
+    child.once("error", (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
     child.once("exit", (code, signal) => {
+      clearTimeout(timer);
       if (code === 0) resolve();
       else reject(new Error(`${command} exited with ${code ?? signal}`));
     });
@@ -97,6 +124,10 @@ async function stop(child) {
 }
 
 try {
+  await run(process.execPath, [
+    path.join(repo, "scripts/test-production-protocol.mjs"),
+    "--self-test",
+  ]);
   await run("git", [
     "clone",
     "--quiet",
@@ -125,7 +156,17 @@ try {
     if (mode === "fixtures" && name !== "fixtures") continue;
     const { child, url } = await start(
       entry,
-      name === "application-sessions" ? ["--http-session"] : [],
+      name === "fixtures"
+        ? []
+        : [
+            ...(name === "application-sessions" ? ["--http-session"] : []),
+            "--working-dir",
+            workingDir,
+            "--kb-dir",
+            kbDir,
+            "--tools-dir",
+            path.join(repo, "tools"),
+          ],
     );
     try {
       const scenarios =
@@ -175,6 +216,24 @@ try {
           }
         }
       }
+      if (name !== "fixtures") {
+        await run(
+          process.execPath,
+          [
+            "--import",
+            "tsx",
+            path.join(repo, "scripts/test-production-protocol.mjs"),
+            suite,
+            url,
+            name === "application-sessions" ? "sessions" : "stateless",
+            workingDir,
+            kbDir,
+            path.join(results, `${name}-capabilities`),
+          ],
+          repo,
+          120000,
+        );
+      }
     } finally {
       await stop(child);
     }
@@ -191,7 +250,7 @@ try {
               productionScenarios,
               sessionScenarios,
               coverage:
-                "Selected production scenarios only; no expected failures; fixture-named tool cases excluded",
+                "Unchanged selected upstream scenarios plus production API capability checks with upstream wire validation; unsupported capabilities reported separately",
             }
           : {}),
         ...(mode === "audit"
@@ -203,6 +262,12 @@ try {
             }
           : {}),
         ...(mode !== "production" ? { fixtures: "Full active suite; no expected failures" } : {}),
+        ...(mode !== "fixtures"
+          ? {
+              productionCapabilities:
+                "Separate application-capabilities and application-sessions-capabilities reports map all 20 prescribed fixture failures to real production behavior or explicit unsupported capabilities; not official full-suite conformance",
+            }
+          : {}),
         packageVersion: JSON.parse(await readFile(path.join(repo, "package.json"), "utf8")).version,
       },
       null,
@@ -212,7 +277,7 @@ try {
   console.log(`Conformance reports: ${results}`);
   console.log(
     mode === "production"
-      ? "Selected production conformance passed with no expected failures."
+      ? "Selected upstream scenarios and supported production capability checks passed. See separate unsupported capability results."
       : mode === "fixtures"
         ? "Full fixture conformance passed with no expected failures."
         : "Application baseline checked; fixture conformance passed. These are separate results.",

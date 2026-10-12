@@ -34,6 +34,7 @@
     "resources/",
     "scripts/",
     "!scripts/test-conformance.mjs",
+    "!scripts/test-production-protocol.mjs",
     "tsconfig.json",
     "README.md",
     "LICENSE",
