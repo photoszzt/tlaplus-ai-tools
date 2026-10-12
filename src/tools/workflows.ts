@@ -4,6 +4,9 @@ import { z } from "zod/v4";
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { completable } from "@modelcontextprotocol/sdk/server/completable.js";
 import { parseMarkdownFrontmatter, removeMarkdownFrontmatter } from "../utils/markdown";
+import { McpError, ErrorCode, type GetPromptResult } from "@modelcontextprotocol/sdk/types.js";
+import { RenderService, NATIVE_SOURCE_LIMIT } from "./animation/RenderService";
+import { isAnimationError } from "./animation/types";
 import type { ServerConfig } from "../types";
 
 const skillsDir = path.resolve(__dirname, "../../skills");
@@ -120,39 +123,81 @@ export async function registerWorkflowPrompts(
       name,
       {
         description: skill.description,
-        argsSchema,
+        argsSchema:
+          name === "tla-create-animations"
+            ? { ...argsSchema, svgContent: z.string().min(1).max(NATIVE_SOURCE_LIMIT).optional() }
+            : argsSchema,
       },
-      ({ fileName, cfgFile }) => ({
-        description: skill.description,
-        messages: [
-          {
-            role: "user",
-            content: {
-              type: "resource",
-              resource: {
-                uri: `tlaplus://skills/${name}`,
-                mimeType: "text/markdown",
-                text: skill.text,
+      async (
+        {
+          fileName,
+          cfgFile,
+          svgContent,
+        }: { fileName?: string; cfgFile?: string; svgContent?: string },
+        extra: { signal: AbortSignal },
+      ): Promise<GetPromptResult> => {
+        extra.signal.throwIfAborted();
+        const result: GetPromptResult = {
+          description: skill.description,
+          messages: [
+            {
+              role: "user",
+              content: {
+                type: "resource",
+                resource: {
+                  uri: `tlaplus://skills/${name}`,
+                  mimeType: "text/markdown",
+                  text: skill.text,
+                },
               },
             },
-          },
-          {
+            {
+              role: "user",
+              content: {
+                type: "text",
+                text: [
+                  `Use this workflow with the registered tlaplus_mcp_* tools. Read supporting files through tlaplus://skills/${name}/{file}, URL-encoding the relative file path. Shared config selection is available at tlaplus://skills/shared/cfg-selection-algorithm.md.`,
+                  fileName
+                    ? `Specification: ${JSON.stringify(fileName)}`
+                    : "Ask for a specification when this workflow requires one.",
+                  cfgFile
+                    ? `Configuration: ${JSON.stringify(cfgFile)}`
+                    : "Select or request a configuration when required.",
+                ].join("\n"),
+              },
+            },
+          ],
+        };
+        if (svgContent !== undefined) {
+          const rendered = await new RenderService().render({
+            operation: "render",
+            protocol: "mcp",
+            useCase: "static",
+            frameIndex: 0,
+            svgContent,
+          });
+          extra.signal.throwIfAborted();
+          if (isAnimationError(rendered)) {
+            throw new McpError(
+              rendered.error === "RENDER_FAILED"
+                ? ErrorCode.InternalError
+                : ErrorCode.InvalidParams,
+              rendered.message,
+            );
+          }
+          if (rendered.protocol !== "mcp")
+            throw new McpError(ErrorCode.InternalError, "Expected native PNG rendering");
+          result.messages.push({
             role: "user",
             content: {
-              type: "text",
-              text: [
-                `Use this workflow with the registered tlaplus_mcp_* tools. Read supporting files through tlaplus://skills/${name}/{file}, URL-encoding the relative file path. Shared config selection is available at tlaplus://skills/shared/cfg-selection-algorithm.md.`,
-                fileName
-                  ? `Specification: ${JSON.stringify(fileName)}`
-                  : "Ask for a specification when this workflow requires one.",
-                cfgFile
-                  ? `Configuration: ${JSON.stringify(cfgFile)}`
-                  : "Select or request a configuration when required.",
-              ].join("\n"),
+              type: "image",
+              mimeType: "image/png",
+              data: rendered.png.toString("base64"),
             },
-          },
-        ],
-      }),
+          });
+        }
+        return result;
+      },
     );
   }
 }

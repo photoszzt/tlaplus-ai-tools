@@ -11,6 +11,7 @@ jest.mock("../tools/sany");
 jest.mock("../tools/tlc");
 jest.mock("../tools/knowledge");
 jest.mock("../tools/animation");
+jest.mock("../tools/trace-audio");
 jest.mock("../tools/workflows");
 jest.mock("../tools/prepare-config");
 

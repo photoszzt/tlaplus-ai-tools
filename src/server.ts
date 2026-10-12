@@ -22,6 +22,7 @@ import {
   KnowledgeBaseEntry,
 } from "./tools/knowledge";
 import { registerAnimationTools } from "./tools/animation";
+import { registerTraceAudioTool } from "./tools/trace-audio";
 import { registerWorkflowPrompts } from "./tools/workflows";
 import { registerPrepareConfigTool } from "./tools/prepare-config";
 import { KnowledgeCatalog, registerKnowledgeTemplate } from "./tools/knowledge";
@@ -295,6 +296,7 @@ export class TLAPlusMCPServer {
     await registerAnimationTools(server, this.config);
     this.logger.debug("Animation tools registered");
 
+    registerTraceAudioTool(server);
     await registerWorkflowPrompts(server, this.config);
     registerPrepareConfigTool(server);
 
