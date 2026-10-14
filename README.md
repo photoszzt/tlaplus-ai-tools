@@ -319,43 +319,46 @@ From a development checkout, run `npm run setup`, then
 reports under `conformance-results/`.
 
 CI runs `npm run test:conformance:production` and
-`npm run test:conformance:fixtures` as separate jobs. Production checks cover
-initialization, logging levels, ping, tool/resource/prompt discovery, and
-DNS-rebinding protection in both HTTP modes. Session mode also checks session
-lifecycle and multiple event streams. These selected scenarios use no expected
-failures; failed, warned, or skipped checks fail CI. Named fixture tool scenarios are excluded
-from the official production selection, including those that can pass on an
-unknown-tool error. A separate production driver maps all 20 baseline scenario
-identifiers to real TLA+ API requests and validates their wire messages with the
-pinned upstream schema validator. It checks animation PNG/SVG output, resources,
-WAV audio, image-bearing workflow prompts and completion, TLC logging and progress, configuration drafts
-and validation errors. Session mode also checks sampling, elicitation defaults
-and enums, cached binary resources, and live subscribe/unsubscribe behavior.
+`npm run test:conformance:fixtures` separately. Production runs the original
+active upstream scenarios against real TLA+ APIs, binding prescribed `test_*`
+names and `test://` inputs to production tools, prompts, and resources. Original
+scenario assertions stay unchanged and their SHA-256 fingerprints are recorded.
+A hash-checked connection helper installs input bindings before SDK transport
+validation; incoming server responses are never rewritten. Reports include the
+original and actual requests in `bindings.jsonl`.
 
-These custom results are written to `application-capabilities/production-capabilities.json`
-and `application-sessions-capabilities/production-capabilities.json`. They report
-unsupported capabilities separately, never as passes. All 20 mapped capabilities
-are supported in session mode, plus two checks for text output and validation
-errors. Stateless HTTP cannot retain
-sampling/elicitation capabilities, cached frames, or resource subscriptions.
-Every supported case must satisfy behavioral assertions and positive upstream
-wire validation; missing notifications and tool errors fail the check. The driver
-uses temporary Counter files and a temporary knowledge article. Fixture CI runs
-the full active suite with no expected failures.
+Bindings use temporary Counter files and knowledge articles, real animation
+rendering, trace audio, TLC logging/progress, prompts, and configuration drafts.
+The general elicitation scenario invokes its original callback on the unchanged
+server request, then maps the accepted username/email fixture answer to valid
+TLC settings. This outgoing client-answer input mapping is also recorded.
+The original template scenario binds parameter `123` to the real article
+`production-123.md`. That URI is also statically registered, so this case does
+not isolate the knowledge template callback. The complementary driver separately
+reads the actual skills template, which has no static registration.
 
-The default `npm run test:conformance` retains the full audit with its explicit
-production baseline. It does not run as the production CI gate.
+The default audit measures 63 passed checks and two expected failures in session
+mode; stateless mode measures 52 passed and seven expected failures. The two
+schema scenarios prescribe fixture-specific fields (`name`, `age`, `score`,
+`status`, `verified`, and legacy/titled enum forms) that the production TLC form
+does not expose. Stateless mode additionally cannot retain sampling/elicitation
+capabilities, cached binary frames, or subscriptions. Its optional session gate
+is reported separately. These failures remain explicit in the baseline.
 
-Application results and fixture results are separate. The application baseline
-records 20 prescribed-fixture failures and the
-unexercised optional session-ID gate; a baseline pass
-does not claim complete SDK conformance. Session-mode production reports appear
-under `application-sessions/` and exercise the session gate. The test-only fixture server reuses
-production tool/resource registration, HTTP guards, and the live TLC wrapper,
-then adds the required `test_*` tools, prompts, resources, and interactive
-fixtures. Its active suite runs with no expected failures. Production does not
-register fixture capabilities. The npm package excludes fixture files; Git
-installations contain the test sources without activating them.
+Strict production CI runs every applicable original active scenario with zero
+expected failures, excluding those two fixture-specific forms and unsupported
+stateless features/session scenarios. Failed, warned, or skipped checks fail CI.
+A complementary production driver retains stronger behavioral checks, including
+actual TLC form defaults/enums and live subscription updates. Those custom checks
+do not replace the original upstream scenarios or their assertions.
+
+`npm run test:conformance:raw` runs the unbound upstream audit and retains its
+20 prescribed-fixture failures in a separate baseline and `*-raw` reports.
+Fixture CI runs the unchanged full active suite (73 checks) with no expected
+failures. The test-only fixture server adds prescribed APIs; production never
+registers them. Test sources and binding scripts are excluded from the npm package.
+These application and fixture results are separate, and a baseline pass does
+not claim complete SDK conformance.
 
 ## Examples
 

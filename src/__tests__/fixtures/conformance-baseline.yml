@@ -1,26 +1,11 @@
-# Prescribed test_* and test:// scenarios remain separate from production APIs.
-# These remain failures on the application server, not a full-suite pass.
-# Logging/setLevel is supported and intentionally absent from this baseline.
 server:
-  - completion-complete
-  - tools-call-image
-  - tools-call-audio
-  - tools-call-embedded-resource
-  - tools-call-mixed-content
-  - tools-call-with-logging
-  - tools-call-with-progress
   - tools-call-sampling
   - tools-call-elicitation
+  # Requires exact name/age/score/status/verified defaults: John Doe/30/95.5/active/true.
   - elicitation-sep1034-defaults
+  # Requires five prescribed enum fields, including deprecated enumNames.
   - elicitation-sep1330-enums
-  - resources-read-text
   - resources-read-binary
-  - resources-templates-read
   - resources-subscribe
   - resources-unsubscribe
-  - prompts-get-simple
-  - prompts-get-with-args
-  - prompts-get-embedded-resource
-  - prompts-get-with-image
-  # Stateless application: no optional session ID to exercise multiple streams.
   - server-sse-multiple-streams:server-sse-multiple-streams-session

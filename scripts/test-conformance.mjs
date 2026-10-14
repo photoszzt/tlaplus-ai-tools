@@ -1,29 +1,27 @@
 #!/usr/bin/env node
-import { spawn } from "node:child_process";
+import { spawn, execFileSync } from "node:child_process";
 import { mkdtemp, mkdir, readFile, writeFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ref = "c37eec888e1c6ff140af79987a40008548b7cc5f";
 const npmCli = process.env.npm_execpath;
 if (!npmCli) throw new Error("Run this command through npm run test:conformance");
 const flags = process.argv.slice(2);
-if (flags.length > 1 || flags.some((flag) => !["--production", "--fixtures"].includes(flag))) {
-  throw new Error("Usage: npm run test:conformance -- [--production|--fixtures]");
+if (
+  flags.length > 1 ||
+  flags.some((flag) => !["--production", "--fixtures", "--raw"].includes(flag))
+) {
+  throw new Error("Usage: npm run test:conformance -- [--production|--fixtures|--raw]");
 }
+const raw = flags[0] === "--raw";
 const mode =
   flags[0] === "--production" ? "production" : flags[0] === "--fixtures" ? "fixtures" : "audit";
-const productionScenarios = [
-  "server-initialize",
-  "logging-set-level",
-  "ping",
-  "tools-list",
-  "resources-list",
-  "prompts-list",
-  "dns-rebinding-protection",
-];
+let productionScenarios = [];
+const productionSelection = {};
 const sessionScenarios = ["server-session-lifecycle", "server-sse-multiple-streams"];
 const scratch = await mkdtemp(path.join(tmpdir(), "tlaplus-conformance-"));
 const suite = path.join(scratch, "suite");
@@ -46,6 +44,7 @@ await writeFile(
 );
 const results = path.join(repo, "conformance-results");
 await mkdir(results, { recursive: true });
+await writeFile(path.join(kbDir, "production-123.md"), "# Production input 123\nParameter 123.\n");
 
 function run(command, args, cwd = repo, timeoutMs) {
   return new Promise((resolve, reject) => {
@@ -124,6 +123,7 @@ async function stop(child) {
 }
 
 try {
+  await run(process.execPath, [path.join(repo, "scripts/conformance-bindings.mjs"), "--self-test"]);
   await run(process.execPath, [
     path.join(repo, "scripts/test-production-protocol.mjs"),
     "--self-test",
@@ -138,13 +138,101 @@ try {
   await run(process.execPath, [npmCli, "ci", "--ignore-scripts"], suite);
   const cli = path.join(suite, "src/index.ts");
   const tsx = path.join(suite, "node_modules/tsx/dist/cli.mjs");
-  const baseline = path.join(repo, "src/__tests__/fixtures/conformance-baseline.yml");
+  const helper = path.join(suite, "src/connection/sdk-client.ts");
+  const helperSource = await readFile(helper, "utf8");
+  const hash = (source) => createHash("sha256").update(source).digest("hex");
+  if (hash(helperSource) !== "96d8b4efc028ce056b784f846b2dbe1c8872e38d11797330727ee54de2bdea6d")
+    throw new Error("Pinned helper changed");
+  const scenarioFiles = (await readdir(path.join(suite, "src/scenarios/server"))).filter((file) =>
+    file.endsWith(".ts"),
+  );
+  const fingerprints = Object.fromEntries(
+    await Promise.all(
+      scenarioFiles.map(async (file) => [
+        file,
+        hash(await readFile(path.join(suite, "src/scenarios/server", file))),
+      ]),
+    ),
+  );
+  await writeFile(
+    helper,
+    `import { bindOptions, bindClient } from ${JSON.stringify(pathToFileURL(path.join(repo, "scripts/conformance-bindings.mjs")).href)};\n` +
+      helperSource
+        .replace(
+          "  const client = new Client(opts.clientInfo",
+          "  opts = bindOptions(opts);\n  const client = new Client(opts.clientInfo",
+        )
+        .replace(
+          "  await client.connect(transport);",
+          "  await client.connect(transport);\n  await bindClient(client);",
+        ),
+  );
+  for (const file of scenarioFiles)
+    if (hash(await readFile(path.join(suite, "src/scenarios/server", file))) !== fingerprints[file])
+      throw new Error(`Original scenario modified: ${file}`);
+  await writeFile(
+    path.join(results, "original-scenario-fingerprints.json"),
+    JSON.stringify(fingerprints, null, 2),
+  );
+  productionScenarios = JSON.parse(
+    execFileSync(
+      process.execPath,
+      [
+        tsx,
+        "--eval",
+        `import { listActiveClientScenarios, getClientScenario } from './src/scenarios/index.ts';
+        (async () => {
+          const checks = await getClientScenario('tools-call-image').run({ connect: async () => ({ request: async () => ({ content: [{ type: 'text', text: 'No image' }] }), close: async () => {} }) });
+          if (!checks.some((check) => check.status === 'FAILURE' && check.errorMessage?.includes('No image content found'))) throw new Error('Original image assertion negative control failed');
+          console.log(JSON.stringify(listActiveClientScenarios()));
+        })()`,
+      ],
+      { cwd: suite, encoding: "utf8" },
+    ),
+  );
+  const bindingScenarios = new Set([
+    "completion-complete",
+    "tools-call-simple-text",
+    "tools-call-image",
+    "tools-call-audio",
+    "tools-call-embedded-resource",
+    "tools-call-mixed-content",
+    "tools-call-with-logging",
+    "tools-call-error",
+    "tools-call-with-progress",
+    "tools-call-sampling",
+    "tools-call-elicitation",
+    "resources-read-text",
+    "resources-read-binary",
+    "resources-templates-read",
+    "resources-subscribe",
+    "resources-unsubscribe",
+    "prompts-get-simple",
+    "prompts-get-with-args",
+    "prompts-get-embedded-resource",
+    "prompts-get-with-image",
+  ]);
+  const baseline = path.join(
+    repo,
+    `src/__tests__/fixtures/conformance-${raw ? "raw-" : ""}baseline.yml`,
+  );
   const sessionBaseline = path.join(scratch, "session-baseline.yml");
   await writeFile(
     sessionBaseline,
     (await readFile(baseline, "utf8"))
       .split("\n")
-      .filter((line) => !line.includes("server-sse-multiple-streams-session"))
+      .filter(
+        (line) =>
+          !line.includes("server-sse-multiple-streams-session") &&
+          (raw ||
+            ![
+              "tools-call-sampling",
+              "tools-call-elicitation",
+              "resources-read-binary",
+              "resources-subscribe",
+              "resources-unsubscribe",
+            ].some((name) => line.trim() === `- ${name}`)),
+      )
       .join("\n"),
   );
   for (const [name, entry] of [
@@ -169,14 +257,30 @@ try {
           ],
     );
     try {
+      const unsupported = [
+        "elicitation-sep1034-defaults",
+        "elicitation-sep1330-enums",
+        ...(name === "application"
+          ? [
+              "tools-call-sampling",
+              "tools-call-elicitation",
+              "resources-read-binary",
+              "resources-subscribe",
+              "resources-unsubscribe",
+              ...sessionScenarios,
+            ]
+          : []),
+      ];
       const scenarios =
         mode === "production"
-          ? [...productionScenarios, ...(name === "application-sessions" ? sessionScenarios : [])]
+          ? productionScenarios.filter((scenario) => !unsupported.includes(scenario))
           : [undefined];
+      if (mode === "production")
+        productionSelection[name] = { included: scenarios, excluded: unsupported };
       for (const scenario of scenarios) {
         const outputDir = path.join(
           results,
-          mode === "production" ? `${name}-selected` : name,
+          raw ? `${name}-raw` : mode === "production" ? `${name}-selected` : name,
           ...(scenario ? [scenario] : []),
         );
         await mkdir(outputDir, { recursive: true });
@@ -198,8 +302,27 @@ try {
             "--expected-failures",
             name === "application-sessions" ? sessionBaseline : baseline,
           );
-        await run(process.execPath, args, suite);
+        if (!raw && name !== "fixtures") {
+          process.env.TLAPLUS_BINDINGS_REPORT = path.join(outputDir, "bindings.jsonl");
+          process.env.TLAPLUS_BINDINGS_WORKSPACE = workingDir;
+          await writeFile(process.env.TLAPLUS_BINDINGS_REPORT, "");
+        }
+        try {
+          await run(process.execPath, args, suite);
+        } finally {
+          delete process.env.TLAPLUS_BINDINGS_REPORT;
+          delete process.env.TLAPLUS_BINDINGS_WORKSPACE;
+        }
         if (mode === "production") {
+          if (bindingScenarios.has(scenario)) {
+            const bindings = (await readFile(path.join(outputDir, "bindings.jsonl"), "utf8"))
+              .trim()
+              .split("\n")
+              .filter(Boolean)
+              .map((line) => JSON.parse(line));
+            if (!bindings.some((binding) => binding.kind === "request"))
+              throw new Error(`No production binding exercised: ${scenario}`);
+          }
           const reports = (await readdir(outputDir, { withFileTypes: true })).filter(
             (entry) => entry.isDirectory() && !previousReports.has(entry.name),
           );
@@ -238,27 +361,43 @@ try {
       await stop(child);
     }
   }
+  const changedSuiteFiles = execFileSync("git", ["diff", "--name-only"], {
+    cwd: suite,
+    encoding: "utf8",
+  })
+    .trim()
+    .split("\n");
+  if (JSON.stringify(changedSuiteFiles) !== JSON.stringify(["src/connection/sdk-client.ts"]))
+    throw new Error(`Unexpected upstream edits: ${changedSuiteFiles}`);
   await writeFile(
     path.join(results, "metadata.json"),
     JSON.stringify(
       {
         suiteRef: ref,
         mode,
+        raw,
+        scenarioAssertions:
+          "Original scenario files verified unchanged; SHA-256 fingerprints saved separately",
+        bindings:
+          "Only outgoing request inputs and general elicitation acceptance inputs are adapted; all real server responses remain unchanged",
         specVersion: "2025-11-25",
         ...(mode === "production"
           ? {
               productionScenarios,
+              productionSelection,
               sessionScenarios,
               coverage:
-                "Unchanged selected upstream scenarios plus production API capability checks with upstream wire validation; unsupported capabilities reported separately",
+                "Original active upstream scenario assertions with request/input bindings to production APIs; fixture-specific schemas and unsupported transport capabilities excluded; complementary behavioral checks retained",
             }
           : {}),
         ...(mode === "audit"
           ? {
-              applicationBaseline:
-                "20 prescribed fixture scenarios remain expected; not full conformance",
-              applicationSessions:
-                "Production session mode; no optional session gate in its baseline",
+              applicationBaseline: raw
+                ? "20 unbound prescribed fixture scenarios remain expected"
+                : "Stateless: five unsupported features and two fixture-specific elicitation schemas remain expected",
+              applicationSessions: raw
+                ? "20 unbound prescribed fixture scenarios remain expected"
+                : "Session mode: two fixture-specific elicitation schemas remain expected",
             }
           : {}),
         ...(mode !== "production" ? { fixtures: "Full active suite; no expected failures" } : {}),

@@ -388,7 +388,7 @@ async function runDriver({ suite, url, mode, workingDir, kbDir, outputDir }) {
     },
   ];
   const baseline = await readFile(
-    new URL("../src/__tests__/fixtures/conformance-baseline.yml", import.meta.url),
+    new URL("../src/__tests__/fixtures/conformance-raw-baseline.yml", import.meta.url),
     "utf8",
   );
   const identifiers = [...baseline.matchAll(/^  - ([^:\n]+)$/gm)].map((match) => match[1]);

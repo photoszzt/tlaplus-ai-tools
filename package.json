@@ -40,7 +40,8 @@
     "LICENSE",
     ".codex-plugin/",
     ".mcp-codex.json",
-    "codex/"
+    "codex/",
+    "!scripts/conformance-bindings.mjs"
   ],
   "main": "dist/index.js",
   "scripts": {
@@ -61,7 +62,8 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "lint": "oxlint",
-    "lint:fix": "oxlint --fix"
+    "lint:fix": "oxlint --fix",
+    "test:conformance:raw": "node scripts/test-conformance.mjs --raw"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.0",
